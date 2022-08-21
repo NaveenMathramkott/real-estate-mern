@@ -1,11 +1,44 @@
 .viewMainContainer {
   width: 100%;
-  height: 100%;
+  height: 100px;
+  border: 1px solid #27ae60;
+  border-radius: 4px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
-.tableView {
-  /* background-color: red; */
+
+.imageStyle {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+}
+.nameTag {
   display: flex;
   flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+.numberTag {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+.ststusTag {
+}
+.viewMainContainer .actionTag {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+}
+.viewMainContainer .actionTag button {
+  background-color: rgb(185, 185, 185);
+  border-radius: 5px;
+  padding: 4px;
+  margin: 5px;
+  display: flex;
   justify-content: center;
   align-items: center;
 }

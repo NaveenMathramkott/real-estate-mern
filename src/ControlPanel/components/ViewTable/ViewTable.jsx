@@ -1,42 +1,32 @@
 import React from "react";
 import "./ViewTable.css";
+import img from "../../../components/images/team-4.jpg";
 
-const columns = [
-  {
-    title: "Name",
-    dataIndex: "name",
-    key: "name",
-    width: 100,
-  },
-  {
-    title: "Age",
-    dataIndex: "age",
-    key: "age",
-    width: 100,
-  },
-  {
-    title: "Address",
-    dataIndex: "address",
-    key: "address",
-    width: 200,
-  },
-  {
-    title: "Operations",
-    dataIndex: "",
-    key: "operations",
-    render: () => <p>Delete</p>,
-  },
-];
-
-const data = [
-  { name: "Jack", age: 28, address: "some where", key: "1" },
-  { name: "Rose", age: 36, address: "some where", key: "2" },
-];
-function ViewTable() {
+function ViewTable({
+  image = img,
+  itemName = "Anna Tomson",
+  status = "proceeding",
+  number = "97 44 22 4047",
+  email = "test@gmail.com",
+}) {
   return (
     <>
       <div className="viewMainContainer">
-        <div className="viewTableContainer"></div>
+        <img src={image} alt={itemName} className="imageStyle" />
+        <div className="nameTag">{itemName}</div>
+        <div className="numberTag">
+          <div>{number}</div>
+          <div>{email}</div>
+        </div>
+        <div className="statusTag">{status}</div>
+        <div className="actionTag">
+          <button>
+            <i className="fa fa-edit" />
+          </button>
+          <button>
+            <i className="fa fa-trash" />
+          </button>
+        </div>
       </div>
     </>
   );

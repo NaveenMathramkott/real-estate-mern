@@ -22,11 +22,13 @@ function UserPanel({ adminName = "User Account" }) {
           cover={img}
         />
         <div className="adminContentWrapper">
-          <ProfileDash
-            adminName={adminName}
-            img={img}
-            dashboardData={PROFILE_SIDE_DATA}
-          />
+          <div className="sideDashboard">
+            <ProfileDash
+              adminName={adminName}
+              img={img}
+              dashboardData={PROFILE_SIDE_DATA}
+            />
+          </div>
           <div className="adminMainContent">
             <div style={{ width: "100%" }}>
               <FileUploader

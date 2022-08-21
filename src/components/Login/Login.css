@@ -2,7 +2,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 300px;
+  height: 360px;
   min-width: 340px;
   box-shadow: 0 0 10px 5px rgba(255, 254, 254, 0.153);
 }
