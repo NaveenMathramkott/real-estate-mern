@@ -7,6 +7,11 @@ header {
   top: 0;
   z-index: 99999;
 }
+.profileHeader {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+}
 header img {
   width: 170px;
 }
@@ -40,6 +45,11 @@ header .toggle {
 @media screen and (max-width: 1024px) {
   header {
     padding: 0;
+  }
+  .profileHeader {
+    position: absolute;
+    top: 0;
+    right: 20px;
   }
   header img {
     margin-top: 20px;

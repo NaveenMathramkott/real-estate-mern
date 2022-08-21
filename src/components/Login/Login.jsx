@@ -16,7 +16,6 @@ function Login({ onClose }) {
 
   // const usersName = JSON.stringify({
   //   name: "John Doe",
-  //   email: "sv@gmail.com",
   //   password: "12345678",
   // });
 
@@ -39,44 +38,42 @@ function Login({ onClose }) {
   //   handleSubmit();
   // }, []);
 
-  // const handleSubmit = async () => {
-  //   console.log("its a log value to test");
-  //   const response = await axios
-  //     .post(`${BASE_URL}/register`, {
-  //       name: formValue.name,
-  //       email: formValue.email,
-  //       password: formValue.password,
-  //     })
-  //     .then((res) => console.log(res));
-  //   console.log(response);
-  // };
-
   const handleSubmit = async () => {
-    const loginFormData = new FormData();
-    loginFormData.append("name", formValue.name);
-    loginFormData.append("email", formValue.email);
-    loginFormData.append("password", formValue.password);
-
-    try {
-      const response = await axios({
-        method: "post",
-        url: { BASE_URL } + "/register",
-        data: loginFormData,
-        headers: { "Content-Type": "multipart/form-data" },
-      });
-      console.log(response);
-    } catch (error) {
-      console.log(error);
-    }
+    const response = await axios
+      .post(`https://jsonplaceholder.typicode.com/posts`, {
+        title: "thiws is a title",
+        body: "its lottery week",
+      })
+      .then((res) => console.log(res));
+    console.log(response);
   };
-  console.log(formValue);
 
-  const handleChange = (event) => {
-    setFormValue({
-      ...formValue,
-      [event.target.name]: event.target.value,
-    });
-  };
+  // const handleSubmit = async () => {
+  //   const loginFormData = new FormData();
+  //   loginFormData.append("name", formValue.name);
+  //   loginFormData.append("email", formValue.email);
+  //   loginFormData.append("password", formValue.password);
+
+  //   try {
+  //     const response = await axios({
+  //       method: "get",
+  //       url: "https://futurerightwings.com/pdftest/Api.php?apicall=login",
+  //       data: loginFormData,
+  //       headers: { "Content-Type": "application/json" },
+  //     });
+  //     console.log(response);
+  //   } catch (error) {
+  //     console.log(error);
+  //   }
+  // };
+  // console.log(formValue);
+
+  // const handleChange = (event) => {
+  //   setFormValue({
+  //     ...formValue,
+  //     [event.target.name]: event.target.value,
+  //   });
+  // };
 
   return (
     <motion.div
@@ -85,7 +82,7 @@ function Login({ onClose }) {
       transition={{ delay: 0.2 }}
       className="loginWrapper"
     >
-      <form onSubmit={handleSubmit} method="post">
+      <form onSubmit={handleSubmit}>
         {newUser === 1 ? <h2>Register</h2> : <h2>Login</h2>}
 
         <label>Name</label>
@@ -93,8 +90,8 @@ function Login({ onClose }) {
           type="text"
           name="name"
           placeholder={"Username"}
-          required
-          onChange={handleChange}
+          // required
+          // onChange={handleChange}
         />
         {newUser === 1 && <label>Email</label>}
         {newUser === 1 && (
@@ -102,8 +99,8 @@ function Login({ onClose }) {
             type="email"
             name="email"
             placeholder={"Email"}
-            required
-            onChange={handleChange}
+            // required
+            // onChange={handleChange}
           />
         )}
 
@@ -112,8 +109,8 @@ function Login({ onClose }) {
           type="password"
           name="password"
           placeholder="Password"
-          required
-          onChange={handleChange}
+          // required
+          // onChange={handleChange}
         />
 
         <div className="userQus">
@@ -127,7 +124,8 @@ function Login({ onClose }) {
             scale: 1.2,
             transition: { duration: 0.2 },
           }}
-          type="submit"
+          // type="submit"
+          onClick={handleSubmit}
         >
           {newUser === 1 ? "Register" : "Login"}
         </motion.button>

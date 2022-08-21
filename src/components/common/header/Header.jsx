@@ -4,10 +4,12 @@ import { nav } from "../../data/Data";
 import { Link } from "react-router-dom";
 import Login from "../../Login/Login";
 import Popup from "reactjs-popup";
+import Avatar from "../commonComp/Avatar/Avatar";
 
 const Header = () => {
   const [navList, setNavList] = useState(false);
   const [loginSpace, setLoginSpace] = useState(false);
+  const [userLoggedIn, setUserLoggedIn] = useState(true);
 
   const toggleLogin = () => {
     return (
@@ -33,22 +35,6 @@ const Header = () => {
     <>
       <header>
         <div className="container flex">
-          <div className="logo">
-            <img src="./images/Logo2_rental.png" alt="company Logo" />
-          </div>
-          <div className="nav">
-            <ul className={navList ? "small" : "flex"}>
-              {nav.map((list, index) => (
-                <li key={index}>
-                  <Link to={list.path}>{list.text}</Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-          {!loginSpace && toggleLogin()}
-          <Link to="/AdminPanel">adminPanel</Link>
-          <Link to="/UserPanel">UserPanel</Link>
-
           <div className="toggle">
             <button onClick={() => setNavList(!navList)}>
               {navList ? (
@@ -58,6 +44,27 @@ const Header = () => {
               )}
             </button>
           </div>
+          <div className="logo">
+            <img src="./images/Logo2_rental.png" alt="company Logo" />
+          </div>
+          <div className="nav">
+            <ul className={navList ? "small" : "flex"}>
+              {nav.map((list, index) => (
+                <li key={index} onClick={() => setNavList(false)}>
+                  <Link to={list.path}>{list.text}</Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+          {!loginSpace && toggleLogin()}
+          {userLoggedIn && (
+            <div className="profileHeader">
+              <Avatar />
+            </div>
+          )}
+
+          {/* <Link to="/AdminPanel">adminPanel</Link>
+          <Link to="/UserPanel">UserPanel</Link> */}
         </div>
       </header>
     </>

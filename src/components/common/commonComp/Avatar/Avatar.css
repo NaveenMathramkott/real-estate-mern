@@ -1,0 +1,14 @@
+.avatarWrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.avatarWrapper .imageStyle {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  border: 2px solid rgb(178, 178, 178);
+}
