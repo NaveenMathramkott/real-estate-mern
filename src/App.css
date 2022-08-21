@@ -34,6 +34,11 @@ button {
   cursor: pointer;
   font-weight: bold;
 }
+.headerMainWrapper {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
 button i {
   margin-right: 5px;
 }
@@ -44,7 +49,7 @@ button i {
 }
 .heading h1 {
   color: #2d3954;
-  font-weight: 600;
+  font-weight: 400;
   text-transform: capitalize;
   font-size: 1em;
 }
@@ -160,12 +165,17 @@ img {
   .grid5 {
     grid-template-columns: repeat(1, 1fr);
   }
+  .headerMainWrapper {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
   .heading {
     width: 100%;
   }
   .heading h1 {
     font-size: smaller;
-    font-weight: 400;
+    font-weight: 200;
   }
   .container {
     max-width: 90%;
@@ -177,5 +187,17 @@ img {
   }
   .back h1 {
     font-size: 26px;
+  }
+  .btn5 {
+    border-radius: 50px;
+    padding: 20px 20px;
+    color: #27ae60;
+    font-size: 20px;
+    font-weight: 400;
+    border: 5px solid #27ae601f;
+    background: #fff;
+  }
+  .text h1 {
+    font-size: 20px;
   }
 }

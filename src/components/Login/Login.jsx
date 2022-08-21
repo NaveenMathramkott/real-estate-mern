@@ -14,67 +14,6 @@ function Login({ onClose }) {
     password: "",
   });
 
-  // const usersName = JSON.stringify({
-  //   name: "John Doe",
-  //   password: "12345678",
-  // });
-
-  // const handleSubmit = async () => {
-  //   console.log("its a log value to test");
-  //   const result = await axios.post(
-  //     "https://sysirohub.com/rent_api/register",
-  //     usersName,
-  //     {
-  //       headers: {
-  //         "Content-Type": "application/json",
-  //       },
-  //     }
-  //   );
-
-  //   console.log(result.data.data);
-  //   console.log(result.data.headers["Content-Type"]);
-  // };
-  // useEffect(() => {
-  //   handleSubmit();
-  // }, []);
-
-  const handleSubmit = async () => {
-    const response = await axios
-      .post(`https://jsonplaceholder.typicode.com/posts`, {
-        title: "thiws is a title",
-        body: "its lottery week",
-      })
-      .then((res) => console.log(res));
-    console.log(response);
-  };
-
-  // const handleSubmit = async () => {
-  //   const loginFormData = new FormData();
-  //   loginFormData.append("name", formValue.name);
-  //   loginFormData.append("email", formValue.email);
-  //   loginFormData.append("password", formValue.password);
-
-  //   try {
-  //     const response = await axios({
-  //       method: "get",
-  //       url: "https://futurerightwings.com/pdftest/Api.php?apicall=login",
-  //       data: loginFormData,
-  //       headers: { "Content-Type": "application/json" },
-  //     });
-  //     console.log(response);
-  //   } catch (error) {
-  //     console.log(error);
-  //   }
-  // };
-  // console.log(formValue);
-
-  // const handleChange = (event) => {
-  //   setFormValue({
-  //     ...formValue,
-  //     [event.target.name]: event.target.value,
-  //   });
-  // };
-
   return (
     <motion.div
       initial={{ y: "-400" }}
@@ -82,7 +21,7 @@ function Login({ onClose }) {
       transition={{ delay: 0.2 }}
       className="loginWrapper"
     >
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={() => {}}>
         {newUser === 1 ? <h2>Register</h2> : <h2>Login</h2>}
 
         <label>Name</label>
@@ -124,8 +63,7 @@ function Login({ onClose }) {
             scale: 1.2,
             transition: { duration: 0.2 },
           }}
-          // type="submit"
-          onClick={handleSubmit}
+          type="submit"
         >
           {newUser === 1 ? "Register" : "Login"}
         </motion.button>

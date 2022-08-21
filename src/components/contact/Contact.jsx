@@ -13,8 +13,8 @@ const Contact = () => {
           cover={img}
         />
         <div className="container">
-          <form className="shadow">
-            <h4>Contact Us</h4> <br />
+          <form className="shadow contactWrapper">
+            <h2>Contact Us</h2> <br />
             <div className="contactDiv">
               <label>Name</label>
               <input type="text" placeholder="Name" className="contactInput" />

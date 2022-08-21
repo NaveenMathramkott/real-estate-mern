@@ -34,9 +34,9 @@ const Header = () => {
   return (
     <>
       <header>
-        <div className="container flex">
+        <div className="container headerMainWrapper">
           <div className="toggle">
-            <button onClick={() => setNavList(!navList)}>
+            <button onClick={() => setNavList(!navList)} className="btnBurger">
               {navList ? (
                 <i className="fa fa-times"></i>
               ) : (

@@ -6,16 +6,6 @@ import { chipData } from "../../data/Data";
 import axios from "axios";
 
 const Hero = () => {
-  const handleSubmit = async () => {
-    const response = await axios
-      .post(`https://jsonplaceholder.typicode.com/posts`, {
-        id: 1,
-        title: "thiws is a title",
-        body: "its lottery week",
-      })
-      .then((res) => console.log(res));
-    console.log(response);
-  };
   return (
     <>
       <div className="hero">
@@ -50,7 +40,7 @@ const Hero = () => {
                 <button className="btnMob">
                   <i className="fa fa-map-marker locationBtn"></i>
                 </button>
-                <button className="btnMob" onClick={handleSubmit}>
+                <button className="btnMob">
                   <i className="fa fa-search"></i>
                 </button>
               </div>
