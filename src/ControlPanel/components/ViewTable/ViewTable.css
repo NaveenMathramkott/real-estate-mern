@@ -1,0 +1,11 @@
+.viewMainContainer {
+  width: 100%;
+  height: 100%;
+}
+.tableView {
+  /* background-color: red; */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}

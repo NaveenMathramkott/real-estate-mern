@@ -1,0 +1,72 @@
+.loginWrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 300px;
+  min-width: 340px;
+  box-shadow: 0 0 10px 5px rgba(255, 254, 254, 0.153);
+}
+.loginWrapper h2 {
+  color: #27ae60;
+}
+
+.loginWrapper form {
+  height: 100%;
+  width: 100%;
+  margin-top: 0;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background-color: #fff;
+  opacity: 1;
+  position: relative;
+}
+.loginWrapper form label {
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 10px;
+  align-self: flex-start;
+  padding-left: 22px;
+}
+.loginWrapper form span {
+  margin-right: 10px;
+  font-size: 12px;
+  cursor: pointer;
+  color: blue;
+}
+.loginWrapper form input {
+  width: 90%;
+  height: 50px;
+  font-size: 14px;
+  border: 1px solid rgb(39, 170, 93, 0.3);
+  border-radius: 5px;
+  margin-bottom: 10px;
+  padding: 8px;
+  background-color: rgb(39, 170, 93, 0.3);
+}
+.loginWrapper form input::placeholder {
+  font-size: 14px;
+}
+.userQus {
+  width: 100%;
+  display: flex;
+  justify-content: space-evenly;
+  align-items: center;
+  padding-bottom: 20px;
+}
+.loginWrapper .closeBtn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+}
+.loginWrapper .closeBtn div {
+  width: 25px;
+  height: 25px;
+  border-radius: 50%;
+  background-color: #27ae60;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}

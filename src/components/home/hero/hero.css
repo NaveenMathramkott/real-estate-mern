@@ -1,0 +1,176 @@
+.hero {
+  background-image: url("../../../../public/images/banner.png");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: cover;
+  height: 90vh;
+  width: 100%;
+}
+.hero .container {
+  padding-top: 6%;
+}
+.hero h1 {
+  color: #fff;
+  font-size: 60px;
+}
+.hero p {
+  color: #fff;
+  opacity: 0.8;
+}
+
+.searchBox {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 30px;
+  width: 74%;
+  border: 1px solid rgba(128, 128, 128, 0.2);
+  flex: 6;
+  font-size: 18px;
+  padding: 16px;
+  border-radius: 6px;
+  color: gray;
+}
+form input {
+  width: 100%;
+  font-size: 18px;
+  color: gray;
+}
+form {
+  background-color: #fff;
+  border-radius: 5px;
+  margin-top: 50px;
+  padding: 10px 20px;
+  width: 100%;
+  opacity: 0.94;
+}
+.heroBtnSec {
+  display: flex;
+  flex-direction: row;
+}
+form .heroBtn {
+  margin-left: 20px;
+  height: 24px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: 1px solid #27ae60;
+}
+form .heroBtn:hover {
+  background-color: #fff;
+  color: #27ae60;
+}
+
+form span {
+  font-size: 16px;
+  color: black;
+}
+.formContainer {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+}
+input::placeholder {
+  font-size: 18px;
+  color: gray;
+  opacity: 0.4;
+}
+form .box {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-direction: row;
+}
+form .box:nth-child(1) {
+  border-left: none;
+}
+.leftWrapper {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  margin-top: 15px;
+}
+.chipWrapper {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  align-items: center;
+  margin-top: 10px;
+}
+.heroBtnMobile {
+  display: none;
+}
+
+@media screen and (max-width: 756px) {
+  .hero {
+    height: 100vh;
+    width: 100%;
+    display: flex;
+  }
+  .hero .container {
+    padding-top: 6px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+  .hero .headingSec {
+    margin-bottom: 18px;
+  }
+
+  form {
+    display: flex;
+    flex-direction: column;
+    width: 400px;
+    padding-bottom: 20px;
+    border-radius: 10px;
+  }
+
+  form .box {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+  .formContainer {
+    margin: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .searchBox {
+    width: 100%;
+  }
+  form input {
+    width: 100%;
+    margin-bottom: 10px;
+  }
+  .heroBtnSec {
+    display: none;
+  }
+  .heroBtnMobile {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-evenly;
+    width: 60%;
+    align-items: center;
+    margin-top: 20px;
+  }
+  .btnMob {
+    height: 10px;
+    background: #27ae60;
+    border-radius: 6px;
+    border: 1px solid #27ae60;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  .btnMob:hover {
+    background: white;
+    color: #27ae60;
+  }
+}

@@ -1,0 +1,16 @@
+.iconWrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: nowrap;
+  width: 100px;
+  background-color: rgb(128, 128, 128, 0.3);
+  border-radius: 5px;
+  cursor: pointer;
+}
+.iconText {
+  /* color: #fff; */
+  font-size: 10px;
+  font-weight: 400;
+  padding: 5px;
+}

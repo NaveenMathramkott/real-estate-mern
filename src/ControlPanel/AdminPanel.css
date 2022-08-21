@@ -1,0 +1,25 @@
+.adminContentWrapper {
+  background-color: rgb(243, 243, 243);
+  padding: 10px;
+  display: flex;
+  flex-direction: row;
+}
+.uploadBtn {
+  width: auto;
+  height: 200px;
+  border: 2px dotted black;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.adminMainContent {
+  flex: 8;
+  padding-left: 10px;
+}
+.tileWrapper {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+}
