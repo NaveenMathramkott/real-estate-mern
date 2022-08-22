@@ -44,7 +44,9 @@ const Header = () => {
             </button>
           </div>
           <div className="logo">
-            <img src="./images/Logo2_rental.png" alt="company Logo" />
+            <Link to="/">
+              <img src="./images/Logo2_rental.png" alt="company Logo" />
+            </Link>
           </div>
           <div className="nav">
             <ul className={navList ? "small" : "flex"}>
