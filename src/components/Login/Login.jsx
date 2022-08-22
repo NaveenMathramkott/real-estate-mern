@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 
 const axios = require("axios");
 
-const BASE_URL = "https://sysirohub.com/rent_api";
+const BASE_URL = "https://futurerightwings.com/rentsys/api/auth/signup";
 
 function Login({ onClose }) {
   const [newUser, setNewUser] = React.useState(0);
@@ -14,6 +14,27 @@ function Login({ onClose }) {
     password: "",
   });
 
+  const fetchData = async () => {
+    const result = await axios
+      .post(BASE_URL, {
+        username: formValue.name,
+        email: formValue.email,
+        password: formValue.password,
+      })
+      .then((response) => {
+        console.log(response.data);
+      });
+    console.log(result);
+  };
+
+  const handleChange = (event) => {
+    event.preventDefault();
+    setFormValue({
+      ...formValue,
+      [event.target.name]: event.target.value,
+    });
+  };
+  console.log(formValue);
   return (
     <motion.div
       initial={{ y: "-400" }}
@@ -21,7 +42,7 @@ function Login({ onClose }) {
       transition={{ delay: 0.2 }}
       className="loginWrapper"
     >
-      <form onSubmit={() => {}}>
+      <form onSubmit={fetchData}>
         {newUser === 1 ? <h2>Register</h2> : <h2>Login</h2>}
 
         <label>Name</label>
@@ -29,8 +50,8 @@ function Login({ onClose }) {
           type="text"
           name="name"
           placeholder={"Username"}
-          // required
-          // onChange={handleChange}
+          required
+          onChange={handleChange}
         />
         {newUser === 1 && <label>Email</label>}
         {newUser === 1 && (
@@ -38,8 +59,8 @@ function Login({ onClose }) {
             type="email"
             name="email"
             placeholder={"Email"}
-            // required
-            // onChange={handleChange}
+            required
+            onChange={handleChange}
           />
         )}
 
@@ -48,8 +69,8 @@ function Login({ onClose }) {
           type="password"
           name="password"
           placeholder="Password"
-          // required
-          // onChange={handleChange}
+          required
+          onChange={handleChange}
         />
 
         <div className="userQus">

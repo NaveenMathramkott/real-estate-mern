@@ -8,8 +8,7 @@ import Avatar from "../commonComp/Avatar/Avatar";
 
 const Header = () => {
   const [navList, setNavList] = useState(false);
-  const [loginSpace, setLoginSpace] = useState(false);
-  const [userLoggedIn, setUserLoggedIn] = useState(true);
+  const [userLoggedIn, setUserLoggedIn] = useState(false);
 
   const toggleLogin = () => {
     return (
@@ -56,11 +55,13 @@ const Header = () => {
               ))}
             </ul>
           </div>
-          {!loginSpace && toggleLogin()}
-          {userLoggedIn && (
+
+          {userLoggedIn ? (
             <div className="profileHeader">
               <Avatar />
             </div>
+          ) : (
+            toggleLogin()
           )}
 
           {/* <Link to="/AdminPanel">adminPanel</Link>
