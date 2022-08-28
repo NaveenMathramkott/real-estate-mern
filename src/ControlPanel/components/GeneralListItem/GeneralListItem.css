@@ -1,10 +1,10 @@
 .generalListItemWrapper {
-  min-width: 300px;
+  min-width: 160px;
   display: flex;
   flex-direction: row;
   align-items: center;
   justify-content: space-between;
-  padding: 16px;
+  padding: 8px;
   border-radius: 4px;
 }
 .generalListItemWrapper:hover {
@@ -15,7 +15,6 @@
 .listLeftWrapper {
   flex: 1;
   width: 24px;
-  height: 24px;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -24,12 +23,13 @@
   flex: 6;
   display: flex;
   align-items: center;
-  font-size: 14px;
+  padding-left: 6px;
 }
-.listRightWrapper {
-  width: 24px;
-  height: 24px;
+.listCenterWrapper p {
+  font-weight: 300;
+  font-size: 13px;
 }
+
 .updateSec {
   display: flex;
   justify-content: center;
@@ -37,6 +37,5 @@
   background-color: #27ae60;
   border-radius: 50%;
   width: 24px;
-  height: 24px;
   color: #fff;
 }

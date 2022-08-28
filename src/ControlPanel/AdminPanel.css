@@ -26,10 +26,16 @@
   display: flex;
   flex-direction: row;
   flex-wrap: wrap;
-  justify-content: space-between;
+  justify-content: space-evenly;
   align-items: center;
+  margin: 8px;
 }
-
+.chartsWrapper {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  padding: 10px;
+}
 @media screen and (max-width: 768px) {
   .adminContentWrapper {
     display: flex;

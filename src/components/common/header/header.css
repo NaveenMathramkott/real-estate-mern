@@ -1,6 +1,6 @@
 header {
   background-color: #fff;
-  height: 10%;
+  height: 80px;
   box-shadow: 0 5px 30px rgb(0 22 84 / 10%);
   padding: 15px 0;
   position: sticky;
@@ -44,6 +44,9 @@ header h4 {
 header .toggle {
   display: none;
 }
+.loginFormRender {
+  margin-top: 10px;
+}
 
 @media screen and (max-width: 1024px) {
   header {
@@ -51,7 +54,6 @@ header .toggle {
   }
   .logo {
     margin-top: -6px;
-    margin-left: -60px;
   }
   .profileHeader {
     position: absolute;
@@ -61,9 +63,17 @@ header .toggle {
   header img {
     margin-top: 20px;
   }
-  header .button {
-    display: none;
+
+  header .button button {
+    margin-top: 10px;
+    width: 70px;
+    height: 36px;
+    font-size: 12px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
   }
+
   header .nav .flex {
     display: none;
   }
@@ -77,6 +87,9 @@ header .toggle {
     display: flex;
     justify-content: center;
     align-items: center;
+  }
+  .loginFormRender {
+    margin-top: 30px;
   }
   header .small {
     position: absolute;

@@ -3,7 +3,6 @@ import Heading from "../../common/Heading";
 import Chip from "../../common/commonComp/Chip/Chip";
 import "./hero.css";
 import { chipData } from "../../data/Data";
-import axios from "axios";
 
 const Hero = () => {
   return (

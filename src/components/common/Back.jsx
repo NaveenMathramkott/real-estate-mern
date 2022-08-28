@@ -1,17 +1,17 @@
-import React from "react"
+import React from "react";
 
-const Back = ({ name, title, cover }) => {
+const Back = ({ name, title, cover, height = "30vh" }) => {
   return (
     <>
-      <div className='back'>
-        <div className='container'>
+      <div className="back" style={{ height: height }}>
+        <div className="container">
           <span>{name}</span>
           <h1>{title}</h1>
         </div>
-        <img src={cover} alt='' />
+        <img src={cover} alt="" />
       </div>
     </>
-  )
-}
+  );
+};
 
-export default Back
+export default Back;

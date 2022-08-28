@@ -15,9 +15,6 @@ function GeneralListItem({
         <div className="listCenterWrapper">
           <p>{itemName}</p>
         </div>
-        <div className="listRightWrapper">
-          {updateNum && <span className="updateSec">{updateNum}</span>}
-        </div>
       </div>
     </>
   );

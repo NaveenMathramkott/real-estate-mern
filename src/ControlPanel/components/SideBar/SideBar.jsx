@@ -1,6 +1,6 @@
 import React from "react";
-import GeneralListItem from "../components/GeneralListItem/GeneralListItem";
-import "./ProfileDash.css";
+import GeneralListItem from "../GeneralListItem/GeneralListItem";
+import "./SideBar.css";
 
 function ProfileDash({ adminName = "Admin", img, dashboardData }) {
   return (
@@ -13,11 +13,7 @@ function ProfileDash({ adminName = "Admin", img, dashboardData }) {
         <div className="adminSideContent">
           {dashboardData.map((item, index) => (
             <div className="listSection">
-              <GeneralListItem
-                icon={item.icon}
-                itemName={item.name}
-                updateNum={item.num}
-              />
+              <GeneralListItem icon={item.icon} itemName={item.name} />
             </div>
           ))}
         </div>

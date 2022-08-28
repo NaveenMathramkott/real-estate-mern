@@ -26,9 +26,9 @@
 .loginWrapper form label {
   font-size: 14px;
   font-weight: 500;
-  margin-bottom: 10px;
+  /* margin-bottom: 10px; */
   align-self: flex-start;
-  padding-left: 22px;
+  padding-left: 8px;
 }
 .loginWrapper form span {
   margin-right: 10px;
@@ -37,12 +37,12 @@
   color: blue;
 }
 .loginWrapper form input {
-  width: 90%;
-  height: 50px;
+  width: 100%;
+  max-height: 40px;
   font-size: 14px;
   border: 1px solid rgb(39, 170, 93, 0.3);
   border-radius: 5px;
-  margin-bottom: 10px;
+  margin-bottom: 8px;
   padding: 8px;
   background-color: rgb(39, 170, 93, 0.3);
 }

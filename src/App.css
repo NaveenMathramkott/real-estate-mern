@@ -127,7 +127,6 @@ img {
   background: #fff;
 }
 .back {
-  height: 30vh;
   position: relative;
 }
 .back img {
@@ -165,11 +164,7 @@ img {
   .grid5 {
     grid-template-columns: repeat(1, 1fr);
   }
-  .headerMainWrapper {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
+
   .heading {
     width: 100%;
   }

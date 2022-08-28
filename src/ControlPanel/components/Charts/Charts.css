@@ -1,0 +1,14 @@
+.chart {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.chartContent {
+  display: flex;
+  flex-direction: column;
+}
+.title {
+  font-size: 15px;
+  text-align: center;
+  color: gray;
+}
