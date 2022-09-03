@@ -2,9 +2,9 @@ import React from "react";
 import "./FeaturedData.css";
 import { CircularProgressbar, buildStyles } from "react-circular-progressbar";
 import "react-circular-progressbar/dist/styles.css";
-const Featured = () => {
+const FeaturedData = () => {
   return (
-    <div className="featured">
+    <div className="featuredData">
       <div className="top">
         <h1 className="title">Total revenue</h1>
         <i class="fa-solid fa-ellipsis-vertical"></i>
@@ -50,4 +50,4 @@ const Featured = () => {
   );
 };
 
-export default Featured;
+export default FeaturedData;

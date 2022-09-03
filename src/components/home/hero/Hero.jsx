@@ -8,10 +8,10 @@ const Hero = () => {
   return (
     <>
       <div className="hero">
-        <div className="container ">
+        <div className="container">
           <div className="headingSec">
             <Heading
-              title="This is a rental portal for people "
+              title="This is a rental portal"
               subtitle="Find new & featured property located in your local city."
             />
           </div>

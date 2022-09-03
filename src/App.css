@@ -47,11 +47,11 @@ button i {
   width: 60%;
   margin: auto;
 }
-.heading h1 {
-  color: #2d3954;
+.heading h2 {
+  color: #c2c5cc;
   font-weight: 400;
   text-transform: capitalize;
-  font-size: 1em;
+  font-size: 3em;
 }
 .heading p {
   color: #72809d;
@@ -168,9 +168,9 @@ img {
   .heading {
     width: 100%;
   }
-  .heading h1 {
-    font-size: smaller;
-    font-weight: 200;
+  .heading h2 {
+    font-size: 3rem;
+    font-weight: 400;
   }
   .container {
     max-width: 90%;

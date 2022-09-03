@@ -2,7 +2,7 @@ import React from "react";
 import "./Charts.css";
 import { AreaChart, Area, XAxis, CartesianGrid, Tooltip } from "recharts";
 
-const Chart = ({ title }) => {
+const Chart = ({ title, width = 830, height = 260 }) => {
   const data = [
     { name: "January", Total: 1200 },
     { name: "February", Total: 1100 },
@@ -16,10 +16,10 @@ const Chart = ({ title }) => {
       <div className="chartContent">
         <h1 className="title">{title}</h1>
         <AreaChart
-          width={830}
-          height={260}
+          width={width}
+          height={height}
           data={data}
-          margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
+          margin={{ top: 0, right: 0, left: 0, bottom: 0 }}
         >
           <defs>
             <linearGradient id="Total" x1="0" y1="0" x2="0" y2="1">

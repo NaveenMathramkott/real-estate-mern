@@ -2,10 +2,10 @@ import React from "react";
 import "./Form.css";
 import { motion } from "framer-motion";
 
-function Login({ handleSubmitLogin, handleChange, setSignUp, onClose }) {
+function Register({ handleSubmitRegister, handleChange, setSignUp, onClose }) {
   return (
-    <form onSubmit={handleSubmitLogin}>
-      <h2>Login</h2>
+    <form onSubmit={handleSubmitRegister}>
+      <h2>Register</h2>
 
       <label>Name</label>
       <input
@@ -15,6 +15,16 @@ function Login({ handleSubmitLogin, handleChange, setSignUp, onClose }) {
         required
         onChange={handleChange}
       />
+      <label>Email</label>
+
+      <input
+        type="email"
+        name="email"
+        placeholder={"Email"}
+        required
+        onChange={handleChange}
+      />
+
       <label>Password</label>
       <input
         type="password"
@@ -23,9 +33,9 @@ function Login({ handleSubmitLogin, handleChange, setSignUp, onClose }) {
         required
         onChange={handleChange}
       />
+
       <div className="userQus">
-        <span onClick={() => setSignUp(true)}>Create a New Account?</span>
-        <span>Forgotten Password!</span>
+        <span onClick={() => setSignUp(false)}>Already have an Account?</span>
       </div>
       <motion.button
         whileHover={{
@@ -34,7 +44,7 @@ function Login({ handleSubmitLogin, handleChange, setSignUp, onClose }) {
         }}
         type="submit"
       >
-        Login
+        Register
       </motion.button>
 
       <div className="closeBtn">
@@ -46,4 +56,4 @@ function Login({ handleSubmitLogin, handleChange, setSignUp, onClose }) {
   );
 }
 
-export default Login;
+export default Register;

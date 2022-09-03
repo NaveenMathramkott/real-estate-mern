@@ -113,7 +113,7 @@ form .box:nth-child(1) {
     display: flex;
   }
   .hero .container {
-    padding-top: 6px;
+    padding-top: 2px;
     display: flex;
     flex-direction: column;
     justify-content: center;

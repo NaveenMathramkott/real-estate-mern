@@ -1,7 +1,5 @@
 import React, { useState } from "react";
 import img from "../components/images/pricing.jpg";
-import Back from "../components/common/Back";
-import { FileUploader } from "react-drag-drop-files";
 import "./UserPanel.css";
 import Tile from "./components/TileData/Tile";
 import SideBar from "./components/SideBar/SideBar";
@@ -32,20 +30,7 @@ function UserPanel({ adminName = "User Account" }) {
             <Tile price={490} itemName={"Listed Property"} />
             <Tile price={490} itemName={"Listed Property"} />
           </div>
-          <div style={{ width: "100%", padding: "8px" }}>
-            <FileUploader
-              handleChange={handleChange}
-              name="file"
-              types={fileTypes}
-              // hoverTitle="Drop files here to upload"
-              multiple
-            >
-              <div className="uploadBtn">
-                <i className="fas fa-upload"></i>
-                <p>Click or Drop files Here</p>
-              </div>
-            </FileUploader>
-          </div>
+          <div style={{ width: "100%", padding: "8px" }}></div>
           <div>
             <ViewTable />
           </div>

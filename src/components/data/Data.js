@@ -25,7 +25,13 @@ export const nav = [
     text: "contact",
     path: "/contact",
   },
+  {
+    id: 5,
+    text: "AdminPanel",
+    path: "/AdminPanel",
+  },
 ];
+
 export const chipData = [
   {
     text: "WhiteField",

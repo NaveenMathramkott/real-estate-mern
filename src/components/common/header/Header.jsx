@@ -1,23 +1,13 @@
 import React, { useState, useContext } from "react";
 import "./header.css";
-import { nav } from "../../data/Data";
 import { Link } from "react-router-dom";
-import Login from "../../Login/Login";
-import Popup from "reactjs-popup";
 import AuthContext from "../../AuthContext/AuthContext";
 
-const Header = () => {
+const Header = ({ navListData }) => {
   const [navList, setNavList] = useState(false);
-  const [userLoggedIn, setUserLoggedIn] = useState(false);
+
   const love = useContext(AuthContext);
 
-  const btnName = !userLoggedIn ? (
-    <button>
-      <i className="fa fa-sign-out"></i>Login
-    </button>
-  ) : (
-    <button>Profile</button>
-  );
   return (
     <header>
       <div className="container headerMainWrapper">
@@ -37,7 +27,7 @@ const Header = () => {
         </div>
         <div className="nav">
           <ul className={navList ? "small" : "flex"}>
-            {nav.map((list, index) => (
+            {navListData.map((list, index) => (
               <li key={index} onClick={() => setNavList(false)}>
                 <Link to={list.path}>{list.text}</Link>
               </li>
@@ -45,19 +35,26 @@ const Header = () => {
           </ul>
         </div>
         <div className="button">
-          <Popup
+          <button>
+            <i className="fa fa-sign-out"></i>Login
+          </button>
+          {/* <Popup
             trigger={(open) => <div>{btnName}</div>}
             position="bottom right"
           >
             {(close) => (
               <div className="loginFormRender">
-                <Login onClose={close} />
+                <Form
+                  onClose={close}
+                  handleChange={handleChange}
+                  handleSubmitRegister={handleSubmitRegister}
+                  handleSubmitLogin={handleSubmitLogin}
+                  userLoggedIn={userLoggedIn}
+                />
               </div>
             )}
-          </Popup>
+          </Popup> */}
         </div>
-        <Link to="/AdminPanel">adminPanel</Link>
-        <Link to="/UserPanel">UserPanel</Link>
       </div>
     </header>
   );

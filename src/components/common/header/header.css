@@ -8,8 +8,9 @@ header {
   z-index: 99999;
 }
 .logo {
-  margin-top: 10px;
+  /* margin-top: 10px; */
 }
+
 .profileHeader {
   position: absolute;
   top: 20px;
@@ -52,8 +53,16 @@ header .toggle {
   header {
     padding: 0;
   }
+  .headerMainWrapper {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
   .logo {
-    margin-top: -6px;
+    /* margin-top: -6px; */
+    background: red;
+    justify-content: center;
+    align-items: center;
   }
   .profileHeader {
     position: absolute;
@@ -61,7 +70,7 @@ header .toggle {
     right: 20px;
   }
   header img {
-    margin-top: 20px;
+    /* margin-top: 20px; */
   }
 
   header .button button {

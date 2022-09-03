@@ -2,34 +2,45 @@ export const PROFILE_SIDE_DATA = [
   {
     id: 1,
     name: "Dashboard",
-    icon: "fa fa-tachometer",
+    icon: "fa-tachometer",
     link: "/dashboard",
     num: "2",
   },
   {
     id: 2,
     name: "My Profile",
-    icon: "fa fa-user",
+    icon: "fa-user",
     link: "/profile",
     num: "2",
   },
   {
     id: 3,
     name: "My Property",
-    icon: "fa fa-home",
+    icon: "fa-home",
     link: "/myProperty",
     num: "2",
   },
   {
     id: 4,
     name: "Change Password",
-    icon: "fa fa-key",
+    icon: "fa-key",
     link: "/changePassword",
   },
+];
+export const navAdmin = [
   {
-    id: 5,
-    name: "Logout",
-    icon: "fa fa-sign-out",
-    link: "/logout",
+    id: 0,
+    text: "home",
+    path: "/",
+  },
+  {
+    id: 1,
+    text: "Dashboard",
+    path: "/AdminPanel",
+  },
+  {
+    id: 2,
+    text: "Messages",
+    path: "/services",
   },
 ];

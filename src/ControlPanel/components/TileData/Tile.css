@@ -1,5 +1,5 @@
 .tileMainWrapper {
-  width: 220px;
+  width: 260px;
   height: 120px;
   background-color: #fff;
   display: flex;
@@ -17,4 +17,17 @@
 .itemWrapper {
   font-size: 18px;
   color: rgb(144, 144, 144);
+}
+.chartView {
+  width: 100%;
+  overflow-x: scroll;
+}
+
+@media screen and (max-width: 768px) {
+  .tileMainWrapper {
+    width: 90%;
+  }
+  .featuredWrapper {
+    width: 100vw;
+  }
 }

@@ -1,9 +1,9 @@
 import React from "react";
 import "./App.css";
-import Pages from "./components/pages/Pages";
+import AppRouter from "./AppRouter";
 
 function App() {
-  return <Pages />;
+  return <AppRouter />;
 }
 
 export default App;
