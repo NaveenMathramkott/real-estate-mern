@@ -27,26 +27,23 @@ export const nav = [
   },
 ];
 
-export const PROFILE_POPUP_LIST_ADMIN = [
+export const PROFILE_POPUP_LIST = [
   {
     id: 1,
     text: "Dashboard",
-    path: "/adminPanel",
+    path: "/dashboard",
   },
   {
     id: 2,
-    text: "Log out",
-    check: "logout",
-  },
-];
-export const PROFILE_POPUP_LIST_USER = [
-  {
-    id: 1,
-    text: "Dashboard",
-    path: "/userPanel",
+    text: "Profile",
   },
   {
-    id: 2,
+    id: 3,
+    text: "Settings",
+    // path: "",
+  },
+  {
+    id: 4,
     text: "Log out",
     check: "logout",
   },

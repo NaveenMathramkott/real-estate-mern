@@ -43,6 +43,9 @@ export const kycFormPost = ({
     location,
   });
 };
+export const kycFormGet = () => {
+  return axios.get(API_URL_KYC);
+};
 
 //   logout() {
 //     localStorage.removeItem("user");

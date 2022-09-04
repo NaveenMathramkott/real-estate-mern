@@ -3,6 +3,7 @@ import "./Form.css";
 import { motion } from "framer-motion";
 
 function Register({ handleSubmitRegister, handleChange, setSignUp, onClose }) {
+  const loggedInUser = localStorage.getItem("authenticated");
   return (
     <form onSubmit={handleSubmitRegister}>
       <h2>Register</h2>
@@ -37,15 +38,28 @@ function Register({ handleSubmitRegister, handleChange, setSignUp, onClose }) {
       <div className="userQus">
         <span onClick={() => setSignUp(false)}>Already have an Account?</span>
       </div>
-      <motion.button
-        whileHover={{
-          scale: 1.2,
-          transition: { duration: 0.2 },
-        }}
-        type="submit"
-      >
-        Register
-      </motion.button>
+      {!loggedInUser ? (
+        <motion.button
+          whileHover={{
+            scale: 1.05,
+            transition: { duration: 0.2 },
+          }}
+          type="submit"
+        >
+          Register
+        </motion.button>
+      ) : (
+        <motion.button
+          whileHover={{
+            opacity: 0,
+            transition: { duration: 0.2 },
+          }}
+          disabled
+          style={{ backgroundColor: "gray " }}
+        >
+          Register
+        </motion.button>
+      )}
 
       {/* <div className="closeBtn">
         <div onClick={onClose}>

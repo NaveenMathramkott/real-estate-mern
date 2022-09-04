@@ -35,8 +35,9 @@ function LoginPage() {
 
         setAuthenticated(true);
         localStorage.setItem("authenticated", true);
-        res.roles[0] === "ROLE_USER" && history.push("/userPanel");
-        res.roles[0] === "ROLE_ADMIN" && history.push("/adminPanel");
+        // res.roles[0] === "ROLE_USER" && history.push("/userPanel");
+        // res.roles[0] === "ROLE_ADMIN" &&
+        history.push("/dashboard");
         window.location.reload();
       })
       .catch((error) => {

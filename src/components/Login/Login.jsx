@@ -31,7 +31,7 @@ function Login({ handleSubmitLogin, handleChange, setSignUp, onClose }) {
       {!loggedInUser ? (
         <motion.button
           whileHover={{
-            scale: 1.2,
+            scale: 1.05,
             transition: { duration: 0.2 },
           }}
           type="submit"

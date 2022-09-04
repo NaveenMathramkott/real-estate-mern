@@ -8,6 +8,7 @@ import Tile from "./components/TileData/Tile";
 import Chart from "./components/Charts/Charts";
 import SideBar from "./components/SideBar/SideBar";
 import { Redirect } from "react-router-dom";
+import UserFormView from "./components/UserForm/UserFormView";
 
 function AdminPanel() {
   const [authenticated, setAuthenticated] = useState(false);
@@ -39,6 +40,9 @@ function AdminPanel() {
               <Tile number={135} itemName={"Auction Property"} />
             </div>
             <div>
+              <div>
+                <UserFormView />
+              </div>
               <div className="chartAndFeature">
                 <div className="featuredData_View">
                   <FeaturedData />

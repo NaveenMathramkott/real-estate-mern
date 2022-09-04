@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import Dropzone from "react-dropzone";
 import { kycFormPost } from "../../../Service/authService";
 import "./UserForm.css";
@@ -29,6 +29,7 @@ function UserForm() {
       .then((res) => console.log(res))
       .catch((err) => console.log(err));
   };
+
   const handleChange = (event) => {
     setKycFormValue({
       ...kycFormValue,

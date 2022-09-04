@@ -17,7 +17,7 @@ header {
   justify-content: space-between;
   align-items: center;
 }
-.profileHeader div {
+.profileHeader .profileNameTag {
   font-size: 14px;
   font-weight: 500;
   padding-left: 10px;
@@ -56,8 +56,27 @@ header h4 {
 header .toggle {
   display: none;
 }
-.profilePopUp {
-  margin-top: 20px;
+.profilePopUpShow {
+  position: absolute;
+  top: 90px;
+  right: 10%;
+  width: 100px;
+  background: #fff;
+  border: 1px solid #27ae60;
+  height: auto;
+  display: flex;
+  justify-content: space-between;
+  flex-direction: column;
+  align-items: center;
+  border-radius: 4px;
+}
+.profilePopUpShow .popUpList {
+  text-decoration: none;
+  font-size: 14px;
+  margin: 5px 0;
+}
+.profilePopUpHide {
+  display: none;
 }
 @media screen and (max-width: 1024px) {
   header {

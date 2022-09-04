@@ -1,12 +1,19 @@
 .kycUploadForm {
   width: auto;
 }
-.kycUploadForm .headingSec {
+.kycUploadFormView {
+  max-width: 400px;
+}
+.kycUploadForm .headingSec,
+.kycUploadFormView .headingSec {
   display: flex;
   justify-content: center;
   align-items: center;
 }
 .kycUploadForm .headingSec h3 {
+  color: #27ae60;
+}
+.kycUploadFormView .headingSec h3 {
   color: #27ae60;
 }
 .kycUploadForm .nameSec {
@@ -61,10 +68,30 @@
   align-items: center;
   border-radius: 4px;
 }
+.kycUploadFormView label {
+  font-size: 14px;
+  font-weight: 600;
+  margin-right: 10px;
+}
+.kycUploadFormView span {
+  font-size: 16px;
+  font-weight: 600;
+  margin-right: 10px;
+}
+.kycUploadFormView div {
+  display: flex;
+  justify-content: space-between;
+
+  max-width: 500px;
+}
+
 @media screen and (max-width: 769px) {
   .kycUploadForm .nameSec,
   .idSec {
     justify-content: center;
     flex-direction: column;
+  }
+  .kycUploadFormView {
+    width: auto;
   }
 }

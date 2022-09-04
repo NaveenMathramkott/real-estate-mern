@@ -1,43 +1,25 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import "./header.css";
-import { Link } from "react-router-dom";
-// import AuthContext from "../../AuthContext/AuthContext";
+import { Link, useHistory } from "react-router-dom";
 import Profile from "../../images/profile.jpg";
-import Popup from "reactjs-popup";
-import ProfilePopUpList from "../commonComp/ProfilePopUp/ProfilePopUpList";
-import {
-  PROFILE_POPUP_LIST_ADMIN,
-  PROFILE_POPUP_LIST_USER,
-} from "../../data/Data";
+import { PROFILE_POPUP_LIST } from "../../data/Data";
 
 const Header = ({ navListData }) => {
+  const history = useHistory();
   const [navList, setNavList] = useState(false);
+  const [profileList, setProfileList] = useState(false);
   const loggedInUser = localStorage.getItem("authenticated");
   const users = localStorage.getItem("user");
   const user = JSON.parse(users);
 
-  const popper = () => {
-    return (
-      <Popup
-        trigger={(open) => (
-          <div className="profileHeader">
-            <img src={Profile} alt="profile" />
-            <div>
-              {user?.username.slice(0, 1).toUpperCase() +
-                user?.username.slice(1, user?.username.length).toLowerCase()}
-            </div>
-          </div>
-        )}
-        position="bottom right"
-      >
-        {() => (
-          <div className="profilePopUp">
-            <ProfilePopUpList list={PROFILE_POPUP_LIST_USER} />
-          </div>
-        )}
-      </Popup>
-    );
+  const checker = (str) => {
+    if (str === "logout") {
+      localStorage.clear();
+      history.push("/login");
+      window.location.reload();
+    }
   };
+
   return (
     <header>
       <div className="container headerMainWrapper">
@@ -72,7 +54,41 @@ const Header = ({ navListData }) => {
               </button>
             </Link>
           ) : (
-            popper()
+            <>
+              <div
+                className="profileHeader"
+                onClick={() => setProfileList(!profileList)}
+              >
+                <img src={Profile} alt="profile" />
+                <div className="profileNameTag">
+                  {user?.username.slice(0, 1).toUpperCase() +
+                    user?.username
+                      .slice(1, user?.username.length)
+                      .toLowerCase()}
+                </div>
+              </div>
+              <div
+                className={
+                  profileList ? "profilePopUpShow" : "profilePopUpHide"
+                }
+              >
+                <ul>
+                  {PROFILE_POPUP_LIST.map((list, index) => (
+                    <li key={index}>
+                      <Link
+                        to={list.path}
+                        className="popUpList"
+                        onClick={() => {
+                          checker(list.check);
+                        }}
+                      >
+                        {list.text}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </>
           )}
         </div>
       </div>

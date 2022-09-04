@@ -12,17 +12,13 @@ import ScrollToTop from "../ScrollToTop/ScrollToTop";
 import LoginPage from "../Login/LoginPage";
 import AuthContext from "../AuthContext/AuthContext";
 import PageNotFound from "../PageNotFound/PageNotFound";
-import AdminPanel from "../../ControlPanel/AdminPanel";
 import { Suspense } from "react";
-import UserPanel from "../../ControlPanel/UserPanel";
+import ControlPanel from "../../ControlPanel/ControlPanel";
 
 const Pages = () => {
-  const userAccount = localStorage.getItem("user");
-  const loggedAccount = JSON.parse(userAccount);
-
   return (
     <>
-      <Suspense fallback={<span>Loading...</span>}>
+      <Suspense fallback={<div style={{ height: "100vh" }}>Loading...</div>}>
         <Router>
           <ScrollToTop>
             <AuthContext.Provider value="naveen">
@@ -34,8 +30,7 @@ const Pages = () => {
                 <Route exact path="/pricing" component={Pricing} />
                 <Route exact path="/contact" component={Contact} />
                 <Route exact path="/login" component={LoginPage} />
-                <Route exact path="/adminPanel" component={AdminPanel} />
-                <Route exact path="/userPanel" component={UserPanel} />
+                <Route exact path="/dashboard" component={ControlPanel} />
                 <Route exact path="/notFound" component={PageNotFound} />
 
                 <Route component={PageNotFound} />
