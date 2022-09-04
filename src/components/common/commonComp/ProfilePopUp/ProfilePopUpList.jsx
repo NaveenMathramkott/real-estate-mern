@@ -3,6 +3,7 @@ import { Link, useHistory } from "react-router-dom";
 import "./ProfilePopUp.css";
 
 // import { motion } from "framer-motion";
+
 function ProfilePopUpList({ list }) {
   const history = useHistory();
   const checker = (str) => {

@@ -34,9 +34,9 @@ function AdminPanel() {
         <div className="adminContentWrapper">
           <div className="adminMainContent">
             <div className="tileWrapper">
-              <Tile number={490} itemName={"Listed Property"} />
-              <Tile price={490} itemName={"Listed Property"} />
-              <Tile price={490} itemName={"Listed Property"} />
+              <Tile number={120} itemName={"Listed Property"} />
+              <Tile number={109} itemName={"Sold Property"} />
+              <Tile number={135} itemName={"Auction Property"} />
             </div>
             <div>
               <div className="chartAndFeature">

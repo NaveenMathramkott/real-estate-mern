@@ -5,7 +5,10 @@ import { Link } from "react-router-dom";
 import Profile from "../../images/profile.jpg";
 import Popup from "reactjs-popup";
 import ProfilePopUpList from "../commonComp/ProfilePopUp/ProfilePopUpList";
-import { PROFILE_POPUP_LIST } from "../../data/Data";
+import {
+  PROFILE_POPUP_LIST_ADMIN,
+  PROFILE_POPUP_LIST_USER,
+} from "../../data/Data";
 
 const Header = ({ navListData }) => {
   const [navList, setNavList] = useState(false);
@@ -29,7 +32,7 @@ const Header = ({ navListData }) => {
       >
         {() => (
           <div className="profilePopUp">
-            <ProfilePopUpList list={PROFILE_POPUP_LIST} />
+            <ProfilePopUpList list={PROFILE_POPUP_LIST_USER} />
           </div>
         )}
       </Popup>

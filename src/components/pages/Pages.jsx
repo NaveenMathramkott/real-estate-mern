@@ -17,6 +17,9 @@ import { Suspense } from "react";
 import UserPanel from "../../ControlPanel/UserPanel";
 
 const Pages = () => {
+  const userAccount = localStorage.getItem("user");
+  const loggedAccount = JSON.parse(userAccount);
+
   return (
     <>
       <Suspense fallback={<span>Loading...</span>}>

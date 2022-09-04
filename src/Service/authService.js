@@ -1,6 +1,7 @@
 import axios from "axios";
 
 const API_URL = "https://futurerightwings.com/rentsys/api/auth/";
+const API_URL_KYC = "https://futurerightwings.com/createkyc/api/items";
 
 export const registerAuth = ({ username, email, password }) => {
   return axios.post(API_URL + "signup", {
@@ -22,6 +23,25 @@ export const loginAuth = ({ username, password }) => {
       }
       return response.data;
     });
+};
+export const kycFormPost = ({
+  firstName,
+  lastName,
+  address,
+  email,
+  mobile,
+  idNo,
+  location,
+}) => {
+  return axios.post(API_URL_KYC, {
+    firstName,
+    lastName,
+    address,
+    email,
+    mobile,
+    idNo,
+    location,
+  });
 };
 
 //   logout() {

@@ -35,7 +35,8 @@ function LoginPage() {
 
         setAuthenticated(true);
         localStorage.setItem("authenticated", true);
-        history.push("/userPanel");
+        res.roles[0] === "ROLE_USER" && history.push("/userPanel");
+        res.roles[0] === "ROLE_ADMIN" && history.push("/adminPanel");
         window.location.reload();
       })
       .catch((error) => {
@@ -56,7 +57,7 @@ function LoginPage() {
           successMsgReg: response.data.message,
           successfulReg: true,
         });
-        alert(response.data.message);
+
         setUserLoggedIn(true);
         history.push("/login");
         window.location.reload();
