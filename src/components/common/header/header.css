@@ -8,16 +8,27 @@ header {
   z-index: 99999;
 }
 .logo {
-  /* margin-top: 10px; */
+  margin-top: 10px;
 }
 
 .profileHeader {
-  position: absolute;
-  top: 20px;
-  right: 20px;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+}
+.profileHeader div {
+  font-size: 14px;
+  font-weight: 500;
+  padding-left: 10px;
+}
+.profileHeader img {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
 }
 header img {
-  width: 170px;
+  width: 140px;
 }
 header a {
   margin-left: 30px;
@@ -45,13 +56,13 @@ header h4 {
 header .toggle {
   display: none;
 }
-.loginFormRender {
-  margin-top: 10px;
+.profilePopUp {
+  margin-top: 20px;
 }
-
 @media screen and (max-width: 1024px) {
   header {
     padding: 0;
+    height: 70px;
   }
   .headerMainWrapper {
     display: flex;
@@ -59,22 +70,26 @@ header .toggle {
     align-items: center;
   }
   .logo {
-    /* margin-top: -6px; */
-    background: red;
     justify-content: center;
     align-items: center;
   }
-  .profileHeader {
-    position: absolute;
-    top: 0;
-    right: 20px;
+
+  .profileHeader img {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+  }
+  .profilePopUp {
+    margin-top: 20px;
   }
   header img {
-    /* margin-top: 20px; */
+    margin-top: 4px;
+    height: 40px;
+    width: 140px;
   }
 
   header .button button {
-    margin-top: 10px;
+    margin-top: -14px;
     width: 70px;
     height: 36px;
     font-size: 12px;
@@ -97,9 +112,7 @@ header .toggle {
     justify-content: center;
     align-items: center;
   }
-  .loginFormRender {
-    margin-top: 30px;
-  }
+
   header .small {
     position: absolute;
     top: 10vh;

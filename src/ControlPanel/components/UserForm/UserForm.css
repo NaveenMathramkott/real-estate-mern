@@ -1,0 +1,63 @@
+.kycUploadForm {
+  width: auto;
+}
+.kycUploadForm .headingSec {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.kycUploadForm .headingSec h3 {
+  color: #27ae60;
+}
+.kycUploadForm .nameSec {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  flex-direction: row;
+  align-items: center;
+}
+.kycUploadForm label {
+  padding-left: 10px;
+  font-size: 16px;
+}
+.kycUploadForm input {
+  border: 1px solid gray;
+  border-radius: 4px;
+  height: 40px;
+  padding: 10px;
+}
+.kycUploadForm .nameSec div {
+  width: 100%;
+}
+
+.addressSec .emailSec .mobNumberSec {
+  margin: 20px 0;
+}
+.textArea {
+  width: 100%;
+  border: 1px solid gray;
+  border-radius: 4px;
+  font-size: 16px;
+  height: 50px;
+  resize: none;
+  padding: 10px;
+}
+.idSec {
+  display: flex;
+  justify-content: space-between;
+  flex-direction: row;
+  align-items: center;
+}
+.kycUploadForm .idSec div {
+  width: 100%;
+}
+.dropZoneSec {
+  width: 100%;
+  height: 60px;
+  border: 1px dotted gray;
+  margin: 20px 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 4px;
+}

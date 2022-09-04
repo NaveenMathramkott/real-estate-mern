@@ -1,13 +1,40 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useEffect } from "react";
 import "./header.css";
 import { Link } from "react-router-dom";
-import AuthContext from "../../AuthContext/AuthContext";
+// import AuthContext from "../../AuthContext/AuthContext";
+import Profile from "../../images/profile.jpg";
+import Popup from "reactjs-popup";
+import ProfilePopUpList from "../commonComp/ProfilePopUp/ProfilePopUpList";
+import { PROFILE_POPUP_LIST } from "../../data/Data";
 
 const Header = ({ navListData }) => {
   const [navList, setNavList] = useState(false);
+  const loggedInUser = localStorage.getItem("authenticated");
+  const users = localStorage.getItem("user");
+  const user = JSON.parse(users);
 
-  const love = useContext(AuthContext);
-
+  const popper = () => {
+    return (
+      <Popup
+        trigger={(open) => (
+          <div className="profileHeader">
+            <img src={Profile} alt="profile" />
+            <div>
+              {user?.username.slice(0, 1).toUpperCase() +
+                user?.username.slice(1, user?.username.length).toLowerCase()}
+            </div>
+          </div>
+        )}
+        position="bottom right"
+      >
+        {() => (
+          <div className="profilePopUp">
+            <ProfilePopUpList list={PROFILE_POPUP_LIST} />
+          </div>
+        )}
+      </Popup>
+    );
+  };
   return (
     <header>
       <div className="container headerMainWrapper">
@@ -35,25 +62,15 @@ const Header = ({ navListData }) => {
           </ul>
         </div>
         <div className="button">
-          <button>
-            <i className="fa fa-sign-out"></i>Login
-          </button>
-          {/* <Popup
-            trigger={(open) => <div>{btnName}</div>}
-            position="bottom right"
-          >
-            {(close) => (
-              <div className="loginFormRender">
-                <Form
-                  onClose={close}
-                  handleChange={handleChange}
-                  handleSubmitRegister={handleSubmitRegister}
-                  handleSubmitLogin={handleSubmitLogin}
-                  userLoggedIn={userLoggedIn}
-                />
-              </div>
-            )}
-          </Popup> */}
+          {!loggedInUser ? (
+            <Link to="/login">
+              <button>
+                <i className="fa fa-sign-out"></i>Login
+              </button>
+            </Link>
+          ) : (
+            popper()
+          )}
         </div>
       </div>
     </header>

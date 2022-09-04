@@ -11,13 +11,13 @@ function Form({
   handleSubmitLogin,
   userLoggedIn,
 }) {
-  const [signUp, setSignUp] = React.useState(false);
+  const [signUp, setSignUp] = React.useState(userLoggedIn);
 
   return (
     <motion.div
-      initial={{ y: "-400" }}
-      animate={{ y: 0 }}
-      transition={{ delay: 0.2 }}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ delay: 0.5 }}
       className="loginWrapper"
     >
       {!signUp ? (

@@ -32,24 +32,20 @@
   align-items: center;
 }
 
-.featureView {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
-  padding: 10px;
-}
 .chartAndFeature {
   display: flex;
   justify-content: center;
-  align-items: center;
   padding: 20px 0;
 }
 .featuredData_View {
-  max-width: 90%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 .chart_View {
-  padding-left: 24px;
+  padding-left: 12px;
   width: 100%;
+  height: 100%;
   overflow-x: scroll;
   overflow-y: hidden;
 }
@@ -78,12 +74,7 @@
     display: flex;
     justify-content: center;
   }
-  .featureView {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 10px;
-  }
+
   .featuredData_View {
     width: 100%;
   }
@@ -95,5 +86,6 @@
     overflow-y: scroll;
     margin: 30px 0;
     padding: 10px;
+    width: 100%;
   }
 }

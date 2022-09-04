@@ -1,0 +1,15 @@
+.profilePopUpListWrapper {
+  background: #2ead2e;
+  width: 100px;
+  height: 60px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 4px;
+  z-index: 999;
+}
+.profilePopUpListWrapper .popUpList {
+  text-decoration: none;
+  font-size: 14px;
+  color: #fff;
+}

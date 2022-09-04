@@ -47,11 +47,11 @@ function Register({ handleSubmitRegister, handleChange, setSignUp, onClose }) {
         Register
       </motion.button>
 
-      <div className="closeBtn">
+      {/* <div className="closeBtn">
         <div onClick={onClose}>
           <i className="fa fa-close " />
         </div>
-      </div>
+      </div> */}
     </form>
   );
 }

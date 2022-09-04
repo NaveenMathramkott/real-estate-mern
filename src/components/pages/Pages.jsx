@@ -9,31 +9,39 @@ import Pricing from "../pricing/Pricing";
 import Services from "../services/Services";
 import Contact from "../contact/Contact";
 import ScrollToTop from "../ScrollToTop/ScrollToTop";
-import Login from "../Login/Login";
+import LoginPage from "../Login/LoginPage";
 import AuthContext from "../AuthContext/AuthContext";
+import PageNotFound from "../PageNotFound/PageNotFound";
 import AdminPanel from "../../ControlPanel/AdminPanel";
+import { Suspense } from "react";
+import UserPanel from "../../ControlPanel/UserPanel";
+
 const Pages = () => {
   return (
     <>
-      <Router>
-        <ScrollToTop>
-          <AuthContext.Provider value="naveen">
-            <Header navListData={nav} />
-            <Switch>
-              <Route exact path="/" component={Home} />
-              <Route exact path="/about" component={About} />
-              <Route exact path="/services" component={Services} />
-              <Route exact path="/pricing" component={Pricing} />
-              <Route exact path="/contact" component={Contact} />
-              <Route exact path="/login" component={Login} />
-            </Switch>
-            <Switch>
-              <Route exact path="/AdminPanel" component={AdminPanel} />
-            </Switch>
-            <Footer />
-          </AuthContext.Provider>
-        </ScrollToTop>
-      </Router>
+      <Suspense fallback={<span>Loading...</span>}>
+        <Router>
+          <ScrollToTop>
+            <AuthContext.Provider value="naveen">
+              <Header navListData={nav} />
+              <Switch>
+                <Route exact path="/" component={Home} />
+                <Route exact path="/about" component={About} />
+                <Route exact path="/services" component={Services} />
+                <Route exact path="/pricing" component={Pricing} />
+                <Route exact path="/contact" component={Contact} />
+                <Route exact path="/login" component={LoginPage} />
+                <Route exact path="/adminPanel" component={AdminPanel} />
+                <Route exact path="/userPanel" component={UserPanel} />
+                <Route exact path="/notFound" component={PageNotFound} />
+
+                <Route component={PageNotFound} />
+              </Switch>
+              <Footer />
+            </AuthContext.Provider>
+          </ScrollToTop>
+        </Router>
+      </Suspense>
     </>
   );
 };

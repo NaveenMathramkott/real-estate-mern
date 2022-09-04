@@ -1,9 +1,20 @@
+.loginPageWrapper {
+  display: flex;
+  justify-content: space-evenly;
+  align-items: center;
+  height: 90vh;
+  background: rgba(209, 209, 209, 0.467);
+}
+.loginPageWrapper img {
+  max-width: 500px;
+}
+
 .loginWrapper {
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 360px;
-  min-width: 340px;
+  height: 460px;
+  width: 360px;
   box-shadow: 0 0 10px 5px rgba(255, 254, 254, 0.153);
 }
 .loginWrapper h2 {
@@ -19,7 +30,7 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  background-color: #fff;
+  background-color: rgb(255, 255, 255);
   opacity: 1;
   position: relative;
 }
@@ -69,4 +80,23 @@
   display: flex;
   justify-content: center;
   align-items: center;
+}
+.statusToast {
+  position: absolute;
+  top: 200px;
+  left: 300px;
+  z-index: 999;
+}
+
+@media screen and (max-width: 769px) {
+  .loginPageWrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 90vh;
+    background: rgba(209, 209, 209, 0.467);
+  }
+  .loginPageWrapper img {
+    display: none;
+  }
 }

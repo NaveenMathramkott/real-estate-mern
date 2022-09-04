@@ -1,14 +1,19 @@
-.chart {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
 .chartContent {
   display: flex;
   flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
 }
 .title {
   font-size: 15px;
   text-align: center;
   color: gray;
+}
+@media screen and (max-width: 769px) {
+  .chartContent {
+    width: 100%;
+    height: 100%;
+  }
 }

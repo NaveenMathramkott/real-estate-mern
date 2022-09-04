@@ -1,43 +1,61 @@
-import React, { useState } from "react";
-import img from "../components/images/pricing.jpg";
-import "./UserPanel.css";
-import Tile from "./components/TileData/Tile";
-import SideBar from "./components/SideBar/SideBar";
-import { PROFILE_SIDE_DATA } from "./AdminData";
+import React, { useEffect, useState } from "react";
+// import img from "../components/images/pricing.jpg";
+import FeaturedData from "./components/FeaturedData/FeaturedData";
+import "./AdminPanel.css";
+// import { PROFILE_SIDE_DATA } from "./AdminData";
 import ViewTable from "./components/ViewTable/ViewTable";
+import Tile from "./components/TileData/Tile";
+import Chart from "./components/Charts/Charts";
+import SideBar from "./components/SideBar/SideBar";
+import { Redirect } from "react-router-dom";
+import UserForm from "./components/UserForm/UserForm";
 
-const fileTypes = ["JPG", "PNG", "GIF"];
-function UserPanel({ adminName = "User Account" }) {
-  const [file, setFile] = useState(null);
+function AdminPanel() {
+  const [authenticated, setAuthenticated] = useState(false);
+  useEffect(() => {
+    const loggedInUser = localStorage.getItem("authenticated");
+    if (loggedInUser) {
+      setAuthenticated(loggedInUser);
+    }
+  }, []);
 
-  const handleChange = (file) => {
-    setFile(file);
-  };
-  return (
-    <div className="adminWrapper">
-      <div className="adminContentWrapper">
-        <div className="sideDashboard">
-          <SideBar
-            adminName={adminName}
-            img={img}
-            dashboardData={PROFILE_SIDE_DATA}
-          />
-        </div>
-        <div className="adminMainContent">
-          <div className="tileWrapper">
-            <Tile number={490} itemName={"Listed Property"} />
-            <Tile number={490} itemName={"Listed Property"} />
-            <Tile price={490} itemName={"Listed Property"} />
-            <Tile price={490} itemName={"Listed Property"} />
-          </div>
-          <div style={{ width: "100%", padding: "8px" }}></div>
-          <div>
+  if (!authenticated) {
+    <Redirect
+      to={{
+        pathname: "/notFound",
+        // state: { from: location },
+      }}
+    />;
+  } else {
+    return (
+      <div className="adminPanel_mainWrapper">
+        {/* <div className="sideDashboard">
+          <SideBar sideBarData={PROFILE_SIDE_DATA} />
+        </div> */}
+        <div className="adminContentWrapper">
+          <div className="adminMainContent">
+            <div className="tileWrapper">
+              <Tile number={490} itemName={"Listed Property"} />
+              <Tile price={490} itemName={"Listed Property"} />
+              <Tile price={490} itemName={"Listed Property"} />
+            </div>
+            <div>
+              <UserForm />
+              <div className="chartAndFeature">
+                <div className="featuredData_View">
+                  <FeaturedData />
+                </div>
+                <div className="chart_View">
+                  <Chart title={"Last 6 month Revenue"} />
+                </div>
+              </div>
+            </div>
             <ViewTable />
           </div>
         </div>
       </div>
-    </div>
-  );
+    );
+  }
 }
 
-export default UserPanel;
+export default AdminPanel;

@@ -25,10 +25,18 @@ export const nav = [
     text: "contact",
     path: "/contact",
   },
+];
+
+export const PROFILE_POPUP_LIST = [
   {
-    id: 5,
-    text: "AdminPanel",
-    path: "/AdminPanel",
+    id: 1,
+    text: "Dashboard",
+    path: "/adminPanel",
+  },
+  {
+    id: 2,
+    text: "Log out",
+    check: "logout",
   },
 ];
 
