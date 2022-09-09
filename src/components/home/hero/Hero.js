@@ -4,57 +4,57 @@ import Chip from "../../common/commonComp/Chip/Chip";
 import "./hero.css";
 import { chipData } from "../../data/Data";
 
-import { useSelector, useDispatch } from 'react-redux';
+import { useSelector, useDispatch } from "react-redux";
 import Recent from "../recent/Recent";
 
 const Hero = () => {
-  const dispatch = useDispatch()
-  const { rentalList } = useSelector((state) => state.home)
-  const [search, setSearch] = useState("")
-  const [typing, setTyping] = useState(false)
-  const [selectedLocation, setSelectedLocation] = useState("")
-  const [autCompleteLocation, setAutCompleteLocation] = useState([])
+  const dispatch = useDispatch();
+  const { rentalList } = useSelector((state) => state.home);
+  const [search, setSearch] = useState("");
+  const [typing, setTyping] = useState(false);
+  const [selectedLocation, setSelectedLocation] = useState("");
+  const [autCompleteLocation, setAutCompleteLocation] = useState([]);
   const handleKeyPress = () => {
-    setTyping(true)
+    setTyping(true);
     if (selectedLocation) {
-      setSelectedLocation("")
+      setSelectedLocation("");
     }
     setTimeout(() => {
-      setTyping(false)
-    }, 1000)
-  }
+      setTyping(false);
+    }, 1000);
+  };
   useEffect(() => {
     if (!typing) {
-      let filteredVal = []
+      let filteredVal = [];
       if (!search) {
-        filteredVal = rentalList
+        filteredVal = rentalList;
       } else {
-        filteredVal = rentalList.filter((item) => item.location.toLowerCase().includes(search.toLowerCase()))
+        filteredVal = rentalList.filter((item) =>
+          item.location.toLowerCase().includes(search.toLowerCase())
+        );
       }
-      let locations = filteredVal.map((item) => item.location)
+      let locations = filteredVal.map((item) => item.location);
       let uniqueLoc = [...new Set(locations)];
-      setAutCompleteLocation(uniqueLoc)
+      setAutCompleteLocation(uniqueLoc);
     }
-  }, [typing])
+  }, [typing]);
   useEffect(() => {
-    dispatch.home.fetchAllRental()
-  }, [])
+    dispatch.home.fetchAllRental();
+  }, []);
 
   useEffect(() => {
-    let locations = rentalList.map((item) => item.location)
+    let locations = rentalList.map((item) => item.location);
     let uniqueLoc = [...new Set(locations)];
-    console.log(locations, "locations")
-    setAutCompleteLocation(uniqueLoc)
-  }, [rentalList])
+    console.log(locations, "locations");
+    setAutCompleteLocation(uniqueLoc);
+  }, [rentalList]);
 
   const onSelectLocation = (item) => {
-    setSearch(item)
-    setSelectedLocation(item)
-  }
+    setSearch(item);
+    setSelectedLocation(item);
+  };
 
-
-  console.log(autCompleteLocation , "autCompleteLocation")
-
+  console.log(autCompleteLocation, "autCompleteLocation");
 
   return (
     <>
@@ -81,44 +81,22 @@ const Hero = () => {
                   {typing && <div class="typing-loader"></div>}
                   <div className="heroBtnSec">
                     <button className="heroBtn">
-                      <i
-                        className="fa fa-map-marker locationBtn"
-                        aria-hidden="true"
-                      ></i>
-                    </button>
-                    <button className="heroBtn">
-                      <i className="fa fa-search"></i>
+                      <i className="fa fa-refresh"></i>
                     </button>
                   </div>
                 </div>
-
-                {<div className="search-content">
-                  <ul className="search-ul">
-                    {autCompleteLocation.length ? autCompleteLocation.map((item, index) =>
-                      <li onClick={() => onSelectLocation(item)} key={index} className="search-li">
-                        {item}
-                      </li>
-                    )
-                      :
-                      <li className="search-li">no data</li>}
-                  </ul>
-
-                </div>}
-
-              </div>
-
-              <div className="heroBtnMobile">
-                <button className="btnMob">
-                  <i className="fa fa-map-marker locationBtn"></i>
-                </button>
-                <button className="btnMob">
-                  <i className="fa fa-search"></i>
-                </button>
               </div>
               <div className="chipWrapper">
-                {chipData.map((data, index) => (
-                  <Chip title={data.text} />
-                ))}
+                {autCompleteLocation.length ? (
+                  autCompleteLocation.map((item, index) => (
+                    <div onClick={() => onSelectLocation(item)} key={index}>
+                      {/* {item} */}
+                      <Chip title={item} />
+                    </div>
+                  ))
+                ) : (
+                  <span>No Property found in this Location</span>
+                )}
               </div>
             </div>
           </form>

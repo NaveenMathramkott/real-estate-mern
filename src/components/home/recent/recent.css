@@ -24,3 +24,7 @@
   justify-content: space-between;
   align-items: center;
 }
+.recentImg {
+  width: 100%;
+  height: 400px;
+}

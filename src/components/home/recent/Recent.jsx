@@ -9,10 +9,10 @@ const Recent = (props) => {
       <section className="recent padding">
         <div className="container">
           <Heading
-            title="Recent Property Listed"
-            subtitle="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam."
+            title="Property Listed"
+            subtitle="Listed property for your desired locstion"
           />
-          <RecentCard {...props}/>
+          <RecentCard {...props} />
         </div>
       </section>
     </>
