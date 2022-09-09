@@ -10,7 +10,7 @@ const Recent = (props) => {
         <div className="container">
           <Heading
             title="Property Listed"
-            subtitle="Listed property for your desired locstion"
+            subtitle="Listed property for your desired locstion,Sometimes, properties can practically sell themselves—as long as they are priced right, promoted correctly, and the property listing description plainly conveys why it is the bargain of a lifetime."
           />
           <RecentCard {...props} />
         </div>

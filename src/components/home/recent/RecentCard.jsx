@@ -27,6 +27,7 @@ const RecentCard = ({ selectedLocation, rentalList }) => {
             room_type,
             description,
             isFurnished,
+            listing_type,
           } = val;
           return (
             <div className="box shadow" key={index}>
@@ -62,7 +63,7 @@ const RecentCard = ({ selectedLocation, rentalList }) => {
                     borderRadius: "15px",
                   }}
                 >
-                  {room_type}
+                  {room_type} {listing_type}
                 </span>
               </div>
             </div>
