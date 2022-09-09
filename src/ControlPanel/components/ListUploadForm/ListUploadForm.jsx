@@ -5,6 +5,7 @@ function ListUploadForm() {
   const [file, setFile] = React.useState("");
   const [listFormValue, setListFormValue] = useState({
     name: "",
+    description: "",
     price: "",
     location: "",
     latitude: "",
@@ -31,6 +32,8 @@ function ListUploadForm() {
           name="name"
           onChange={handleChange}
         />
+        <label>Property Description</label>
+        <textarea type="text" name="description" onChange={handleChange} />
         <label>Property Price</label>
         <input
           type="text"
