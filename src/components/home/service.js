@@ -1,10 +1,10 @@
 import { api, catchHandler } from "../../helperFunctions/axios";
 import config from "../../config"
 
-export function locationAutocomplte(location) {
+export function fetchAllRental(location) {
     console.log(config , "config")
     return api()
-        .put(`${config.routes.rentalList}/${location}`)
+        .get(`${config.routes.rentalList}/all`)
         .then(res => res.data)
         .catch((err) => catchHandler(err))
 }

@@ -3,7 +3,7 @@ import * as service from "./service"
 export const home = {
     state: {
         apiLoading: false,
-        locationAutoComplete: []
+        rentalList: []
     }, // initial state
     reducers: {
         //handle before request
@@ -26,24 +26,24 @@ export const home = {
                 apiLoading: false
             }
         },
-        locationAutocomplteSuccess(state, response) {
+        fetchallrentalSuccess(state, response) {
             return {
                 ...state,
                 apiLoading: false,
-                locationAutoComplete: response.response
+                rentalList: response.response
             }
         },
     },
     effects: (dispatch) => ({
         // handle state changes with impure functions.
         // use async/await for async actions
-        async locationAutocomplte(payload, rootState) {
+        async fetchAllRental(payload, rootState) {
 
             dispatch.home.onRequest()
             try {
-                let res = await service.locationAutocomplte(payload)
+                let res = await service.fetchAllRental(payload)
                 console.log(res ,"called")
-                dispatch.home.locationAutocomplteSuccess(res);
+                dispatch.home.fetchallrentalSuccess(res);
             } catch (e) {
                 dispatch.home.onError(e);
             }
