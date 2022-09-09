@@ -8,3 +8,9 @@ export function fetchAllRental(location) {
         .then(res => res.data)
         .catch((err) => catchHandler(err))
 }
+export function addrentalFromAdmin(payload) {
+    return api()
+        .post(`${config.routes.rentalList}/add` , payload)
+        .then(res => res.data)
+        .catch((err) => catchHandler(err))
+}

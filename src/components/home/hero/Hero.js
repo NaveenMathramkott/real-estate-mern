@@ -12,11 +12,11 @@ const Hero = () => {
   const { rentalList } = useSelector((state) => state.home)
   const [search, setSearch] = useState("")
   const [typing, setTyping] = useState(false)
-  const [selectedLocation , setSelectedLocation] = useState("")
+  const [selectedLocation, setSelectedLocation] = useState("")
   const [autCompleteLocation, setAutCompleteLocation] = useState([])
   const handleKeyPress = () => {
     setTyping(true)
-    if (selectedLocation){
+    if (selectedLocation) {
       setSelectedLocation("")
     }
     setTimeout(() => {
@@ -47,32 +47,14 @@ const Hero = () => {
     setAutCompleteLocation(uniqueLoc)
   }, [rentalList])
 
-  const onSelectLocation = (item) => { 
+  const onSelectLocation = (item) => {
     setSearch(item)
     setSelectedLocation(item)
   }
 
 
-import { useSelector, useDispatch } from "react-redux";
+  console.log(autCompleteLocation , "autCompleteLocation")
 
-const Hero = () => {
-  const dispatch = useDispatch();
-  const { locationAutoComplete } = useSelector((state) => state.home);
-  const [search, setSearch] = useState("");
-  const [typing, setTyping] = useState(false);
-  const handleKeyPress = () => {
-    setTyping(true);
-    setTimeout(() => {
-      setTyping(false);
-    }, 3000);
-  };
-  useEffect(() => {
-    if (!typing && search) {
-      console.log(dispatch, "enetered");
-      dispatch.home.locationAutocomplte(search);
-    }
-  }, [typing]);
-  console.log(locationAutoComplete, "locationAutoComplete");
 
   return (
     <>
@@ -123,22 +105,6 @@ const Hero = () => {
 
                 </div>}
 
-                {
-                  <div className="search-content">
-                    <ul className="search-ul">
-                      {locationAutoComplete.length ? (
-                        locationAutoComplete.map((item, index) => (
-                          <li key={index} className="search-li">
-                            {item?.location}
-                          </li>
-                        ))
-                      ) : (
-                        <li className="search-li">no data</li>
-                      )}
-                    </ul>
-                  </div>
-                }
-
               </div>
 
               <div className="heroBtnMobile">
@@ -158,7 +124,7 @@ const Hero = () => {
           </form>
         </div>
       </div>
-      <Recent selectedLocation = {selectedLocation} rentalList = {rentalList}/>
+      <Recent selectedLocation={selectedLocation} rentalList={rentalList} />
     </>
   );
 };

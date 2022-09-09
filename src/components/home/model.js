@@ -33,6 +33,12 @@ export const home = {
                 rentalList: response.response
             }
         },
+        addrentalFromAdminSuccess(state, response) {
+            return {
+                ...state,
+                apiLoading: false
+            }
+        },
     },
     effects: (dispatch) => ({
         // handle state changes with impure functions.
@@ -44,6 +50,16 @@ export const home = {
                 let res = await service.fetchAllRental(payload)
                 console.log(res ,"called")
                 dispatch.home.fetchallrentalSuccess(res);
+            } catch (e) {
+                dispatch.home.onError(e);
+            }
+        },
+        async addrentalFromAdmin(payload, rootState) {
+
+            dispatch.home.onRequest()
+            try {
+                let res = await service.addrentalFromAdmin(payload)
+                dispatch.home.addrentalFromAdminSuccess(res);
             } catch (e) {
                 dispatch.home.onError(e);
             }
