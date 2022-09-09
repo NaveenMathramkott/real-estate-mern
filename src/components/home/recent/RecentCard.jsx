@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 // import { list } from "../../data/Data";
+import config from "../../../config"
 
 const RecentCard = ({selectedLocation , rentalList}) => {
   const [list ,setList ] = useState([])
@@ -15,22 +16,22 @@ const RecentCard = ({selectedLocation , rentalList}) => {
     <>
       <div className="content grid3 mtop">
         {list.map((val, index) => {
-          const { cover, category, location, name, price, type } = val;
+          const { image, Status, location, name, price, room_type } = val;
           return (
             <div className="box shadow" key={index}>
               <div className="img">
-                <img src={cover} alt="" />
+                <img src={`${config.imageUrl}${image}`} alt="" />
               </div>
               <div className="text">
                 <div className="category flex">
                   <span
                     style={{
                       background:
-                        category === "For Sale" ? "#25b5791a" : "#ff98001a",
-                      color: category === "For Sale" ? "#25b579" : "#ff9800",
+                      Status === 1  ? "#25b5791a" : "#ff98001a",
+                      color: Status === 1 ? "#25b579" : "#ff9800",
                     }}
                   >
-                    {category}
+                    {Status === 1 ? "Available" : "Not available"}
                   </span>
                   <i className="fa fa-heart"></i>
                 </div>
@@ -43,7 +44,7 @@ const RecentCard = ({selectedLocation , rentalList}) => {
                 <div>
                   <button className="btn2">{price}/sqft</button>{" "}
                 </div>
-                <div>{type}</div>
+                <div>{room_type}</div>
               </div>
             </div>
           );
