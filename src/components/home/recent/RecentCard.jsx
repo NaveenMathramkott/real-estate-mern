@@ -1,7 +1,16 @@
-import React from "react";
-import { list } from "../../data/Data";
+import React, { useEffect, useState } from "react";
+// import { list } from "../../data/Data";
 
-const RecentCard = () => {
+const RecentCard = ({selectedLocation , rentalList}) => {
+  const [list ,setList ] = useState([])
+  useEffect(()=>{
+    let tempArray = rentalList
+    if (selectedLocation && rentalList && rentalList.length){
+      tempArray =  rentalList.filter((item) => item.location.toLowerCase().includes(selectedLocation.toLowerCase()))
+    }
+    setList(tempArray)
+  } , [selectedLocation , rentalList])
+  console.log(selectedLocation , rentalList , "{selectedLocation , rentalList}")
   return (
     <>
       <div className="content grid3 mtop">

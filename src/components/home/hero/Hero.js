@@ -4,25 +4,53 @@ import Chip from "../../common/commonComp/Chip/Chip";
 import "./hero.css";
 import { chipData } from "../../data/Data";
 import { useSelector, useDispatch } from 'react-redux';
+import Recent from "../recent/Recent";
 
 const Hero = () => {
   const dispatch = useDispatch()
-  const {locationAutoComplete} = useSelector((state)=> state.home)
+  const { rentalList } = useSelector((state) => state.home)
   const [search, setSearch] = useState("")
   const [typing, setTyping] = useState(false)
+  const [selectedLocation , setSelectedLocation] = useState("")
+  const [autCompleteLocation, setAutCompleteLocation] = useState([])
   const handleKeyPress = () => {
     setTyping(true)
+    if (selectedLocation){
+      setSelectedLocation("")
+    }
     setTimeout(() => {
       setTyping(false)
-    }, 3000)
+    }, 1000)
   }
   useEffect(() => {
-    if (!typing && search) {
-      console.log(dispatch, "enetered")
-      dispatch.home.locationAutocomplte(search)
+    if (!typing) {
+      let filteredVal = []
+      if (!search) {
+        filteredVal = rentalList
+      } else {
+        filteredVal = rentalList.filter((item) => item.location.toLowerCase().includes(search.toLowerCase()))
+      }
+      let locations = filteredVal.map((item) => item.location)
+      let uniqueLoc = [...new Set(locations)];
+      setAutCompleteLocation(uniqueLoc)
     }
   }, [typing])
-console.log(locationAutoComplete , "locationAutoComplete")
+  useEffect(() => {
+    dispatch.home.fetchAllRental()
+  }, [])
+
+  useEffect(() => {
+    let locations = rentalList.map((item) => item.location)
+    let uniqueLoc = [...new Set(locations)];
+    console.log(locations, "locations")
+    setAutCompleteLocation(uniqueLoc)
+  }, [rentalList])
+
+  const onSelectLocation = (item) => { 
+    setSearch(item)
+    setSelectedLocation(item)
+  }
+
   return (
     <>
       <div className="hero">
@@ -59,15 +87,15 @@ console.log(locationAutoComplete , "locationAutoComplete")
                   </div>
 
                 </div>
-            {     <div className="search-content">
-                  <ul className= "search-ul">
-                   {locationAutoComplete.length ?locationAutoComplete.map((item , index)=>
-                   <li key = {index} className="search-li">
-                   {item?.location}
-                 </li>
-                   ) 
- :
-                     <li className="search-li">no data</li>}
+                {<div className="search-content">
+                  <ul className="search-ul">
+                    {autCompleteLocation.length ? autCompleteLocation.map((item, index) =>
+                      <li onClick={() => onSelectLocation(item)} key={index} className="search-li">
+                        {item}
+                      </li>
+                    )
+                      :
+                      <li className="search-li">no data</li>}
                   </ul>
 
                 </div>}
@@ -90,6 +118,7 @@ console.log(locationAutoComplete , "locationAutoComplete")
           </form>
         </div>
       </div>
+      <Recent selectedLocation = {selectedLocation} rentalList = {rentalList}/>
     </>
   );
 };
