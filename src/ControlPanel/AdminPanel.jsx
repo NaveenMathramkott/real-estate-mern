@@ -9,6 +9,7 @@ import Chart from "./components/Charts/Charts";
 import SideBar from "./components/SideBar/SideBar";
 import { Redirect } from "react-router-dom";
 import UserFormView from "./components/UserForm/UserFormView";
+import ListUploadForm from "./components/ListUploadForm/ListUploadForm";
 
 function AdminPanel() {
   const [authenticated, setAuthenticated] = useState(false);
@@ -41,7 +42,8 @@ function AdminPanel() {
             </div>
             <div>
               <div>
-                <UserFormView />
+                {/* <UserFormView /> */}
+                <ListUploadForm />
               </div>
               <div className="chartAndFeature">
                 <div className="featuredData_View">

@@ -3,26 +3,26 @@ import Heading from "../../common/Heading";
 import Chip from "../../common/commonComp/Chip/Chip";
 import "./hero.css";
 import { chipData } from "../../data/Data";
-import { useSelector, useDispatch } from 'react-redux';
+import { useSelector, useDispatch } from "react-redux";
 
 const Hero = () => {
-  const dispatch = useDispatch()
-  const {locationAutoComplete} = useSelector((state)=> state.home)
-  const [search, setSearch] = useState("")
-  const [typing, setTyping] = useState(false)
+  const dispatch = useDispatch();
+  const { locationAutoComplete } = useSelector((state) => state.home);
+  const [search, setSearch] = useState("");
+  const [typing, setTyping] = useState(false);
   const handleKeyPress = () => {
-    setTyping(true)
+    setTyping(true);
     setTimeout(() => {
-      setTyping(false)
-    }, 3000)
-  }
+      setTyping(false);
+    }, 3000);
+  };
   useEffect(() => {
     if (!typing && search) {
-      console.log(dispatch, "enetered")
-      dispatch.home.locationAutocomplte(search)
+      console.log(dispatch, "enetered");
+      dispatch.home.locationAutocomplte(search);
     }
-  }, [typing])
-console.log(locationAutoComplete , "locationAutoComplete")
+  }, [typing]);
+  console.log(locationAutoComplete, "locationAutoComplete");
   return (
     <>
       <div className="hero">
@@ -57,20 +57,22 @@ console.log(locationAutoComplete , "locationAutoComplete")
                       <i className="fa fa-search"></i>
                     </button>
                   </div>
-
                 </div>
-            {     <div className="search-content">
-                  <ul className= "search-ul">
-                   {locationAutoComplete.length ?locationAutoComplete.map((item , index)=>
-                   <li key = {index} className="search-li">
-                   {item?.location}
-                 </li>
-                   ) 
- :
-                     <li className="search-li">no data</li>}
-                  </ul>
-
-                </div>}
+                {
+                  <div className="search-content">
+                    <ul className="search-ul">
+                      {locationAutoComplete.length ? (
+                        locationAutoComplete.map((item, index) => (
+                          <li key={index} className="search-li">
+                            {item?.location}
+                          </li>
+                        ))
+                      ) : (
+                        <li className="search-li">no data</li>
+                      )}
+                    </ul>
+                  </div>
+                }
               </div>
 
               <div className="heroBtnMobile">
