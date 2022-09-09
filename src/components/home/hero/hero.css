@@ -17,8 +17,13 @@
   color: #fff;
   opacity: 0.8;
 }
+.search-wrapper{
+  position: relative;
+  width: 100%;
 
+}
 .searchBox {
+  margin: auto;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -30,6 +35,27 @@
   padding: 16px;
   border-radius: 6px;
   color: gray;
+
+}
+.search-content{
+  position:absolute;
+
+  width: 100%;
+}
+.search-ul{
+  width: 74%;
+  z-index: 1;
+  margin:10px auto;
+  /* padding: 10px; */
+  background: white;
+  cursor: pointer;
+
+}
+.search-li{
+  color: #72809d;
+  height: 35px;
+  text-align: center;
+  font-size: 18px;
 }
 form input {
   width: 100%;
@@ -173,4 +199,74 @@ form .box:nth-child(1) {
     background: white;
     color: #27ae60;
   }
+}
+.typing-loader{
+  margin-right: 10px;
+  width: 6px;
+  height: 6px;
+  -webkit-animation: line 1s linear infinite alternate;
+ -moz-animation: line 1s linear infinite alternate;
+ animation: line 1s linear infinite alternate;
+}
+@-webkit-keyframes line{
+  0%{
+     
+      background-color: rgba(0,0,0, 1);
+      box-shadow: 12px 0px 0px 0px rgba(0,0,0,0.2), 
+                  24px 0px 0px 0px rgba(0,0,0,0.2);
+                  
+    }
+  25%{ 
+          background-color: rgba(0,0,0, 0.4);
+          box-shadow: 12px 0px 0px 0px rgba(0,0,0,2), 
+                  24px 0px 0px 0px rgba(0,0,0,0.2);
+                  
+  }
+  75%{ background-color: rgba(0,0,0, 0.4);
+      box-shadow: 12px 0px 0px 0px rgba(0,0,0,0.2), 
+                  24px 0px 0px 0px rgba(0,0,0,2);
+                 
+    }
+}
+
+@-moz-keyframes line{
+  0%{
+     
+      background-color: rgba(0,0,0, 1);
+      box-shadow: 12px 0px 0px 0px rgba(0,0,0,0.2), 
+                  24px 0px 0px 0px rgba(0,0,0,0.2);
+                  
+    }
+  25%{ 
+          background-color: rgba(0,0,0, 0.4);
+          box-shadow: 12px 0px 0px 0px rgba(0,0,0,2), 
+                  24px 0px 0px 0px rgba(0,0,0,0.2);
+                  
+  }
+  75%{ background-color: rgba(0,0,0, 0.4);
+      box-shadow: 12px 0px 0px 0px rgba(0,0,0,0.2), 
+                  24px 0px 0px 0px rgba(0,0,0,2);
+                 
+    }
+}
+
+@keyframes line{
+  0%{
+     
+      background-color: rgba(0,0,0, 1);
+      box-shadow: 12px 0px 0px 0px rgba(0,0,0,0.2), 
+                  24px 0px 0px 0px rgba(0,0,0,0.2);
+                  
+    }
+  25%{ 
+          background-color: rgba(0,0,0, 0.4);
+          box-shadow: 12px 0px 0px 0px rgba(0,0,0,2), 
+                  24px 0px 0px 0px rgba(0,0,0,0.2);
+                  
+  }
+  75%{ background-color: rgba(0,0,0, 0.4);
+      box-shadow: 12px 0px 0px 0px rgba(0,0,0,0.2), 
+                  24px 0px 0px 0px rgba(0,0,0,2);
+                 
+    }
 }
