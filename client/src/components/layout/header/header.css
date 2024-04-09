@@ -1,0 +1,150 @@
+header {
+  background-color: var(--white);
+  height: 80px;
+  box-shadow: 0 5px 30px var(--box-shadow);
+  padding: 15px 0;
+  position: sticky;
+  top: 0;
+  z-index: 99999;
+}
+.logo {
+  margin-top: 10px;
+}
+
+.profileHeader {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+}
+.profileHeader .profileNameTag {
+  font-size: 14px;
+  font-weight: 500;
+  padding-left: 10px;
+}
+.profileHeader img {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+}
+header img {
+  width: 160px;
+}
+header a {
+  margin-left: 30px;
+  transition: 0.5s;
+  font-weight: 500;
+}
+header a:hover {
+  color: var(--hover);
+  border-bottom: 1px solid var(--border);
+}
+
+header span {
+  width: auto;
+  padding: 0px 6px;
+  background: var(--bg-primary);
+  border-radius: 50px;
+  color: var(--white);
+  margin-right: 4px;
+  font-weight: 400;
+}
+header h4 {
+  font-weight: 500;
+  margin-right: 20px;
+  padding-bottom: 10px;
+}
+header .toggle {
+  display: none;
+}
+.profilePopUpShow {
+  position: absolute;
+  top: 90px;
+  right: 10%;
+  width: 100px;
+  background: var(--white);
+  border: 1px solid var(--bg-primary);
+  height: auto;
+  display: flex;
+  justify-content: space-between;
+  flex-direction: column;
+  align-items: center;
+  border-radius: 4px;
+}
+.profilePopUpShow .popUpList {
+  text-decoration: none;
+  font-size: 14px;
+  margin: 5px 0;
+}
+.profilePopUpHide {
+  display: none;
+}
+@media screen and (max-width: 1024px) {
+  header {
+    padding: 0;
+    height: 70px;
+  }
+  .headerMainWrapper {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .logo {
+    justify-content: center;
+    align-items: center;
+  }
+
+  .profileHeader img {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+  }
+  .profilePopUp {
+    margin-top: 20px;
+  }
+  header img {
+    margin-top: 4px;
+    height: 40px;
+    width: 140px;
+  }
+
+  header .button button {
+    margin-top: -14px;
+    width: 70px;
+    height: 36px;
+    font-size: 12px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  header .nav .flex {
+    display: none;
+  }
+  header .toggle {
+    display: block;
+    margin-top: 10px;
+  }
+  header .toggle .btnBurger {
+    width: 8px;
+    height: 12px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  header .small {
+    position: absolute;
+    top: 10vh;
+    left: 0;
+    width: 100%;
+    background-color: var(--white);
+    padding: 20px;
+  }
+
+  header li a {
+    display: inline-block;
+    margin-bottom: 20px;
+    color: black;
+  }
+}
