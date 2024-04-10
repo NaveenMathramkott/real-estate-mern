@@ -5,9 +5,10 @@
   box-sizing: border-box;
 }
 :root {
-  --bg-primary: #27ae60;
-  --hover: #27ae60;
-  --bg-secondary: hsla(215, 62%, 17%, 0.627);
+  --bg-primary: #3aafa9;
+  --hover: #2b7a78;
+  --bg-secondary: #17252a;
+  --bg-light: #def2f1;
   --bg-blue: #1d2636;
   --white: #ffffff;
   --gray: #c2c5cc;
@@ -19,5 +20,5 @@
 
 body {
   font-family: "Poppins", sans-serif;
-  background-color: var(--white);
+  background-color: var(--bg-light);
 }
