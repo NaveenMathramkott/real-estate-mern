@@ -9,7 +9,7 @@
 }
 a {
   text-decoration: none;
-  color: var(--black);
+  color: var(--bg-light);
   text-transform: capitalize;
 }
 ul {

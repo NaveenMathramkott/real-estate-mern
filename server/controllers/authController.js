@@ -1,15 +1,21 @@
 import jwt from "jsonwebtoken";
 import userModel from "../models/userModel.js";
 import { comparePassword } from "../utils/authUtils.js";
+import bcrypt from "bcrypt";
 
 // Register function
 export const register = async (req, res) => {
   try {
     const { username, email, password } = req.body;
+
+    const existingUser = await userModel.findOne({ email });
+
+    if (existingUser) {
+      return res.status(400).json({ message: "User exists" });
+    }
+
     // HASH THE PASSWORD
-
     const hashedPassword = await bcrypt.hash(password, 10);
-
     // CREATE A NEW USER AND SAVE TO DB
     const newUser = await new userModel({
       username,
@@ -17,9 +23,28 @@ export const register = async (req, res) => {
       password: hashedPassword,
     }).save();
 
-    res.status(201).json({ message: "User created successfully" });
+    // GENERATE COOKIE TOKEN AND SEND TO THE USER
+    const age = 100 * 60 * 60 * 24 * 7;
+
+    const token = jwt.sign(
+      {
+        id: newUser.id,
+        isAdmin: false,
+      },
+      process.env.JWT_SECRET_KEY,
+      { expiresIn: age }
+    );
+
+    res
+      .cookie("token", token, {
+        httpOnly: true,
+        // secure:true,
+        maxAge: age,
+      })
+      .status(200)
+      .send({ user: newUser, message: "User created successfully" });
   } catch (err) {
-    res.status(500).json({ message: "Failed to create user!" });
+    res.status(500).send({ message: "Failed to create user!" });
   }
 };
 
@@ -52,7 +77,6 @@ export const login = async (req, res) => {
     );
 
     const { password: userPassword, ...userInfo } = user;
-
     res
       .cookie("token", token, {
         httpOnly: true,
@@ -60,10 +84,10 @@ export const login = async (req, res) => {
         maxAge: age,
       })
       .status(200)
-      .json(userInfo);
+      .send(userInfo?._doc);
   } catch (err) {
     console.log(err);
-    res.status(500).json({ message: "Failed to login!" });
+    res.status(500).send({ message: "Failed to login!" });
   }
 };
 
