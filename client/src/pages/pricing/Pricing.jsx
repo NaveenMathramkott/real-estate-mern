@@ -1,7 +1,7 @@
 import React from "react";
-import Back from "../Back";
+import Back from "../../components/Back";
 import PriceCard from "../home/price/PriceCard";
-import img from "../images/pricing.jpg";
+import img from "../../assets/images/pricing.jpg";
 import "../home/price/price.css";
 
 const Pricing = () => {

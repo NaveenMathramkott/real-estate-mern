@@ -1,6 +1,6 @@
 import React from "react";
-import Heading from "../../Heading";
-import { location } from "../../data/Data";
+import Heading from "../../../components/Heading";
+import { location } from "../../../utils/Data";
 import "./style.css";
 
 const Location = () => {

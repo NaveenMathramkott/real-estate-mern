@@ -1,7 +1,7 @@
 import React from "react";
 import Header from "./header/Header";
 import Footer from "./footer/Footer";
-import { nav } from "../data/Data";
+import { nav } from "../../utils/Data";
 import { Navigate, Outlet } from "react-router-dom";
 import { useContext } from "react";
 import { AuthContext } from "../../context/AuthContext";

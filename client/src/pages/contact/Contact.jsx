@@ -1,6 +1,6 @@
 import React from "react";
-import img from "../images/pricing.jpg";
-import Back from "../Back";
+import img from "../../assets/images/pricing.jpg";
+import Back from "../../components/Back";
 import "./contact.css";
 
 const Contact = () => {

@@ -50,11 +50,11 @@ export const register = async (req, res) => {
 
 // Login function
 export const login = async (req, res) => {
-  const { username, password } = req.body;
+  const { email, password } = req.body;
 
   try {
     // CHECK IF THE USER EXISTS
-    const user = await userModel.findOne({ username });
+    const user = await userModel.findOne({ email });
 
     if (!user) return res.status(400).json({ message: "Invalid Credentials!" });
 

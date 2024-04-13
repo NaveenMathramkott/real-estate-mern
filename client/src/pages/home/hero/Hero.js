@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
-import Heading from "../../Heading";
+import Heading from "../../../components/Heading";
 import "./hero.css";
 
-import SearchBar from "../../searchBar/SearchBar";
+import SearchBar from "../../../components/searchBar/SearchBar";
 
 const Hero = () => {
   // const { rentalList } = useSelector((state) => state.home);

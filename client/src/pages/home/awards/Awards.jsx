@@ -1,6 +1,6 @@
 import React from "react";
-import Heading from "../../Heading";
-import { awards } from "../../data/Data";
+import Heading from "../../../components/Heading";
+import { awards } from "../../../utils/Data";
 import "./awards.css";
 
 const Awards = () => {

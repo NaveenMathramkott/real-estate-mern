@@ -1,12 +1,11 @@
 import React, { useContext, useState } from "react";
 import "./Form.css";
-import apiCall from "../../utils/api";
-import { AuthContext } from "../../context/AuthContext";
 import { useNavigate } from "react-router-dom";
+import { AuthContext } from "../../context/AuthContext.js";
+import apiCall from "../../utils/api.js";
 
-function Register({ setUserLogged, loggedUser }) {
+function Login({ setUserLogged, loggedUser }) {
   const navigate = useNavigate();
-  const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -14,16 +13,15 @@ function Register({ setUserLogged, loggedUser }) {
 
   const { updateUser } = useContext(AuthContext);
 
-  const handleSubmitRegister = async (e) => {
+  const handleSubmitLogin = async (e) => {
     e.preventDefault();
     try {
-      const res = await apiCall.post("/auth/register", {
-        username,
-        password,
+      const res = await apiCall.post("/auth/login", {
         email,
+        password,
       });
-      console.log(res);
-      updateUser(res.data.user);
+
+      updateUser(res.data);
       navigate("/");
     } catch (err) {
       console.log(err);
@@ -33,29 +31,18 @@ function Register({ setUserLogged, loggedUser }) {
   };
 
   return (
-    <form onSubmit={handleSubmitRegister}>
-      <h2>Register</h2>
+    <form onSubmit={handleSubmitLogin}>
+      <h2>Welcome Back</h2>
 
-      <label>Name</label>
+      <label>Email</label>
       <input
         type="text"
         name="name"
-        placeholder={"Username"}
-        required
-        value={username}
-        onChange={(event) => setUsername(event.target.value)}
-      />
-      <label>Email</label>
-
-      <input
-        type="email"
-        name="email"
         placeholder={"Email"}
         required
         value={email}
         onChange={(event) => setEmail(event.target.value)}
       />
-
       <label>Password</label>
       <div className="password-sec">
         <input
@@ -78,19 +65,18 @@ function Register({ setUserLogged, loggedUser }) {
         </div>
       </div>
       <div className="userQus">
-        <span onClick={() => setUserLogged(false)}>
-          Already have an Account?
-        </span>
+        <span onClick={() => setUserLogged(true)}>Create a New Account?</span>
+        <span>Forgotten Password!</span>
       </div>
       <button
+        className={loggedUser ? "submit-btn" : "submit-btn-disabled"}
+        disabled={!loggedUser}
         type="submit"
-        className={!loggedUser ? "submit-btn" : "submit-btn-disabled"}
-        disabled={loggedUser}
       >
-        Register
+        Login
       </button>
     </form>
   );
 }
 
-export default Register;
+export default Login;

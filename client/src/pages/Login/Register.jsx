@@ -1,27 +1,29 @@
 import React, { useContext, useState } from "react";
 import "./Form.css";
+import apiCall from "../../utils/api";
+import { AuthContext } from "../../context/AuthContext";
 import { useNavigate } from "react-router-dom";
-import { AuthContext } from "../../context/AuthContext.js";
-import apiCall from "../../utils/api.js";
 
-function Login({ setUserLogged, loggedUser }) {
+function Register({ setUserLogged, loggedUser }) {
   const navigate = useNavigate();
   const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
   const { updateUser } = useContext(AuthContext);
 
-  const handleSubmitLogin = async (e) => {
+  const handleSubmitRegister = async (e) => {
     e.preventDefault();
     try {
-      const res = await apiCall.post("/auth/login", {
+      const res = await apiCall.post("/auth/register", {
         username,
         password,
+        email,
       });
-
-      updateUser(res.data);
+      console.log(res);
+      updateUser(res.data.user);
       navigate("/");
     } catch (err) {
       console.log(err);
@@ -29,11 +31,12 @@ function Login({ setUserLogged, loggedUser }) {
       setIsLoading(false);
     }
   };
-  return (
-    <form onSubmit={handleSubmitLogin}>
-      <h2>Welcome Back</h2>
 
-      <label>UserName</label>
+  return (
+    <form onSubmit={handleSubmitRegister}>
+      <h2>Register</h2>
+
+      <label>Name</label>
       <input
         type="text"
         name="name"
@@ -42,6 +45,17 @@ function Login({ setUserLogged, loggedUser }) {
         value={username}
         onChange={(event) => setUsername(event.target.value)}
       />
+      <label>Email</label>
+
+      <input
+        type="email"
+        name="email"
+        placeholder={"Email"}
+        required
+        value={email}
+        onChange={(event) => setEmail(event.target.value)}
+      />
+
       <label>Password</label>
       <div className="password-sec">
         <input
@@ -64,18 +78,19 @@ function Login({ setUserLogged, loggedUser }) {
         </div>
       </div>
       <div className="userQus">
-        <span onClick={() => setUserLogged(true)}>Create a New Account?</span>
-        <span>Forgotten Password!</span>
+        <span onClick={() => setUserLogged(false)}>
+          Already have an Account?
+        </span>
       </div>
       <button
-        className={!loggedUser ? "submit-btn" : "submit-btn-disabled"}
-        disabled={loggedUser}
         type="submit"
+        className={loggedUser ? "submit-btn" : "submit-btn-disabled"}
+        disabled={!loggedUser}
       >
-        Login
+        Register
       </button>
     </form>
   );
 }
 
-export default Login;
+export default Register;
