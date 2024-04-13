@@ -1,61 +1,79 @@
-import React from "react";
+import React, { useContext, useState } from "react";
 import "./Form.css";
-import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
+import { AuthContext } from "../../context/AuthContext.js";
+import apiCall from "../../utils/api.js";
 
-function Login({ handleSubmitLogin, handleChange, setSignUp, onClose }) {
-  const loggedInUser = localStorage.getItem("authenticated");
+function Login({ setUserLogged, loggedUser }) {
+  const navigate = useNavigate();
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const { updateUser } = useContext(AuthContext);
+
+  const handleSubmitLogin = async (e) => {
+    e.preventDefault();
+    try {
+      const res = await apiCall.post("/auth/login", {
+        username,
+        password,
+      });
+
+      updateUser(res.data);
+      navigate("/");
+    } catch (err) {
+      console.log(err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
   return (
     <form onSubmit={handleSubmitLogin}>
-      <h2>Login</h2>
+      <h2>Welcome Back</h2>
 
-      <label>Name</label>
+      <label>UserName</label>
       <input
         type="text"
         name="name"
         placeholder={"Username"}
         required
-        onChange={handleChange}
+        value={username}
+        onChange={(event) => setUsername(event.target.value)}
       />
       <label>Password</label>
-      <input
-        type="password"
-        name="password"
-        placeholder="Password"
-        required
-        onChange={handleChange}
-      />
+      <div className="password-sec">
+        <input
+          type={showPassword ? "text" : "password"}
+          name="password"
+          placeholder="Password"
+          required
+          value={password}
+          onChange={(event) => setPassword(event.target.value)}
+        />
+        <div
+          className="password-icon"
+          onClick={() => setShowPassword(!showPassword)}
+        >
+          <i
+            className={
+              showPassword ? "fa-solid fa-eye" : "fa-solid fa-eye-slash"
+            }
+          />
+        </div>
+      </div>
       <div className="userQus">
-        <span onClick={() => setSignUp(true)}>Create a New Account?</span>
+        <span onClick={() => setUserLogged(true)}>Create a New Account?</span>
         <span>Forgotten Password!</span>
       </div>
-      {!loggedInUser ? (
-        <motion.button
-          whileHover={{
-            scale: 1.05,
-            transition: { duration: 0.2 },
-          }}
-          type="submit"
-        >
-          Login
-        </motion.button>
-      ) : (
-        <motion.button
-          whileHover={{
-            opacity: 0,
-            transition: { duration: 0.2 },
-          }}
-          disabled
-          style={{ backgroundColor: "gray " }}
-        >
-          Login
-        </motion.button>
-      )}
-
-      {/* <div className="closeBtn">
-        <div onClick={onClose}>
-          <i className="fa fa-close " />
-        </div>
-      </div> */}
+      <button
+        className={!loggedUser ? "submit-btn" : "submit-btn-disabled"}
+        disabled={loggedUser}
+        type="submit"
+      >
+        Login
+      </button>
     </form>
   );
 }

@@ -1,5 +1,5 @@
 header {
-  background-color: var(--white);
+  background-color: var(--bg-blue);
   height: 80px;
   box-shadow: 0 5px 30px var(--box-shadow);
   padding: 15px 0;
@@ -30,6 +30,10 @@ header {
 header img {
   width: 160px;
 }
+header .button button {
+  border-radius: 10px;
+  padding: 0.6rem 1rem;
+}
 header a {
   margin-left: 30px;
   transition: 0.5s;
@@ -59,8 +63,8 @@ header .toggle {
 }
 .profilePopUpShow {
   position: absolute;
-  top: 90px;
-  right: 10%;
+  top: 60px;
+  right: 4%;
   width: 100px;
   background: var(--white);
   border: 1px solid var(--bg-primary);

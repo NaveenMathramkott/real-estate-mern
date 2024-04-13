@@ -27,28 +27,6 @@ export const nav = [
   },
 ];
 
-export const PROFILE_POPUP_LIST = [
-  {
-    id: 1,
-    text: "Dashboard",
-    path: "/dashboard",
-  },
-  {
-    id: 2,
-    text: "Profile",
-  },
-  {
-    id: 3,
-    text: "Settings",
-    // path: "",
-  },
-  {
-    id: 4,
-    text: "Log out",
-    check: "logout",
-  },
-];
-
 export const chipData = [
   {
     text: "WhiteField",

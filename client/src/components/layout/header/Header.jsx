@@ -1,24 +1,18 @@
-import React, { useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import "./header.css";
-import { Link, useHistory } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import Profile from "../../images/profile.jpg";
-import { PROFILE_POPUP_LIST } from "../../data/Data";
+import { AuthContext } from "../../../context/AuthContext";
 
 const Header = ({ navListData }) => {
-  const history = useHistory();
+  const navigate = useNavigate();
   const [navList, setNavList] = useState(false);
-  const [profileList, setProfileList] = useState(false);
-  const loggedInUser = localStorage.getItem("authenticated");
-  const users = localStorage.getItem("user");
-  const user = JSON.parse(users);
+  const [loggedUser, setLoggedUser] = useState();
+  const { currentUser } = useContext(AuthContext);
 
-  const checker = (str) => {
-    if (str === "logout") {
-      localStorage.clear();
-      history.push("/login");
-      window.location.reload();
-    }
-  };
+  useEffect(() => {
+    setLoggedUser(currentUser);
+  }, [currentUser]);
 
   return (
     <header>
@@ -47,46 +41,23 @@ const Header = ({ navListData }) => {
           </ul>
         </div>
         <div className="button">
-          {!loggedInUser ? (
+          {!loggedUser ? (
             <Link to="/login">
-              <button>
-                <i className="fa fa-sign-out"></i>Login
-              </button>
+              <button>SignIn</button>
             </Link>
           ) : (
             <>
               <div
                 className="profileHeader"
-                onClick={() => setProfileList(!profileList)}
+                onClick={() => navigate("/profile")}
               >
-                <img src={Profile} alt="profile" />
+                <img src={loggedUser?.avatar || Profile} alt="profile" />
                 <div className="profileNameTag">
-                  {user?.username.slice(0, 1).toUpperCase() +
-                    user?.username
-                      .slice(1, user?.username.length)
+                  {loggedUser?.username.slice(0, 1).toUpperCase() +
+                    loggedUser?.username
+                      .slice(1, loggedUser?.username.length)
                       .toLowerCase()}
                 </div>
-              </div>
-              <div
-                className={
-                  profileList ? "profilePopUpShow" : "profilePopUpHide"
-                }
-              >
-                <ul>
-                  {PROFILE_POPUP_LIST.map((list, index) => (
-                    <li key={index}>
-                      <Link
-                        to={list.path}
-                        className="popUpList"
-                        onClick={() => {
-                          checker(list.check);
-                        }}
-                      >
-                        {list.text}
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
               </div>
             </>
           )}
