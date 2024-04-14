@@ -39,13 +39,13 @@ header .button button {
   height: 36px;
   font-size: 12px;
 }
-header a {
-  transition: 0.5s;
+#navItems {
+  transition: 1s;
   font-weight: 500;
 }
-header a:hover {
+#navItems a:hover,
+a:focus {
   color: var(--hover);
-  border-bottom: 1px solid var(--border);
 }
 
 header span {

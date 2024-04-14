@@ -42,20 +42,42 @@ const postSchema = new mongoose.Schema(
       required: true,
     },
     type: {
-      type: mongoose.ObjectId,
-      ref: "type",
+      type: String,
+      default: "buy",
+      enum: ["buy", "rent"],
     },
     property: {
-      type: mongoose.ObjectId,
-      ref: "property",
+      type: String,
+      default: "apartment",
+      renum: ["apartment", "house", "land", "condo"],
     },
     user: {
       type: mongoose.ObjectId,
       ref: "user",
     },
-    postDetails: {
-      type: mongoose.ObjectId,
-      ref: "postDetail",
+    description: {
+      type: String,
+    },
+    utilities: {
+      type: String,
+    },
+    pet: {
+      type: String,
+    },
+    income: {
+      type: String,
+    },
+    size: {
+      type: Number,
+    },
+    school: {
+      type: Number,
+    },
+    bus: {
+      type: Number,
+    },
+    restaurant: {
+      type: Number,
     },
     savedPosts: {
       type: mongoose.ObjectId,

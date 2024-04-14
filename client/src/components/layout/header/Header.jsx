@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useState } from "react";
 import "./header.css";
 import { Link, useNavigate } from "react-router-dom";
-import Profile from "../../images/profile.jpg";
+import Profile from "../../../assets/images/profile.jpg";
 import { AuthContext } from "../../../context/AuthContext";
 
 const Header = ({ navListData }) => {
@@ -34,7 +34,7 @@ const Header = ({ navListData }) => {
         <div className="nav">
           <ul className={navList ? "small" : "flex"}>
             {navListData.map((list, index) => (
-              <li key={index} onClick={() => setNavList(false)}>
+              <li key={index} onClick={() => setNavList(false)} id="navItems">
                 <Link to={list.path}>{list.text}</Link>
               </li>
             ))}

@@ -1,7 +1,7 @@
 import React from "react";
 import Back from "../../components/Back";
 import Heading from "../../components/Heading";
-import img from "../../components/images/about.jpg";
+import img from "../../assets/images/about.jpg";
 import "./about.css";
 
 const About = () => {
