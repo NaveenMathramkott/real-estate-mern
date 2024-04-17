@@ -2,15 +2,11 @@ import mongoose from "mongoose";
 
 const savedPostSchema = new mongoose.Schema(
   {
-    userId: {
-      type: mongoose.ObjectId,
-      ref: "user",
-      unique: true,
+    user: {
+      type: String,
     },
     postId: {
-      type: mongoose.ObjectId,
-      ref: "post",
-      unique: true,
+      type: [String],
     },
   },
   { timestamps: true }

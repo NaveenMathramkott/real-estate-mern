@@ -11,6 +11,11 @@ import LoginForm from "./pages/Login/LoginForm";
 import ListPage from "./pages/listPage/ListPage";
 import SinglePage from "./pages/singlePage/SinglePage";
 import Profile from "./pages/profile/Profile";
+import {
+  listPageLoader,
+  singlePageLoader,
+  profilePageLoader,
+} from "./utils/loaders.js";
 
 function AppRouter() {
   const router = createBrowserRouter([
@@ -46,12 +51,12 @@ function AppRouter() {
         {
           path: "/list",
           element: <ListPage />,
-          // loader: listPageLoader,
+          loader: listPageLoader,
         },
         {
           path: "/detail/:id",
           element: <SinglePage />,
-          // loader: singlePageLoader,
+          loader: singlePageLoader,
         },
         {
           path: "/notFound",
@@ -66,6 +71,7 @@ function AppRouter() {
         {
           path: "/profile",
           element: <Profile />,
+          loader: profilePageLoader,
         },
       ],
     },

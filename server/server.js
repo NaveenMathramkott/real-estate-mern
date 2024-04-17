@@ -23,7 +23,7 @@ app.use(cookieParser());
 app.use("/api/v1/auth", authRoute);
 app.use("/api/v1/users", userRoute);
 app.use("/api/v1/posts", postRoute);
-app.use("/api/v1/chats", chatRoute);
+// app.use("/api/v1/chats", chatRoute);
 
 const PORT = process.env.PORT || 8800;
 app.listen(PORT, () => {

@@ -1,3 +1,5 @@
+import postModel from "../models/postModel.js";
+import savedPostModel from "../models/savedPostModel.js";
 import userModel from "../models/userModel.js";
 import { hashPassword } from "../utils/authUtils.js";
 
@@ -58,5 +60,70 @@ export const deleteUser = async (req, res) => {
   } catch (err) {
     console.log(err);
     res.status(500).send({ message: "Failed to delete users!" });
+  }
+};
+
+// Save the liked post
+
+export const savePost = async (req, res) => {
+  const postId = req.body.postId;
+  const user = req.userId;
+  console.log(user);
+  try {
+    const userPost = await savedPostModel.findOne({ user });
+
+    // if we have post then we'll remove from the save post list
+    if (userPost) {
+      const filterData = userPost.postId.filter((itm) => itm === postId);
+      if (filterData.length === 0) {
+        const newData = [...userPost.postId, postId];
+        await savedPostModel.findOneAndUpdate(
+          { user },
+          {
+            postId: newData,
+          }
+        );
+      } else {
+        const filterData = userPost.postId.filter((itm) => itm !== postId);
+        await savedPostModel.findOneAndUpdate(
+          { user },
+          {
+            postId: filterData,
+          }
+        );
+      }
+    } else {
+      // need to work in next repo push ------------------xx
+      // If post not found then create new saved post profile for new user
+      await new savedPostModel({
+        user,
+        postId,
+      }).save();
+    }
+
+    res.status(200).send({ message: "Post saved" });
+  } catch (err) {
+    console.log(err);
+    res.status(500).send({ message: "Failed to save post!" });
+  }
+};
+
+// Get profile posts
+
+export const profilePosts = async (req, res) => {
+  const tokenUserId = req.userId;
+  try {
+    const userPosts = await postModel.find({
+      userId: tokenUserId,
+    });
+    const saved = await savedPostModel.find({
+      userId: tokenUserId,
+    });
+
+    // const savedPosts = saved.map((item) => item.post);
+    res.status(200).send({ userPosts, saved });
+  } catch (err) {
+    console.log(err);
+    res.status(500).send({ message: "Failed to get profile posts!" });
   }
 };

@@ -56,13 +56,13 @@ export const login = async (req, res) => {
     // CHECK IF THE USER EXISTS
     const user = await userModel.findOne({ email });
 
-    if (!user) return res.status(400).json({ message: "Invalid Credentials!" });
+    if (!user) return res.status(400).send({ message: "Invalid Credentials!" });
 
     // CHECK IF THE PASSWORD IS CORRECT
     const isPasswordValid = await comparePassword(password, user.password);
 
     if (!isPasswordValid)
-      return res.status(400).json({ message: "Invalid Credentials!" });
+      return res.status(400).send({ message: "Invalid Credentials!" });
 
     // GENERATE COOKIE TOKEN AND SEND TO THE USER
     const age = 100 * 60 * 60 * 24 * 7;
@@ -93,20 +93,20 @@ export const login = async (req, res) => {
 
 // Logout function
 export const logout = (req, res) => {
-  res.clearCookie("token").status(200).json({ message: "Logout Successful" });
+  res.clearCookie("token").status(200).send({ message: "Logout Successful" });
 };
 
 // checkAdmin function
 export const checkAdmin = async (req, res) => {
   const token = req.cookies.token;
 
-  if (!token) return res.status(401).json({ message: "Not Authenticated!" });
+  if (!token) return res.status(401).send({ message: "Not Authenticated!" });
 
   jwt.verify(token, process.env.JWT_SECRET_KEY, async (err, payload) => {
     if (err) return res.status(403).json({ message: "Token is not Valid!" });
     if (!payload.isAdmin || payload.isAdmin === undefined) {
-      return res.status(403).json({ message: "Not authorized!" });
+      return res.status(403).send({ message: "Not authorized!" });
     }
-    res.status(200).json({ message: "You are Authenticated" });
+    res.status(200).send({ message: "You are Authenticated" });
   });
 };
