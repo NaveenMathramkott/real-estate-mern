@@ -19,18 +19,18 @@ const userSchema = new mongoose.Schema(
     avatar: {
       type: String,
     },
-    // posts: {
-    //   type: mongoose.objectId,
-    //   ref: "post",
-    // },
-    // savedPosts: {
-    //   type: mongoose.objectId,
-    //   ref: "savedPost",
-    // },
-    // chat: {
-    //   type: mongoose.objectId,
-    //   ref: "savedPost",
-    // },
+    posts: {
+      type: [mongoose.objectId],
+      ref: "post",
+    },
+    savedPosts: {
+      type: [mongoose.objectId],
+      ref: "savedPost",
+    },
+    chat: {
+      type: [mongoose.objectId],
+      ref: "savedPost",
+    },
   },
   { timestamps: true }
 );

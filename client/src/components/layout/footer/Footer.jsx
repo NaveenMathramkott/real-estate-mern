@@ -1,5 +1,5 @@
 import React from "react";
-import { footer } from "../../data/Data";
+import { footer } from "../../../utils/Data";
 import "./footer.css";
 
 const Footer = () => {
@@ -37,7 +37,7 @@ const Footer = () => {
 
               <div className="input flex">
                 <input type="text" placeholder="Email Address" />
-                <button>Subscribe</button>
+                <button className="subscribe-btn">Subscribe</button>
               </div>
             </div>
           </div>
@@ -54,7 +54,7 @@ const Footer = () => {
         </div>
       </footer>
       <div className="legal">
-        <span>© 2022 RentIsEazy. Designd By NvN</span>
+        <span>© 2024 Tenementary. Designd By NaveenMathramkott</span>
       </div>
     </>
   );

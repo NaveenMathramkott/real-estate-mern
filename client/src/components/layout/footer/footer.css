@@ -71,6 +71,10 @@ footer ul li {
 .footerPad {
   margin: 10px;
 }
+.subscribe-btn {
+  height: 100%;
+  width: 6rem;
+}
 @media screen and (max-width: 800px) {
   footer .container {
     display: flex;

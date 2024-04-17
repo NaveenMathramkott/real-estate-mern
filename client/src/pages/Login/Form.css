@@ -1,0 +1,132 @@
+.loginPageWrapper {
+  display: flex;
+  justify-content: space-evenly;
+  align-items: center;
+  height: 90vh;
+  background: var(--bg-light);
+}
+.loginPageWrapper img {
+  max-width: 500px;
+}
+
+.loginWrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 600px;
+  width: 360px;
+  box-shadow: 0 0 10px 5px rgba(255, 254, 254, 0.153);
+}
+.loginWrapper h2 {
+  color: var(--text-light);
+}
+
+.loginWrapper form {
+  height: 100%;
+  width: 100%;
+  padding: 0 20px;
+  margin-top: 0;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 6px;
+  align-items: center;
+  background-color: var(--white);
+  opacity: 1;
+  position: relative;
+  box-shadow: 1px 1px 10px 10px var(--box-shadow);
+}
+.loginWrapper form label {
+  font-size: 14px;
+  font-weight: 500;
+  /* margin-bottom: 10px; */
+  align-self: flex-start;
+  padding-left: 8px;
+}
+.loginWrapper form span {
+  margin-right: 10px;
+  font-size: 12px;
+  cursor: pointer;
+  color: blue;
+  text-decoration: underline;
+}
+.loginWrapper form .password-sec {
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+}
+.loginWrapper form .password-icon {
+  width: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: var(--bg-primary);
+  height: 40px;
+  width: 40px;
+  border-radius: 5px;
+  margin-left: 2px;
+  color: var(--bg-secondary);
+}
+.loginWrapper form input {
+  width: 100%;
+  height: 40px;
+  font-size: 14px;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  margin-bottom: 8px;
+  padding: 8px;
+  background-color: var(--bg-primary);
+  color: var(--white);
+}
+.loginWrapper form input::placeholder {
+  font-size: 14px;
+}
+.userQus {
+  width: 100%;
+  display: flex;
+  justify-content: space-evenly;
+  align-items: center;
+  padding-bottom: 20px;
+}
+.loginWrapper .closeBtn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+}
+.loginWrapper .closeBtn div {
+  width: 25px;
+  height: 25px;
+  border-radius: 50%;
+  background-color: var(--bg-primary);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.statusToast {
+  position: absolute;
+  top: 200px;
+  left: 300px;
+  z-index: 999;
+}
+.submit-btn-disabled {
+  background-color: var(--bg-light);
+  cursor: not-allowed;
+}
+.submit-btn {
+  background-color: var(--bg-primary);
+  cursor: pointer;
+}
+
+@media screen and (max-width: 769px) {
+  .loginPageWrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 90vh;
+    background: rgba(209, 209, 209, 0.467);
+  }
+  .loginPageWrapper img {
+    display: none;
+  }
+}
