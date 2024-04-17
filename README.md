@@ -29,6 +29,10 @@ JWT_SECRET_KEY=
 CLIENT_URL=
 ```
 
+## Project Architecture
+  ![](https://github.com/NaveenMathramkott/real-estate-mern/blob/main/project_data/real%20estate%20architecture.png)
+
+
 
 ## Run Locally
 
