@@ -1,16 +1,12 @@
 import React from "react";
 import { RouterProvider, createBrowserRouter } from "react-router-dom";
-import Home from "./pages/home/Home";
-import About from "./pages/about/About";
-import Pricing from "./pages/pricing/Pricing";
-import Services from "./pages/services/Services";
-import Contact from "./pages/contact/Contact";
-import { AuthRequiredLayout, Layout } from "./components/layout/Layout";
-import PageNotFound from "./pages/PageNotFound/PageNotFound";
-import LoginForm from "./pages/Login/LoginForm";
-import ListPage from "./pages/listPage/ListPage";
-import SinglePage from "./pages/singlePage/SinglePage";
-import Profile from "./pages/profile/Profile";
+import Home from "./pages/home/Home.jsx";
+import { RequireAuth, Layout } from "./pages/layout/Layout.jsx";
+import Login from "./pages/login/Login.jsx";
+import ListPage from "./pages/listPage/ListPage.jsx";
+import SinglePage from "./pages/singlePage/SinglePage.jsx";
+import Register from "./pages/register/Register.jsx";
+import ProfilePage from "./pages/profilePage/ProfilePage";
 import {
   listPageLoader,
   singlePageLoader,
@@ -22,31 +18,19 @@ function AppRouter() {
     {
       path: "/",
       element: <Layout />,
-      errorElement: <PageNotFound />,
+      // errorElement: <PageNotFound />,
       children: [
         {
           path: "/",
           element: <Home />,
         },
         {
-          path: "/about",
-          element: <About />,
-        },
-        {
-          path: "/services",
-          element: <Services />,
-        },
-        {
-          path: "/pricing",
-          element: <Pricing />,
-        },
-        {
-          path: "/contact",
-          element: <Contact />,
-        },
-        {
           path: "/login",
-          element: <LoginForm />,
+          element: <Login />,
+        },
+        {
+          path: "/register",
+          element: <Register />,
         },
         {
           path: "/list",
@@ -58,19 +42,19 @@ function AppRouter() {
           element: <SinglePage />,
           loader: singlePageLoader,
         },
-        {
-          path: "/notFound",
-          element: <PageNotFound />,
-        },
+        // {
+        //   path: "/notFound",
+        //   element: <PageNotFound />,
+        // },
       ],
     },
     {
       path: "/",
-      element: <AuthRequiredLayout />,
+      element: <RequireAuth />,
       children: [
         {
           path: "/profile",
-          element: <Profile />,
+          element: <ProfilePage />,
           loader: profilePageLoader,
         },
       ],
