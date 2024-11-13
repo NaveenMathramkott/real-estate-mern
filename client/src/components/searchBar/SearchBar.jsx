@@ -1,10 +1,10 @@
 import { useState } from "react";
-import styles from "./searchBar.module.css";
+import "./searchBar.scss";
 import { Link } from "react-router-dom";
 
 const types = ["buy", "rent"];
 
-function SearchBar() {
+const SearchBar = () => {
   const [query, setQuery] = useState({
     type: "buy",
     city: "",
@@ -21,19 +21,19 @@ function SearchBar() {
   };
 
   return (
-    <div className={styles.searchBar}>
-      <div className={styles.type}>
+    <div className="searchBar">
+      <div className="type">
         {types.map((type) => (
           <button
             key={type}
             onClick={() => switchType(type)}
-            className={query.type === type ? styles.active : styles.noActive}
+            className={query.type === type ? "active" : ""}
           >
             {type}
           </button>
         ))}
       </div>
-      <form className={styles.searchForm}>
+      <form>
         <input
           type="text"
           name="city"
@@ -60,12 +60,12 @@ function SearchBar() {
           to={`/list?type=${query.type}&city=${query.city}&minPrice=${query.minPrice}&maxPrice=${query.maxPrice}`}
         >
           <button>
-            <i className="fa fa-search" />
+            <img src="/images/search.png" alt="" />
           </button>
         </Link>
       </form>
     </div>
   );
-}
+};
 
 export default SearchBar;
