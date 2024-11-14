@@ -7,6 +7,8 @@ import ListPage from "./pages/listPage/ListPage.jsx";
 import SinglePage from "./pages/singlePage/SinglePage.jsx";
 import Register from "./pages/register/Register.jsx";
 import ProfilePage from "./pages/profilePage/ProfilePage";
+import ProfileUpdatePage from "./pages/profileUpdatePage/ProfileUpdatePage";
+import NewPostPage from "./pages/newPostPage/NewPostPage";
 import {
   listPageLoader,
   singlePageLoader,
@@ -56,6 +58,14 @@ function AppRouter() {
           path: "/profile",
           element: <ProfilePage />,
           loader: profilePageLoader,
+        },
+        {
+          path: "/profile/update",
+          element: <ProfileUpdatePage />,
+        },
+        {
+          path: "/add",
+          element: <NewPostPage />,
         },
       ],
     },
