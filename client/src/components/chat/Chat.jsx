@@ -99,15 +99,15 @@ const Chat = ({ chats }) => {
         <div className="chatBox">
           <div className="top">
             <div className="user">
-              <img src={chat.receiver.avatar || "noavatar.jpg"} alt="" />
-              {chat.receiver.username}
+              <img src={chat?.receiver.avatar || "noavatar.jpg"} alt="" />
+              {chat?.receiver.username}
             </div>
             <span className="close" onClick={() => setChat(null)}>
               X
             </span>
           </div>
           <div className="center">
-            {chat.messages.map((message) => (
+            {chat?.messages.map((message) => (
               <div
                 className="chatMessage"
                 style={{

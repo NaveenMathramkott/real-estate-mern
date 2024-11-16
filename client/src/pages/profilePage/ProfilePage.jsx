@@ -53,10 +53,10 @@ const ProfilePage = () => {
           </div>
           <Suspense fallback={<p>Loading...</p>}>
             <Await
-              resolve={data.postResponse}
+              resolve={data?.postResponse}
               errorElement={<p>Error loading posts!</p>}
             >
-              {(postResponse) => <List posts={postResponse.data.userPosts} />}
+              {(postResponse) => <List posts={postResponse?.data?.userPosts} />}
             </Await>
           </Suspense>
           <div className="title">
@@ -64,10 +64,14 @@ const ProfilePage = () => {
           </div>
           <Suspense fallback={<p>Loading...</p>}>
             <Await
-              resolve={data.postResponse}
+              resolve={data?.postResponse}
               errorElement={<p>Error loading posts!</p>}
             >
-              {(postResponse) => <List posts={postResponse.data.savedPosts} />}
+              {(postResponse) => {
+                console.log("post response------", postResponse);
+
+                return <List posts={postResponse?.data?.savedPosts} />;
+              }}
             </Await>
           </Suspense>
         </div>
@@ -76,10 +80,10 @@ const ProfilePage = () => {
         <div className="wrapper">
           <Suspense fallback={<p>Loading...</p>}>
             <Await
-              resolve={data.chatResponse}
+              resolve={data?.chatResponse}
               errorElement={<p>Error loading chats!</p>}
             >
-              {(chatResponse) => <Chat chats={chatResponse.data} />}
+              {(chatResponse) => <Chat chats={chatResponse?.data} />}
             </Await>
           </Suspense>
         </div>

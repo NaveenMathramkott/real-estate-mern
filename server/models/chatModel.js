@@ -7,7 +7,7 @@ const chatSchema = new mongoose.Schema(
       ref: "user",
     },
     seenBy: {
-      type: String[mongoose.ObjectId],
+      type: [mongoose.ObjectId],
     },
     messages: {
       type: mongoose.ObjectId,
