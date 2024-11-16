@@ -1,3 +1,4 @@
+import chatModel from "../models/chatModel.js";
 import postModel from "../models/postModel.js";
 import savedPostModel from "../models/savedPostModel.js";
 import userModel from "../models/userModel.js";
@@ -125,5 +126,19 @@ export const profilePosts = async (req, res) => {
   } catch (err) {
     console.log(err);
     res.status(500).send({ message: "Failed to get profile posts!" });
+  }
+};
+
+export const getNotificationNumber = async (req, res) => {
+  const tokenUserId = req.userId;
+  try {
+    const number = await chatModel.countDocuments({
+      userIDs: { $in: [tokenUserId] }, // Checks if tokenUserId is in userIDs
+      seenBy: { $nin: [tokenUserId] }, // Excludes tokenUserId from seenBy
+    });
+    res.status(200).json(number);
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ message: "Failed to get profile posts!" });
   }
 };

@@ -105,7 +105,7 @@ const Filter = () => {
           />
         </div>
         <button onClick={handleFilter}>
-          <img src="/search.png" alt="" />
+          <img src="/images/search.png" alt="" />
         </button>
       </div>
     </div>

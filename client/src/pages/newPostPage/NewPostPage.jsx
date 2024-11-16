@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useContext, useState } from "react";
 import "./newPostPage.scss";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 import apiRequest from "../../utils/api";
 import UploadWidget from "../../components/uploadWidget/UploadWidget";
 import { useNavigate } from "react-router-dom";
+import { AuthContext } from "../../context/AuthContext";
 
 const NewPostPage = () => {
   const [value, setValue] = useState("");
@@ -12,6 +13,9 @@ const NewPostPage = () => {
   const [error, setError] = useState("");
 
   const navigate = useNavigate();
+  const { currentUser } = useContext(AuthContext);
+
+  console.log("user---", currentUser);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -32,6 +36,8 @@ const NewPostPage = () => {
           latitude: inputs.latitude,
           longitude: inputs.longitude,
           images: images,
+          user: currentUser._id,
+          userId: currentUser._id,
         },
         postDetail: {
           desc: value,

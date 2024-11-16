@@ -11,7 +11,8 @@ const postSchema = new mongoose.Schema(
       required: true,
     },
     images: {
-      type: [String],
+      type: [String], // Array of strings
+      required: true,
     },
     address: {
       type: String,
@@ -37,54 +38,41 @@ const postSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    userId: {
-      type: mongoose.ObjectId,
+    type: {
+      type: String, // Replace with actual Type enum if needed
       required: true,
     },
-    type: {
-      type: String,
-      default: "buy",
-      enum: ["buy", "rent"],
-    },
     property: {
-      type: String,
-      default: "apartment",
-      renum: ["apartment", "house", "land", "condo"],
+      type: String, // Replace with actual Property enum if needed
+      required: true,
+    },
+    createdAt: {
+      type: Date,
+      default: Date.now,
     },
     user: {
-      type: mongoose.ObjectId,
-      ref: "user",
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "user", // Reference to the User model
+      required: true,
     },
-    description: {
-      type: String,
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "user", // Reference to the User model
+      required: true,
     },
-    utilities: {
-      type: String,
+    postDetail: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "postDetail", // Reference to the PostDetail model
+      required: false, // Optional, can be null
     },
-    pet: {
-      type: String,
-    },
-    income: {
-      type: String,
-    },
-    size: {
-      type: Number,
-    },
-    school: {
-      type: Number,
-    },
-    bus: {
-      type: Number,
-    },
-    restaurant: {
-      type: Number,
-    },
-    savedPosts: {
-      type: mongoose.ObjectId,
-      ref: "savedPost",
-    },
+    savedPosts: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "savedPost", // Reference to the SavedPost model
+      },
+    ],
   },
-  { timestamps: true }
+  { timestamps: true } // Automatically adds createdAt and updatedAt fields
 );
 
 export default mongoose.model("post", postSchema);

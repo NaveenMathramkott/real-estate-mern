@@ -20,7 +20,6 @@ const ListPage = () => {
             >
               {(postResponse) =>
                 postResponse.data.map((post) => {
-                  console.log("data--", post);
                   return <Card key={post.id} item={post} />;
                 })
               }
