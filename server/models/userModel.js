@@ -2,37 +2,48 @@ import mongoose from "mongoose";
 
 const userSchema = new mongoose.Schema(
   {
-    username: {
-      type: String,
-      required: true,
-      trim: true,
-    },
     email: {
       type: String,
       required: true,
       unique: true,
+      lowercase: true,
+      trim: true,
     },
-    password: {
+    phone: {
+      type: String,
+      unique: true,
+      sparse: true,
+      trim: true,
+    },
+    role: {
+      type: String,
+      enum: ["buyer", "renter", "agent", "landlord", "admin"],
+      default: "buyer",
+    },
+    verified: {
+      type: Boolean,
+      default: false,
+    },
+    locale: {
+      type: String,
+      default: "en",
+    },
+    currency: {
+      type: String,
+      default: "INR",
+    },
+    passwordHash: {
       type: String,
       required: true,
     },
-    avatar: {
-      type: String,
-    },
-    posts: {
-      type: [mongoose.objectId],
-      ref: "post",
-    },
-    savedPosts: {
-      type: [mongoose.objectId],
-      ref: "savedPost",
-    },
-    chat: {
-      type: [mongoose.objectId],
-      ref: "savedPost",
-    },
+    refreshTokens: [
+      {
+        token: { type: String, required: true },
+        expiresAt: { type: Date, required: true },
+      },
+    ],
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 export default mongoose.model("user", userSchema);
