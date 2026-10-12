@@ -84,8 +84,34 @@ export const getMyReviews = async (req, res) => {
     res.status(200).json({ success: true, reviews });
   } catch (error) {
     console.log(error);
-    res
-      .status(500)
-      .json({ success: false, message: "Failed to fetch reviews" });
+    errorResponse(res, error, "Failed to fetch reviews");
+  }
+};
+
+// DELETE /reviews/:id — the author, or an admin, may delete a review
+export const deleteReview = async (req, res) => {
+  try {
+    const review = await reviewModel.findById(req.params.id);
+
+    if (!review) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Review not found" });
+    }
+
+    const isAuthor = review.userId.toString() === req.userId;
+
+    if (!isAuthor && req.userRole !== "admin") {
+      return res
+        .status(403)
+        .json({ success: false, message: "Not authorized" });
+    }
+
+    await reviewModel.deleteOne({ _id: review._id });
+
+    res.status(200).json({ success: true, message: "Review deleted" });
+  } catch (error) {
+    console.log(error);
+    errorResponse(res, error, "Failed to delete review");
   }
 };

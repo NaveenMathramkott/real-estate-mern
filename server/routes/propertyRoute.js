@@ -5,11 +5,13 @@ import {
   addPropertyMedia,
   createInquiry,
   deleteProperty,
+  deletePropertyMedia,
   getPriceHistory,
   getProperties,
   getPropertyById,
   getPropertyReviews,
   getSimilarProperties,
+  reorderPropertyMedia,
   updateProperty,
 } from "../controllers/propertyController.js";
 
@@ -32,5 +34,7 @@ router.post(
 router.patch("/:id", requireSignIn, updateProperty);
 router.delete("/:id", requireSignIn, deleteProperty);
 router.post("/:id/media", requireSignIn, addPropertyMedia);
+router.patch("/:id/media/reorder", requireSignIn, reorderPropertyMedia);
+router.delete("/:id/media/:mediaId", requireSignIn, deletePropertyMedia);
 
 export default router;

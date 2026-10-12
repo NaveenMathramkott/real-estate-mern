@@ -69,6 +69,17 @@ export const searchPolygon = async (req, res) => {
       });
     }
 
+    // GeoJSON rings must be closed, otherwise MongoDB rejects the query
+    const firstPoint = coordinates[0];
+    const lastPoint = coordinates[coordinates.length - 1];
+    if (firstPoint[0] !== lastPoint[0] || firstPoint[1] !== lastPoint[1]) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "The ring must be closed — repeat the first [lng,lat] point as the last",
+      });
+    }
+
     const cacheKey = `search:polygon:${JSON.stringify(coordinates)}`;
     const cached = await cache.get(cacheKey);
     if (cached) {

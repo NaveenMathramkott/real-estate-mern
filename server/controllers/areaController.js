@@ -1,25 +1,44 @@
 import areaModel from "../models/areaModel.js";
-import { errorResponse } from "../utils/errorUtils.js";
-import buildingModel from "../models/buildingModel.js";
 import propertyModel from "../models/propertyModel.js";
 import reviewModel from "../models/reviewModel.js";
 import { cache } from "../config/redis.js";
+import { errorResponse } from "../utils/errorUtils.js";
 
-// GET /areas — browsable list of known localities
+// GET /areas
 export const getAreas = async (req, res) => {
   try {
-    const filter = req.query.city
-      ? { city: new RegExp(req.query.city, "i") }
-      : {};
-    const areas = await areaModel.find(filter).select("name city boundary");
-    res.status(200).json({ success: true, areas });
+    const page = Math.max(Number(req.query.page) || 1, 1);
+    const limit = Math.min(Number(req.query.limit) || 20, 100);
+    const skip = (page - 1) * limit;
+
+    const filter = {};
+    if (req.query.city) filter.city = new RegExp(req.query.city, "i");
+    if (req.query.name) filter.name = new RegExp(req.query.name, "i");
+
+    const [areas, total] = await Promise.all([
+      areaModel
+        .find(filter)
+        .select("name city boundary")
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit),
+      areaModel.countDocuments(filter),
+    ]);
+
+    res.status(200).json({
+      success: true,
+      page,
+      limit,
+      total,
+      pages: Math.ceil(total / limit),
+      areas,
+    });
   } catch (error) {
-    console.log(error);
     errorResponse(res, error, "Failed to fetch areas");
   }
 };
 
-// GET /areas/:id — boundary plus aggregate market stats for the area
+// GET /areas/:id
 export const getAreaById = async (req, res) => {
   try {
     const area = await areaModel.findById(req.params.id);
@@ -32,8 +51,91 @@ export const getAreaById = async (req, res) => {
 
     res.status(200).json({ success: true, area });
   } catch (error) {
-    console.log(error);
-    res.status(500).json({ success: false, message: "Failed to fetch area" });
+    errorResponse(res, error, "Failed to fetch area");
+  }
+};
+
+// POST /areas
+export const addArea = async (req, res) => {
+  try {
+    const { name, city, boundary } = req.body;
+
+    if (!name || !city || !boundary?.coordinates) {
+      return res.status(400).json({
+        success: false,
+        message: "name, city and boundary.coordinates are required",
+      });
+    }
+
+    const area = await areaModel.create({ name, city, boundary });
+
+    res.status(201).json({ success: true, area });
+  } catch (error) {
+    errorResponse(res, error, "Failed to create area");
+  }
+};
+
+// PATCH /areas/:id
+export const updateArea = async (req, res) => {
+  try {
+    const area = await areaModel.findById(req.params.id);
+
+    if (!area) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Area not found" });
+    }
+
+    const { name, city, boundary } = req.body;
+
+    if (name !== undefined) area.name = name;
+    if (city !== undefined) area.city = city;
+    if (boundary !== undefined) area.boundary = boundary;
+
+    await area.save();
+
+    // Insights depend on the boundary, so drop the cached aggregate
+    await cache.del(`areas:insights:${area._id}`);
+
+    res.status(200).json({ success: true, area });
+  } catch (error) {
+    errorResponse(res, error, "Failed to update area");
+  }
+};
+
+// DELETE /areas/:id
+export const deleteArea = async (req, res) => {
+  try {
+    const area = await areaModel.findById(req.params.id);
+
+    if (!area) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Area not found" });
+    }
+
+    // Guard against orphaning reviews written against this area
+    const reviewCount = await reviewModel.countDocuments({
+      targetType: "area",
+      targetId: area._id,
+    });
+
+    if (reviewCount > 0) {
+      return res.status(409).json({
+        success: false,
+        message: `Cannot delete: ${reviewCount} review${
+          reviewCount === 1 ? "" : "s"
+        } still reference this area`,
+      });
+    }
+
+    await areaModel.deleteOne({ _id: area._id });
+
+    await cache.del(`areas:insights:${area._id}`);
+
+    res.status(200).json({ success: true, message: "Area deleted" });
+  } catch (error) {
+    errorResponse(res, error, "Failed to delete area");
   }
 };
 
@@ -112,16 +214,16 @@ export const getAreaInsights = async (req, res) => {
 
     // $median is an Atlas-only operator, so derive the median from the sorted
     // price list, which works on any MongoDB deployment.
-    const medianPrice = await propertyModel.distinct("price", geoFilter);
+    const prices = await propertyModel.distinct("price", geoFilter);
 
-    medianPrice.sort((a, b) => a - b);
-    const mid = Math.floor(medianPrice.length / 2);
+    prices.sort((a, b) => a - b);
+    const mid = Math.floor(prices.length / 2);
     const median =
-      medianPrice.length === 0
+      prices.length === 0
         ? 0
-        : medianPrice.length % 2
-          ? medianPrice[mid]
-          : (medianPrice[mid - 1] + medianPrice[mid]) / 2;
+        : prices.length % 2
+          ? prices[mid]
+          : (prices[mid - 1] + prices[mid]) / 2;
 
     const payload = {
       success: true,
@@ -155,100 +257,6 @@ export const getAreaInsights = async (req, res) => {
 
     res.status(200).json(payload);
   } catch (error) {
-    console.log(error);
-    res
-      .status(500)
-      .json({
-        success: false,
-        message: error.message || "Failed to compute insights",
-      });
-  }
-};
-
-// GET /buildings/:id
-export const getBuildingById = async (req, res) => {
-  try {
-    const building = await buildingModel.findById(req.params.id);
-
-    if (!building) {
-      return res
-        .status(404)
-        .json({ success: false, message: "Building not found" });
-    }
-
-    const properties = await propertyModel
-      .find({ buildingId: building._id, status: "active" })
-      .select("title price currency type purpose beds address");
-
-    res.status(200).json({ success: true, building, properties });
-  } catch (error) {
-    console.log(error);
-    res
-      .status(500)
-      .json({ success: false, message: "Failed to fetch building" });
-  }
-};
-
-// GET /buildings/:id/reviews — paginated reviews with a rating breakdown
-export const getBuildingReviews = async (req, res) => {
-  try {
-    const building = await buildingModel.findById(req.params.id);
-
-    if (!building) {
-      return res
-        .status(404)
-        .json({ success: false, message: "Building not found" });
-    }
-
-    const page = Math.max(Number(req.query.page) || 1, 1);
-    const limit = Math.min(Number(req.query.limit) || 20, 100);
-    const skip = (page - 1) * limit;
-
-    const match = { targetType: "building", targetId: building._id };
-
-    const [reviews, agg, breakdown] = await Promise.all([
-      reviewModel
-        .find(match)
-        .populate("userId", "email avatar")
-        .sort({ createdAt: -1 })
-        .skip(skip)
-        .limit(limit),
-      reviewModel.aggregate([
-        { $match: match },
-        {
-          $group: {
-            _id: null,
-            avgRating: { $avg: "$rating" },
-            count: { $sum: 1 },
-          },
-        },
-      ]),
-      reviewModel.aggregate([
-        { $match: match },
-        { $group: { _id: "$rating", count: { $sum: 1 } } },
-      ]),
-    ]);
-
-    const distribution = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
-    breakdown.forEach((row) => {
-      distribution[row._id] = row.count;
-    });
-
-    res.status(200).json({
-      success: true,
-      reviews,
-      page,
-      total: agg[0]?.count || 0,
-      avgRating: agg[0]?.avgRating || 0,
-      distribution,
-    });
-  } catch (error) {
-    console.log(error);
-    res
-      .status(500)
-      .json({
-        success: false,
-        message: error.message || "Failed to fetch reviews",
-      });
+    errorResponse(res, error, "Failed to compute insights");
   }
 };

@@ -83,14 +83,21 @@ export const requireSignIn = async (req, res, next) => {
   }
 };
 
-// Restricts a route to the given roles, e.g. requireRole("agent", "landlord")
+// Restricts a route to the given roles, e.g. requireRole("agent", "landlord").
+// Runs requireSignIn itself when the route has not already authenticated, so
+// a forgotten middleware turns into a 401 rather than a confusing 403.
 export const requireRole =
   (...roles) =>
-  (req, res, next) => {
-    if (!req.userRole || !roles.includes(req.userRole)) {
-      return res
-        .status(403)
-        .json({ success: false, message: "Not authorized!" });
+  async (req, res, next) => {
+    if (!req.userId) {
+      return requireSignIn(req, res, () => checkRole(req, res, next, roles));
     }
-    next();
+    return checkRole(req, res, next, roles);
   };
+
+const checkRole = (req, res, next, roles) => {
+  if (!req.userRole || !roles.includes(req.userRole)) {
+    return res.status(403).json({ success: false, message: "Not authorized!" });
+  }
+  next();
+};

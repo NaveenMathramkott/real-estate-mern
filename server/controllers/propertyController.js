@@ -35,6 +35,15 @@ export const buildPropertyFilter = (query) => {
       if (!Array.isArray(coordinates) || coordinates.length < 3) {
         throw new Error("A polygon needs at least 3 points");
       }
+
+      // GeoJSON rings must be closed, otherwise MongoDB rejects the query
+      const first = coordinates[0];
+      const last = coordinates[coordinates.length - 1];
+      if (first[0] !== last[0] || first[1] !== last[1]) {
+        throw new Error(
+          "The ring must be closed — repeat the first point last",
+        );
+      }
       filter.location = {
         $geoIntersects: {
           $geometry: { type: "Polygon", coordinates: [coordinates] },
@@ -306,6 +315,99 @@ export const addPropertyMedia = async (req, res) => {
   } catch (error) {
     console.log(error);
     errorResponse(res, error, "Failed to add media");
+  }
+};
+
+// Confirms the caller may modify the given property's media
+const assertCanEditProperty = async (req, res) => {
+  const property = await propertyModel.findById(req.params.id);
+
+  if (!property) {
+    res.status(404).json({ success: false, message: "Property not found" });
+    return null;
+  }
+
+  const canEdit =
+    property.ownerId.toString() === req.userId ||
+    property.agentId?.toString() === req.userId ||
+    req.userRole === "admin";
+
+  if (!canEdit) {
+    res.status(403).json({ success: false, message: "Not authorized" });
+    return null;
+  }
+
+  return property;
+};
+
+// DELETE /properties/:id/media/:mediaId
+export const deletePropertyMedia = async (req, res) => {
+  try {
+    const property = await assertCanEditProperty(req, res);
+    if (!property) return;
+
+    const media = await propertyMediaModel.findOneAndDelete({
+      _id: req.params.mediaId,
+      propertyId: property._id,
+    });
+
+    if (!media) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Media not found" });
+    }
+
+    res.status(200).json({ success: true, message: "Media removed" });
+  } catch (error) {
+    console.log(error);
+    errorResponse(res, error, "Failed to remove media");
+  }
+};
+
+// PATCH /properties/:id/media/reorder — body: { order: ["mediaId", ...] }
+export const reorderPropertyMedia = async (req, res) => {
+  try {
+    const property = await assertCanEditProperty(req, res);
+    if (!property) return;
+
+    const { order } = req.body;
+
+    if (!Array.isArray(order)) {
+      return res.status(400).json({
+        success: false,
+        message: "order must be an array of media ids",
+      });
+    }
+
+    const media = await propertyMediaModel.find({ propertyId: property._id });
+    const owned = new Set(media.map((m) => m._id.toString()));
+
+    const unknown = order.filter((id) => !owned.has(id));
+    if (unknown.length) {
+      return res.status(400).json({
+        success: false,
+        message: `Unknown media ids: ${unknown.join(", ")}`,
+      });
+    }
+
+    // Bulk write so the whole reorder lands in one round trip
+    await propertyMediaModel.bulkWrite(
+      order.map((id, index) => ({
+        updateOne: {
+          filter: { _id: id, propertyId: property._id },
+          update: { $set: { order: index } },
+        },
+      })),
+    );
+
+    const updated = await propertyMediaModel
+      .find({ propertyId: property._id })
+      .sort({ order: 1 });
+
+    res.status(200).json({ success: true, media: updated });
+  } catch (error) {
+    console.log(error);
+    errorResponse(res, error, "Failed to reorder media");
   }
 };
 
