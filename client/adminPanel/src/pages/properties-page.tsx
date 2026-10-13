@@ -21,6 +21,7 @@ import {
   Tag,
 } from "@/components/common";
 import { StatusBadge } from "@/features/shared/status-badge";
+import { LocationField } from "@/features/shared/location-field";
 import { Pagination } from "@/features/shared/widgets";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -62,6 +63,7 @@ import {
   PROPERTY_TYPES,
   PURPOSES,
 } from "@/lib/constants";
+import type { LatLng } from "@/lib/geo";
 import { formatArea, formatCurrency, formatRelative } from "@/lib/format";
 import type { Property, PropertySearchResponse } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -392,11 +394,10 @@ function CreatePropertyDialog({
     baths: "",
     furnished: "unfurnished" as NonNullable<Property["furnished"]>,
     address: "",
-    lat: "",
-    lng: "",
     amenities: [] as string[],
     status: "active" as Property["status"],
   }));
+  const [location, setLocation] = React.useState<LatLng>();
   const [error, setError] = React.useState<string>();
 
   const set = (patch: Partial<typeof draft>) =>
@@ -407,16 +408,14 @@ function CreatePropertyDialog({
 
   const submit = async () => {
     setError(undefined);
-    const lat = number(draft.lat);
-    const lng = number(draft.lng);
 
     if (!draft.title.trim()) {
       setError("Title is required");
       return;
     }
-    if (lat === undefined || lng === undefined) {
+    if (!location) {
       setError(
-        "Location is required — GeoJSON coordinates are [lng, lat] in that order.",
+        "Location is required — click the map, type the coordinates, or paste a Google Maps link.",
       );
       return;
     }
@@ -434,7 +433,11 @@ function CreatePropertyDialog({
         baths: number(draft.baths),
         furnished: draft.furnished,
         address: draft.address || undefined,
-        location: { type: "Point", coordinates: [lng, lat] },
+        // GeoJSON is [lng, lat], the reverse of the lat/lng fields above.
+        location: {
+          type: "Point",
+          coordinates: [location.lng, location.lat],
+        },
         amenities: draft.amenities,
         status: draft.status,
       });
@@ -454,7 +457,7 @@ function CreatePropertyDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl sm:max-w-6xl h-11/12 overflow-y-auto">
+      <DialogContent className="max-w-2xl sm:max-w-6xl h-11/12 overflow-y-auto scrollbar-track-transparent">
         <DialogHeader>
           <DialogTitle>Create listing</DialogTitle>
           <DialogDescription>
@@ -618,22 +621,16 @@ function CreatePropertyDialog({
             </Select>
           </Field>
 
-          <Field label="Coordinates" className="sm:col-span-2">
-            <div className="flex gap-2">
-              <Input
-                inputMode="decimal"
-                value={draft.lat}
-                onChange={(event) => set({ lat: event.target.value })}
-                placeholder="lat 28.6139"
-              />
-              <Input
-                inputMode="decimal"
-                value={draft.lng}
-                onChange={(event) => set({ lng: event.target.value })}
-                placeholder="lng 77.2090"
-              />
-            </div>
-          </Field>
+          <div className="sm:col-span-2">
+            <LocationField
+              mode="point"
+              label="Location"
+              hint="Click the map, enter the coordinates, or paste a Google Maps link. Stored as a GeoJSON point in [lng, lat] order."
+              point={location}
+              onPointChange={setLocation}
+              onRingChange={() => undefined}
+            />
+          </div>
 
           <Field label="Address" className="sm:col-span-2">
             <Input

@@ -17,6 +17,7 @@ import {
   Panel,
 } from "@/components/common";
 import { ConfirmDialog, CountBar, Pagination } from "@/features/shared/widgets";
+import { LocationField } from "@/features/shared/location-field";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -34,6 +35,7 @@ import { useQuery } from "@/hooks/use-query";
 import { queryStore } from "@/lib/query-store";
 import { formKey } from "@/lib/utils";
 import { areaApi } from "@/lib/api";
+import { closeRing, isValidRing, pointToRing, type Ring } from "@/lib/geo";
 import { formatCurrency, formatNumber } from "@/lib/format";
 import type { Area, AreaInsights } from "@/lib/types";
 import {
@@ -359,9 +361,14 @@ function AreaDialog({
 
   const [name, setName] = React.useState(() => area?.name ?? "");
   const [city, setCity] = React.useState(() => area?.city ?? "");
-  const [raw, setRaw] = React.useState(() =>
-    area?.boundary ? JSON.stringify(area.boundary, null, 2) : "",
-  );
+  const [ring, setRing] = React.useState<Ring>(() => {
+    const points = area?.boundary?.coordinates?.[0];
+    if (!Array.isArray(points)) return [];
+    return points.filter(
+      (point): point is [number, number] =>
+        Array.isArray(point) && point.length >= 2,
+    );
+  });
   const [error, setError] = React.useState<string>();
 
   const save = useMutation({
@@ -374,36 +381,29 @@ function AreaDialog({
     },
   });
 
-  const parseBoundary = (): Area["boundary"] | undefined => {
-    if (!raw.trim()) return undefined;
-    let parsed: unknown;
-    try {
-      parsed = JSON.parse(raw);
-    } catch {
-      throw new Error("Boundary must be valid JSON");
-    }
-    const boundary = parsed as Area["boundary"];
-    if (boundary?.type !== "Polygon" || !Array.isArray(boundary.coordinates)) {
-      throw new Error("Boundary must be a GeoJSON Polygon");
-    }
-    const ring = boundary.coordinates[0] ?? [];
-    const first = ring[0];
-    const last = ring[ring.length - 1];
-    if (
-      ring.length < 4 ||
-      first?.[0] !== last?.[0] ||
-      first?.[1] !== last?.[1]
-    ) {
-      throw new Error(
-        "Polygon ring must be closed (repeat the first point last)",
-      );
-    }
-    return boundary;
-  };
-
   const handleSubmit = async () => {
+    if (!name.trim()) {
+      setError("Name is required");
+      return;
+    }
+    if (ring.length === 0) {
+      setError(
+        "Boundary is required — click the map to trace it, or paste a Google Maps link to seed the first point.",
+      );
+      return;
+    }
+    if (!isValidRing(ring)) {
+      setError("A boundary ring needs at least four points");
+      return;
+    }
+
+    // GeoJSON rings must be closed or MongoDB rejects the document with 400.
+    const boundary: Area["boundary"] = {
+      type: "Polygon",
+      coordinates: [closeRing(ring)],
+    };
+
     try {
-      const boundary = parseBoundary();
       await save.mutateAsync({ name, city, boundary });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not save the area");
@@ -412,7 +412,7 @@ function AreaDialog({
 
   return (
     <Dialog open={Boolean(state)} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-xl">
+      <DialogContent className="sm:max-w-6xl h-11/12 overflow-y-scroll scrollbar-track-transparent">
         <DialogHeader>
           <DialogTitle>
             {isNew ? "Create area" : `Edit ${area?.name}`}
@@ -443,16 +443,31 @@ function AreaDialog({
               />
             </div>
           </div>
-          <div className="space-y-1.5">
-            <Label>Boundary polygon (GeoJSON)</Label>
-            <textarea
-              value={raw}
-              onChange={(event) => setRaw(event.target.value)}
-              rows={7}
-              placeholder='{ "type": "Polygon", "coordinates": [[[77.19,28.60],[77.23,28.60],[77.23,28.63],[77.19,28.63],[77.19,28.60]]] }'
-              className="border-input focus-visible:border-ring focus-visible:ring-ring/50 w-full rounded-md border bg-transparent px-3 py-2 font-mono text-xs shadow-xs outline-none focus-visible:ring-[3px]"
-            />
-          </div>
+
+          <LocationField
+            mode="polygon"
+            label="Boundary"
+            hint="Click the map to add each vertex, or paste a Google Maps link to seed the first point."
+            ring={ring}
+            onPointChange={(point) => setRing([pointToRing(point)])}
+            onRingChange={setRing}
+          />
+
+          {ring.length > 0 && (
+            <div className="space-y-1.5">
+              <Label>Boundary polygon (GeoJSON)</Label>
+              <textarea
+                readOnly
+                rows={5}
+                value={JSON.stringify(
+                  { type: "Polygon", coordinates: [closeRing(ring)] },
+                  null,
+                  2,
+                )}
+                className="border-input bg-muted/50 focus-visible:border-ring focus-visible:ring-ring/50 w-full rounded-md border px-3 py-2 font-mono text-xs shadow-xs outline-none"
+              />
+            </div>
+          )}
         </div>
 
         <DialogFooter>
