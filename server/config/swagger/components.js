@@ -215,6 +215,18 @@ export const schemas = {
     },
   },
 
+  Agency: {
+    type: "object",
+    properties: {
+      _id: objectId,
+      name: { type: "string" },
+      logo: { type: "string" },
+      licenseNo: { type: "string" },
+      verified: { type: "boolean" },
+      createdAt: dateString,
+    },
+  },
+
   Area: {
     type: "object",
     properties: {
@@ -292,6 +304,152 @@ export const schemas = {
       rating: {
         type: "object",
         properties: { average: { type: "number" }, count: { type: "integer" } },
+      },
+    },
+  },
+
+  BuyerDashboard: {
+    type: "object",
+    properties: {
+      success: { type: "boolean" },
+      role: { type: "string" },
+      summary: {
+        type: "object",
+        properties: {
+          favorites: { type: "integer" },
+          savedSearches: { type: "integer" },
+          inquiriesSent: { type: "integer" },
+          conversations: { type: "integer" },
+          unreadNotifications: { type: "integer" },
+        },
+      },
+      favoriteSummary: {
+        type: "object",
+        description: "Value of favorited listings, keyed by purpose",
+        additionalProperties: {
+          type: "object",
+          properties: {
+            count: { type: "integer" },
+            totalValue: { type: "number" },
+            avgPrice: { type: "number" },
+            minPrice: { type: "number" },
+            maxPrice: { type: "number" },
+          },
+        },
+      },
+      recentFavorites: { type: "array", items: { $ref: "#/components/schemas/Favorite" } },
+      recentInquiries: { type: "array", items: { $ref: "#/components/schemas/Inquiry" } },
+    },
+  },
+
+  AgentDashboard: {
+    type: "object",
+    properties: {
+      success: { type: "boolean" },
+      role: { type: "string" },
+      summary: {
+        type: "object",
+        properties: {
+          totalListings: { type: "integer" },
+          activeListings: { type: "integer" },
+          totalInquiries: { type: "integer" },
+          newInquiries: { type: "integer" },
+          mediaAssets: { type: "integer" },
+          portfolioValue: {
+            type: "number",
+            description: "Sum of every listing price owned or assigned to you",
+          },
+          avgPrice: { type: "number" },
+          priceRange: {
+            type: "object",
+            properties: { min: { type: "number" }, max: { type: "number" } },
+          },
+          livePortfolioValue: {
+            type: "number",
+            description: "Sum of prices for listings still active on the market",
+          },
+        },
+      },
+      listingsByStatus: { type: "object", additionalProperties: { type: "integer" } },
+      listingsByPurpose: {
+        type: "object",
+        additionalProperties: {
+          type: "object",
+          properties: {
+            count: { type: "integer" },
+            avgPrice: { type: "number" },
+            totalValue: { type: "number" },
+          },
+        },
+      },
+      inquiriesByStatus: { type: "object", additionalProperties: { type: "integer" } },
+      recentListings: { type: "array", items: { $ref: "#/components/schemas/Property" } },
+      recentInquiries: { type: "array", items: { $ref: "#/components/schemas/Inquiry" } },
+      recentPriceChanges: {
+        type: "array",
+        items: { $ref: "#/components/schemas/PriceHistory" },
+      },
+    },
+  },
+
+  AdminDashboard: {
+    type: "object",
+    properties: {
+      success: { type: "boolean" },
+      role: { type: "string", example: "admin" },
+      summary: {
+        type: "object",
+        properties: {
+          totalUsers: { type: "integer" },
+          usersByRole: { type: "object", additionalProperties: { type: "integer" } },
+          verifiedUsers: { type: "integer" },
+          unverifiedUsers: { type: "integer" },
+          totalProperties: { type: "integer" },
+          propertiesByStatus: { type: "object", additionalProperties: { type: "integer" } },
+          verifiedProperties: { type: "integer" },
+          unverifiedProperties: { type: "integer" },
+          totalAgencies: { type: "integer" },
+          verifiedAgencies: { type: "integer" },
+          unverifiedAgencies: { type: "integer" },
+          totalAreas: { type: "integer" },
+          totalBuildings: { type: "integer" },
+          totalReviews: { type: "integer" },
+          totalMessages: { type: "integer" },
+          closedDeals: { type: "integer" },
+          closedDealValue: { type: "number" },
+        },
+      },
+      verified: { $ref: "#/components/schemas/VerificationQueue" },
+      unverified: { $ref: "#/components/schemas/VerificationQueue" },
+      recentUsers: { type: "array", items: { $ref: "#/components/schemas/User" } },
+      recentProperties: { type: "array", items: { $ref: "#/components/schemas/Property" } },
+    },
+  },
+
+  VerificationQueue: {
+    type: "object",
+    description: "Verified and unverified records, with counts and a preview sample",
+    properties: {
+      users: {
+        type: "object",
+        properties: {
+          count: { type: "integer" },
+          sample: { type: "array", items: { $ref: "#/components/schemas/User" } },
+        },
+      },
+      properties: {
+        type: "object",
+        properties: {
+          count: { type: "integer" },
+          sample: { type: "array", items: { $ref: "#/components/schemas/Property" } },
+        },
+      },
+      agencies: {
+        type: "object",
+        properties: {
+          count: { type: "integer" },
+          sample: { type: "array", items: { $ref: "#/components/schemas/Agency" } },
+        },
       },
     },
   },

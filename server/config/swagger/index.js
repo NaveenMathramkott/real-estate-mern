@@ -7,6 +7,7 @@ import {
   searchPaths,
 } from "./paths.search.js";
 import { areaPaths, agencyPaths, buildingPaths } from "./paths.admin.js";
+import { dashboardPaths } from "./paths.dashboard.js";
 import {
   conversationPaths,
   notificationPaths,
@@ -91,6 +92,11 @@ export const swaggerDocument = {
       description: "Agencies, user profiles and locale/currency preferences",
     },
     { name: "Reviews", description: "Ratings for buildings, areas and agents" },
+    {
+      name: "Dashboard",
+      description:
+        "Role-specific dashboards for buyers, agents and admins, plus admin verification controls",
+    },
   ],
   components: {
     schemas: {
@@ -144,6 +150,7 @@ export const swaggerDocument = {
     ...buildingPaths,
     ...agencyPaths,
     ...reviewPaths,
+    ...dashboardPaths,
   },
 };
 

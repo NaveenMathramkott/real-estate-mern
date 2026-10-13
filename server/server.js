@@ -22,6 +22,7 @@ import areaRoute from "./routes/areaRoute.js";
 import buildingRoute from "./routes/buildingRoute.js";
 import agencyRoute from "./routes/agencyRoute.js";
 import profileRoute from "./routes/profileRoute.js";
+import dashboardRoute from "./routes/dashboardRoute.js";
 
 dotenv.config();
 
@@ -69,6 +70,7 @@ app.use(`${API_PREFIX}/areas`, areaRoute);
 app.use(`${API_PREFIX}/buildings`, buildingRoute);
 app.use(`${API_PREFIX}/agencies`, agencyRoute);
 app.use(`${API_PREFIX}/profiles`, profileRoute);
+app.use(`${API_PREFIX}/dashboard`, dashboardRoute);
 
 // Realtime — chat and notifications
 initSocket(server, process.env.CLIENT_URL);
