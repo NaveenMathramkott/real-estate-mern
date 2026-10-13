@@ -78,7 +78,10 @@ export function formatRelative(value?: string | null) {
 export function initials(value?: string | null) {
   if (!value) return "?";
   const parts = value.trim().split(/\s+|\s*@\s*/);
-  return (parts[0]?.[0] ?? "") + (parts[1]?.[0] ?? "") || value.slice(0, 2);
+  return (
+    (parts[0]?.[0].toUpperCase() ?? "") + (parts[1]?.[0].toUpperCase() ?? "") ||
+    value.slice(0, 2)
+  );
 }
 
 export function coordinatesToLatLng(

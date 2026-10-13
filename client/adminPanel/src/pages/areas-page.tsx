@@ -30,7 +30,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useMutation } from "@/hooks/use-mutation";
 import { useQuery } from "@/hooks/use-query";
-import { apiCache } from "@/lib/api-client";
+import { queryStore } from "@/lib/query-store";
+import { formKey } from "@/lib/utils";
 import { areaApi } from "@/lib/api";
 import { formatCurrency, formatNumber } from "@/lib/format";
 import type { Area, AreaInsights } from "@/lib/types";
@@ -71,8 +72,7 @@ export default function AreasPage() {
   );
 
   const invalidate = () => {
-    apiCache.invalidate("get|/areas");
-    void refetch();
+    queryStore.invalidate("get|/areas");
   };
 
   const remove = useMutation({
@@ -120,7 +120,7 @@ export default function AreasPage() {
 
         {error ? (
           <ErrorState message={error} onRetry={refetch} />
-        ) : isLoading ? (
+        ) : isLoading && !data ? (
           <LoadingBlock />
         ) : areas.length === 0 ? (
           <EmptyState
@@ -192,7 +192,9 @@ export default function AreasPage() {
         <Pagination {...pickPagination(data)} onChange={setPage} />
       </Panel>
 
+      {/* Keyed on the selected record so the form remounts with its values. */}
       <AreaDialog
+        key={formKey(editing)}
         state={editing}
         onClose={() => setEditing(null)}
         onSaved={invalidate}
@@ -269,10 +271,7 @@ function AreaDialog({
 
   return (
     <Dialog open={Boolean(state)} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent
-        key={area?._id ?? (isNew ? "new" : "none")}
-        className="sm:max-w-xl"
-      >
+      <DialogContent className="sm:max-w-xl">
         <DialogHeader>
           <DialogTitle>
             {isNew ? "Create area" : `Edit ${area?.name}`}

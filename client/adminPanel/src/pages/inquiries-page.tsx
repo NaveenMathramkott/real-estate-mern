@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/select";
 import { useMutation } from "@/hooks/use-mutation";
 import { useQuery } from "@/hooks/use-query";
-import { apiCache } from "@/lib/api-client";
+import { queryStore } from "@/lib/query-store";
 import { inquiryApi } from "@/lib/api";
 import { INQUIRY_STATUSES } from "@/lib/constants";
 import { formatCurrency, formatDateTime, formatRelative } from "@/lib/format";
@@ -46,8 +46,7 @@ export default function InquiriesPage() {
       inquiryApi.setStatus(id, status),
     successMessage: "Inquiry updated",
     invalidate: () => {
-      apiCache.invalidate("get|/inquiries");
-      void refetch();
+      queryStore.invalidate("get|/inquiries");
     },
   });
 
@@ -70,7 +69,7 @@ export default function InquiriesPage() {
 
       {error ? (
         <ErrorState message={error} onRetry={refetch} />
-      ) : isLoading ? (
+      ) : isLoading && !data ? (
         <LoadingBlock />
       ) : (
         <div className="grid gap-4 lg:grid-cols-3">

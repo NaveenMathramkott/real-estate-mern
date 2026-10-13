@@ -51,7 +51,7 @@ import {
 } from "@/components/ui/table";
 import { useMutation } from "@/hooks/use-mutation";
 import { useQuery } from "@/hooks/use-query";
-import { apiCache } from "@/lib/api-client";
+import { queryStore } from "@/lib/query-store";
 import { dashboardApi, propertyApi, type PropertyFilters } from "@/lib/api";
 import {
   FURNISHED,
@@ -97,8 +97,7 @@ export default function PropertiesPage() {
       dashboardApi.verifyProperty(id, next),
     successMessage: "Listing verification updated",
     invalidate: () => {
-      apiCache.invalidate("get|/properties", "get|/dashboard");
-      void refetch();
+      queryStore.invalidate("get|/properties", "get|/dashboard");
     },
   });
 
@@ -223,7 +222,7 @@ export default function PropertiesPage() {
 
       {error ? (
         <ErrorState message={error} onRetry={refetch} />
-      ) : isLoading ? (
+      ) : isLoading && !data ? (
         <LoadingBlock />
       ) : properties.length === 0 ? (
         <Panel>
@@ -330,7 +329,9 @@ export default function PropertiesPage() {
         </Panel>
       )}
 
+      {/* Remounts on open so the dialog starts from the filters in effect. */}
       <FiltersDialog
+        key={filtersOpen ? "open" : "closed"}
         open={filtersOpen}
         onOpenChange={setFiltersOpen}
         filters={filters}
@@ -435,7 +436,7 @@ function FiltersDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent key={open ? "open" : "closed"} className="sm:max-w-2xl">
+      <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle>Advanced filters</DialogTitle>
           <DialogDescription>

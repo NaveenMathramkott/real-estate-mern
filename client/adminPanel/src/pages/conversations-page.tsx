@@ -15,7 +15,7 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useMutation } from "@/hooks/use-mutation";
 import { useQuery } from "@/hooks/use-query";
-import { apiCache } from "@/lib/api-client";
+import { queryStore } from "@/lib/query-store";
 import { conversationApi } from "@/lib/api";
 import { formatRelative, initials } from "@/lib/format";
 import type { Conversation, Message } from "@/lib/types";
@@ -51,12 +51,12 @@ export default function ConversationsPage() {
       setDraft("");
       void thread.refetch();
     },
-    invalidate: () => apiCache.invalidate("get|/conversations"),
+    invalidate: () => queryStore.invalidate("get|/conversations"),
   });
 
   const markRead = useMutation({
     mutationFn: (id: string) => conversationApi.markRead(id),
-    onSuccess: () => apiCache.invalidate("get|/conversations"),
+    onSuccess: () => queryStore.invalidate("get|/conversations"),
   });
 
   const active = conversations.find((c) => c._id === activeId);
@@ -73,7 +73,7 @@ export default function ConversationsPage() {
 
       {list.error ? (
         <ErrorState message={list.error} onRetry={list.refetch} />
-      ) : list.isLoading ? (
+      ) : list.isLoading && !list.data ? (
         <LoadingBlock />
       ) : (
         <div className="grid gap-4 lg:grid-cols-[320px_1fr]">
@@ -145,7 +145,7 @@ export default function ConversationsPage() {
                 title="Select a thread"
                 description="Pick a conversation from the list to read its history."
               />
-            ) : thread.isLoading ? (
+            ) : thread.isLoading && !thread.data ? (
               <LoadingBlock />
             ) : (
               <>

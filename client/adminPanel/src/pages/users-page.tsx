@@ -30,7 +30,7 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useMutation } from "@/hooks/use-mutation";
 import { useQuery } from "@/hooks/use-query";
-import { apiCache } from "@/lib/api-client";
+import { queryStore } from "@/lib/query-store";
 import { dashboardApi } from "@/lib/api";
 import { formatRelative, initials } from "@/lib/format";
 import { pick, pickList } from "@/lib/safe";
@@ -51,12 +51,11 @@ export default function UsersPage() {
       dashboardApi.verifyUser(id, verified),
     successMessage: "Verification updated",
     invalidate: () => {
-      apiCache.invalidate("get|/dashboard", "get|/auth/me");
-      void refetch();
+      queryStore.invalidate("get|/dashboard", "get|/auth/me");
     },
   });
 
-  if (isLoading) return <LoadingBlock />;
+  if (isLoading && !data) return <LoadingBlock />;
   if (error) return <ErrorState message={error} onRetry={refetch} />;
   if (!data) return null;
 

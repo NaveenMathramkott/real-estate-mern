@@ -1,5 +1,6 @@
 import { Outlet, useLocation } from "react-router-dom";
 
+import { ErrorBoundary } from "@/components/error-boundary";
 import { SidebarContent } from "@/components/layout/sidebar";
 import { Topbar } from "@/components/layout/topbar";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
@@ -54,7 +55,9 @@ export function AppShell() {
                 <Skeleton className="h-72 rounded-xl" />
               </div>
             ) : (
-              <Outlet />
+              <ErrorBoundary resetKey={location.pathname}>
+                <Outlet />
+              </ErrorBoundary>
             )}
           </div>
         </main>

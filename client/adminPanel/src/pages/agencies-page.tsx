@@ -33,7 +33,8 @@ import {
 } from "@/components/ui/select";
 import { useMutation } from "@/hooks/use-mutation";
 import { useQuery } from "@/hooks/use-query";
-import { apiCache } from "@/lib/api-client";
+import { queryStore } from "@/lib/query-store";
+import { formKey } from "@/lib/utils";
 import { agencyApi, dashboardApi } from "@/lib/api";
 import { formatShortDate } from "@/lib/format";
 import { pickList, pickPagination } from "@/lib/safe";
@@ -62,8 +63,7 @@ export default function AgenciesPage() {
   );
 
   const invalidate = () => {
-    apiCache.invalidate("get|/agencies", "get|/dashboard");
-    void refetch();
+    queryStore.invalidate("get|/agencies", "get|/dashboard");
   };
 
   const verify = useMutation({
@@ -120,7 +120,7 @@ export default function AgenciesPage() {
 
         {error ? (
           <ErrorState message={error} onRetry={refetch} />
-        ) : isLoading ? (
+        ) : isLoading && !data ? (
           <LoadingBlock />
         ) : agencies.length === 0 ? (
           <EmptyState
@@ -199,7 +199,9 @@ export default function AgenciesPage() {
         <Pagination {...pickPagination(data)} onChange={setPage} />
       </Panel>
 
+      {/* Keyed on the selected record so the form remounts with its values. */}
       <AgencyDialog
+        key={formKey(editing)}
         state={editing}
         onClose={() => setEditing(null)}
         onSaved={invalidate}
@@ -239,10 +241,7 @@ function AgencyDialog({
 
   return (
     <Dialog open={Boolean(state)} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent
-        key={agency?._id ?? (isNew ? "new" : "none")}
-        className="sm:max-w-lg"
-      >
+      <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>
             {isNew ? "Create agency" : `Edit ${agency?.name}`}

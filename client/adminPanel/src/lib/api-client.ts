@@ -28,6 +28,17 @@ export function setUnauthorizedHandler(fn: () => void) {
   onUnauthorized = fn;
 }
 
+/**
+ * Set once a refresh has failed for this session. Without it every request
+ * would fire its own `POST /auth/refresh` before giving up.
+ */
+let refreshUnavailable = false;
+
+/** Cleared whenever we obtain fresh credentials. */
+export function markRefreshAvailable() {
+  refreshUnavailable = false;
+}
+
 const http: AxiosInstance = axios.create({
   baseURL: API_BASE_URL,
   withCredentials: true,
@@ -35,9 +46,18 @@ const http: AxiosInstance = axios.create({
   headers: { "Content-Type": "application/json" },
 });
 
+const DEBUG =
+  (import.meta.env.DEV as boolean | undefined) &&
+  (import.meta.env.VITE_API_DEBUG as string | undefined) === "true";
+
 http.interceptors.request.use((config: InternalAxiosRequestConfig) => {
   const token = localStorage.getItem(ACCESS_TOKEN_KEY);
   if (token) config.headers.Authorization = `Bearer ${token}`;
+  if (DEBUG) {
+    console.debug(
+      `[api] ${(config.method ?? "get").toUpperCase()} ${config.baseURL ?? ""}${config.url ?? ""}`,
+    );
+  }
   return config;
 });
 
@@ -74,13 +94,24 @@ http.interceptors.response.use(
 
     const isAuthRoute = original?.url?.includes("/auth/");
 
-    if (status === 401 && original && !original._retried && !isAuthRoute) {
+    if (
+      status === 401 &&
+      original &&
+      !original._retried &&
+      !isAuthRoute &&
+      !refreshUnavailable
+    ) {
       original._retried = true;
       refreshing ??= rotateAccessToken().finally(() => {
         refreshing = null;
       });
       const token = await refreshing;
+      // Replay preserves the original method and body, so a PATCH stays a PATCH.
       if (token) return http(original);
+
+      // The refresh token is gone or was replayed — stop trying for this
+      // session instead of firing a refresh POST on every later request.
+      refreshUnavailable = true;
       localStorage.removeItem(ACCESS_TOKEN_KEY);
       onUnauthorized?.();
     }

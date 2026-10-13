@@ -31,12 +31,18 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { useMutation } from "@/hooks/use-mutation";
 import { useQuery } from "@/hooks/use-query";
-import { apiCache } from "@/lib/api-client";
+import { queryStore } from "@/lib/query-store";
 import { reviewApi } from "@/lib/api";
 import { formatShortDate } from "@/lib/format";
 import type { Review, ReviewTargetType } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { pickList } from "@/lib/safe";
+
+const EMPTY_DRAFT: {
+  targetType: ReviewTargetType;
+  targetId: string;
+  body: string;
+} = { targetType: "building", targetId: "", body: "" };
 
 function Stars({
   value,
@@ -85,8 +91,7 @@ export default function ReviewsPage() {
     mutationFn: (id: string) => reviewApi.remove(id),
     successMessage: "Review deleted",
     invalidate: () => {
-      apiCache.invalidate("get|/reviews");
-      void refetch();
+      queryStore.invalidate("get|/reviews");
     },
   });
 
@@ -99,18 +104,20 @@ export default function ReviewsPage() {
     }) => reviewApi.create(payload),
     successMessage: "Review saved",
     invalidate: () => {
-      apiCache.invalidate("get|/reviews");
-      void refetch();
+      queryStore.invalidate("get|/reviews");
     },
   });
 
   const [open, setOpen] = React.useState(false);
   const [rating, setRating] = React.useState(4);
-  const [draft, setDraft] = React.useState({
-    targetType: "building" as ReviewTargetType,
-    targetId: "",
-    body: "",
-  });
+  const [draft, setDraft] = React.useState(EMPTY_DRAFT);
+
+  // Always open on a blank form, never on the previous submission.
+  const openComposer = () => {
+    setDraft(EMPTY_DRAFT);
+    setRating(4);
+    setOpen(true);
+  };
 
   const submitReview = () => {
     void create
@@ -138,7 +145,7 @@ export default function ReviewsPage() {
         title="Reviews"
         description="Reviews you have written. Writing again edits the earlier review rather than duplicating it."
         actions={
-          <Button onClick={() => setOpen(true)}>
+          <Button onClick={openComposer}>
             <PenLineIcon className="size-4" />
             Write a review
           </Button>
@@ -147,7 +154,7 @@ export default function ReviewsPage() {
 
       {error ? (
         <ErrorState message={error} onRetry={refetch} />
-      ) : isLoading ? (
+      ) : isLoading && !data ? (
         <LoadingBlock />
       ) : (
         <div className="grid gap-4 lg:grid-cols-3">
@@ -194,9 +201,7 @@ export default function ReviewsPage() {
                 icon={StarIcon}
                 title="No reviews written"
                 description="Rate a building, area or agent to build trust across the marketplace."
-                action={
-                  <Button onClick={() => setOpen(true)}>Write a review</Button>
-                }
+                action={<Button onClick={openComposer}>Write a review</Button>}
               />
             ) : (
               <ul className="divide-border divide-y">

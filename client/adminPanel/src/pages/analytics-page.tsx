@@ -64,7 +64,7 @@ export default function AnalyticsPage() {
     propertyApi.search({ limit: 100, purpose: "rent" }),
   );
 
-  if (isLoading) return <LoadingBlock />;
+  if (isLoading && !data) return <LoadingBlock />;
   if (error) return <ErrorState message={error} onRetry={refetch} />;
   if (!data) return null;
 

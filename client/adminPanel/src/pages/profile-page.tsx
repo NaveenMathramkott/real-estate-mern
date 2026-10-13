@@ -23,16 +23,19 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { useMutation } from "@/hooks/use-mutation";
 import { useQuery } from "@/hooks/use-query";
-import { API_BASE_URL, apiCache } from "@/lib/api-client";
+import { API_BASE_URL } from "@/lib/api-client";
+import { queryStore } from "@/lib/query-store";
 import { authApi, profileApi } from "@/lib/api";
 import { CURRENCIES, LOCALES } from "@/lib/constants";
 import { formatDateTime } from "@/lib/format";
+import { pick } from "@/lib/safe";
 import type { Profile, User } from "@/lib/types";
+import { useAuthStore } from "@/store/auth-store";
 import { useUiStore } from "@/store/ui-store";
 
 type ProfileFormProps = {
   profile: Profile | undefined;
-  onSaved: () => void;
+  onSaved: (profile: Profile | undefined) => void;
 };
 
 function ProfileForm({ profile, onSaved }: ProfileFormProps) {
@@ -52,7 +55,11 @@ function ProfileForm({ profile, onSaved }: ProfileFormProps) {
         agencyId: draft.agencyId || undefined,
       }),
     successMessage: "Profile updated",
-    invalidate: onSaved,
+    // Reflect the saved values immediately, then refresh in the background.
+    onSuccess: (data) => {
+      onSaved(pick<Profile>(data, "profile") ?? profile ?? undefined);
+    },
+    invalidate: () => queryStore.invalidate("get|/profiles"),
   });
 
   return (
@@ -126,10 +133,16 @@ function PreferencesForm({ user }: { user: User }) {
     currency: user.currency ?? "INR",
   }));
 
+  const setUser = useAuthStore((state) => state.setUser);
+
   const save = useMutation({
     mutationFn: () => profileApi.updatePreferences(prefs),
     successMessage: "Preferences saved",
-    invalidate: () => apiCache.invalidate("get|/auth/me"),
+    onSuccess: (data) => {
+      const updated = pick<User>(data, "user");
+      if (updated) setUser(updated);
+    },
+    invalidate: () => queryStore.invalidate("get|/auth/me"),
   });
 
   return (
@@ -235,7 +248,27 @@ export default function ProfilePage() {
   const account = useQuery<{ user: User }>("get|/auth/me|", authApi.me);
   const user = account.data?.user;
 
-  if (profile.isLoading || account.isLoading) return <LoadingBlock />;
+  if (
+    (profile.isLoading && !profile.data) ||
+    (account.isLoading && !account.data)
+  ) {
+    return <LoadingBlock />;
+  }
+
+  // Neither endpoint can render without an account; surface the failure rather
+  // than leaving the user on an empty shell.
+  if (account.error) {
+    return (
+      <Panel title="Session unavailable">
+        <div className="space-y-4 p-5">
+          <p className="text-muted-foreground text-sm">{account.error}</p>
+          <Button variant="outline" onClick={() => void account.refetch()}>
+            Retry
+          </Button>
+        </div>
+      </Panel>
+    );
+  }
 
   const current = profile.data?.profile;
   const avatar = current?.avatar;
@@ -300,9 +333,8 @@ export default function ProfilePage() {
           <ProfileForm
             key={current?._id ?? "new-profile"}
             profile={current}
-            onSaved={() => {
-              apiCache.invalidate("get|/profiles");
-              void profile.refetch();
+            onSaved={(saved) => {
+              if (saved) profile.setData({ profile: saved });
             }}
           />
 

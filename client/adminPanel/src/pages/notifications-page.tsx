@@ -20,7 +20,7 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { useMutation } from "@/hooks/use-mutation";
 import { useQuery } from "@/hooks/use-query";
-import { apiCache } from "@/lib/api-client";
+import { queryStore } from "@/lib/query-store";
 import { notificationApi } from "@/lib/api";
 import { formatDateTime, formatRelative } from "@/lib/format";
 import type { AppNotification } from "@/lib/types";
@@ -46,8 +46,7 @@ export default function NotificationsPage() {
   );
 
   const invalidate = () => {
-    apiCache.invalidate("get|/notifications");
-    void refetch();
+    queryStore.invalidate("get|/notifications");
   };
 
   const markRead = useMutation({
@@ -107,7 +106,7 @@ export default function NotificationsPage() {
 
         {error ? (
           <ErrorState message={error} onRetry={refetch} />
-        ) : isLoading ? (
+        ) : isLoading && !data ? (
           <LoadingBlock />
         ) : items.length === 0 ? (
           <EmptyState

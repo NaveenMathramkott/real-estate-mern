@@ -1,7 +1,12 @@
 import { create } from "zustand";
 
-import { ACCESS_TOKEN_KEY, apiCache } from "@/lib/api-client";
+import {
+  ACCESS_TOKEN_KEY,
+  apiCache,
+  markRefreshAvailable,
+} from "@/lib/api-client";
 import { authApi } from "@/lib/api";
+import { queryStore } from "@/lib/query-store";
 import type { User } from "@/lib/types";
 
 type AuthStatus = "idle" | "loading" | "authenticated" | "unauthenticated";
@@ -26,6 +31,12 @@ type AuthState = {
   clearError: () => void;
 };
 
+const timerHandles: number[] = [];
+
+function clearTimers() {
+  while (timerHandles.length) window.clearTimeout(timerHandles.pop());
+}
+
 export const useAuthStore = create<AuthState>((set) => ({
   user: null,
   status: "idle",
@@ -43,7 +54,8 @@ export const useAuthStore = create<AuthState>((set) => ({
       const data = await authApi.login({ email, password });
       if (data.accessToken)
         localStorage.setItem(ACCESS_TOKEN_KEY, data.accessToken);
-      apiCache.invalidate("get|");
+      queryStore.invalidate("get|");
+      markRefreshAvailable();
       set({ user: data.user, status: "authenticated" });
       return data.user;
     } catch (error) {
@@ -59,7 +71,8 @@ export const useAuthStore = create<AuthState>((set) => ({
       const data = await authApi.verifyOtp({ email, otp });
       if (data.accessToken)
         localStorage.setItem(ACCESS_TOKEN_KEY, data.accessToken);
-      apiCache.invalidate("get|");
+      queryStore.invalidate("get|");
+      markRefreshAvailable();
       set({ user: data.user, status: "authenticated", otpEmail: null });
       return data.user;
     } catch (error) {
@@ -89,7 +102,8 @@ export const useAuthStore = create<AuthState>((set) => ({
       const data = await authApi.register(payload);
       if (data.accessToken)
         localStorage.setItem(ACCESS_TOKEN_KEY, data.accessToken);
-      apiCache.invalidate("get|");
+      queryStore.invalidate("get|");
+      markRefreshAvailable();
       set({ user: data.user, status: "authenticated" });
       return data.user;
     } catch (error) {
@@ -108,15 +122,28 @@ export const useAuthStore = create<AuthState>((set) => ({
     }
     localStorage.removeItem(ACCESS_TOKEN_KEY);
     apiCache.clear();
+    queryStore.resetAll();
+    markRefreshAvailable();
     set({ user: null, status: "unauthenticated" });
   },
 
   bootstrap: async () => {
     set({ status: "loading" });
+    // Guard against an unreachable API so the shell never hangs on a spinner.
+    const timeout = new Promise<never>((_, reject) => {
+      const id = setTimeout(
+        () => reject(new Error("Auth check timed out")),
+        10000,
+      );
+      timerHandles.push(id);
+    });
     try {
-      const data = await authApi.me();
+      const data = await Promise.race([authApi.me(), timeout]);
+      clearTimers();
+      markRefreshAvailable();
       set({ user: data.user, status: "authenticated" });
     } catch {
+      clearTimers();
       localStorage.removeItem(ACCESS_TOKEN_KEY);
       set({ user: null, status: "unauthenticated" });
     }

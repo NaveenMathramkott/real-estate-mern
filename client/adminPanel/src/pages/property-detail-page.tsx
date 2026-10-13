@@ -57,7 +57,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useMutation } from "@/hooks/use-mutation";
 import { useQuery } from "@/hooks/use-query";
-import { apiCache } from "@/lib/api-client";
+import { queryStore } from "@/lib/query-store";
 import { dashboardApi, propertyApi } from "@/lib/api";
 import {
   FURNISHED,
@@ -108,15 +108,15 @@ export default function PropertyDetailPage() {
   const verify = useMutation({
     mutationFn: (next: boolean) => dashboardApi.verifyProperty(id, next),
     successMessage: "Verification updated",
-    invalidate: () => apiCache.invalidate("get|/properties", "get|/dashboard"),
+    invalidate: () =>
+      queryStore.invalidate("get|/properties", "get|/dashboard"),
   });
 
   const update = useMutation({
     mutationFn: (payload: Partial<Property>) => propertyApi.update(id, payload),
     successMessage: "Listing updated",
     invalidate: () => {
-      apiCache.invalidate("get|/properties", "get|/dashboard");
-      void detail.refetch();
+      queryStore.invalidate("get|/properties", "get|/dashboard");
     },
   });
 
@@ -124,12 +124,12 @@ export default function PropertyDetailPage() {
     mutationFn: () => propertyApi.remove(id),
     successMessage: "Listing expired",
     onSuccess: () => {
-      apiCache.invalidate("get|/properties", "get|/dashboard");
+      queryStore.invalidate("get|/properties", "get|/dashboard");
       navigate("/properties");
     },
   });
 
-  if (detail.isLoading) return <LoadingBlock />;
+  if (detail.isLoading && !detail.data) return <LoadingBlock />;
   if (detail.error)
     return <ErrorState message={detail.error} onRetry={detail.refetch} />;
 
@@ -554,7 +554,9 @@ export default function PropertyDetailPage() {
         </TabsContent>
       </Tabs>
 
+      {/* Remounts on open so the form starts from the listing's current values. */}
       <EditPropertyDialog
+        key={editing ? property._id : "closed"}
         open={editing}
         onOpenChange={setEditing}
         property={property}
@@ -670,7 +672,7 @@ function EditPropertyDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent key={property._id} className="sm:max-w-2xl">
+      <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle>Edit listing</DialogTitle>
           <DialogDescription>

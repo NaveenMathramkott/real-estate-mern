@@ -95,12 +95,10 @@ const CHART_COLORS = [
 ];
 
 export default function DashboardPage() {
-  const { data, error, isLoading, refetch } = useQuery<AdminDashboard>(
-    "get|/dashboard/admin|",
-    dashboardApi.admin,
-  );
+  const { data, error, isLoading, refetch, invalidate } =
+    useQuery<AdminDashboard>("get|/dashboard/admin|", dashboardApi.admin);
 
-  if (isLoading) return <LoadingBlock />;
+  if (isLoading && !data) return <LoadingBlock />;
   if (error) return <ErrorState message={error} onRetry={refetch} />;
   if (!data) return null;
 
@@ -131,7 +129,11 @@ export default function DashboardPage() {
         description="Live totals, verification queues and market activity across Tenementary."
         actions={
           <>
-            <Button variant="outline" onClick={refetch}>
+            <Button
+              variant="outline"
+              onClick={() => invalidate()}
+              disabled={isLoading}
+            >
               <ActivityIcon className="size-4" />
               Refresh
             </Button>
