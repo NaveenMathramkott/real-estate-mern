@@ -3,6 +3,7 @@ import propertyModel from "../models/propertyModel.js";
 import reviewModel from "../models/reviewModel.js";
 import { cache } from "../config/redis.js";
 import { errorResponse } from "../utils/errorUtils.js";
+import { validatePolygon } from "../utils/geoUtils.js";
 
 // GET /areas
 export const getAreas = async (req, res) => {
@@ -67,7 +68,18 @@ export const addArea = async (req, res) => {
       });
     }
 
-    const area = await areaModel.create({ name, city, boundary });
+    // MongoDB rejects self-intersecting rings on a 2dsphere index, so the
+    // geometry is checked here to return a readable 400.
+    const polygon = validatePolygon(boundary);
+    if (!polygon.ok) {
+      return res.status(400).json({ success: false, message: polygon.message });
+    }
+
+    const area = await areaModel.create({
+      name,
+      city,
+      boundary: polygon.value,
+    });
 
     res.status(201).json({ success: true, area });
   } catch (error) {
@@ -90,7 +102,15 @@ export const updateArea = async (req, res) => {
 
     if (name !== undefined) area.name = name;
     if (city !== undefined) area.city = city;
-    if (boundary !== undefined) area.boundary = boundary;
+    if (boundary !== undefined) {
+      const polygon = validatePolygon(boundary);
+      if (!polygon.ok) {
+        return res
+          .status(400)
+          .json({ success: false, message: polygon.message });
+      }
+      area.boundary = polygon.value;
+    }
 
     await area.save();
 
