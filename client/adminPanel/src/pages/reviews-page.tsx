@@ -19,30 +19,26 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  ReviewTargetPicker,
+  type ReviewTargetValue,
+} from "@/features/reviews/review-target-picker";
 import { useMutation } from "@/hooks/use-mutation";
 import { useQuery } from "@/hooks/use-query";
 import { queryStore } from "@/lib/query-store";
 import { reviewApi } from "@/lib/api";
 import { formatShortDate } from "@/lib/format";
-import type { Review, ReviewTargetType } from "@/lib/types";
+import type { Review } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { pickList } from "@/lib/safe";
 
-const EMPTY_DRAFT: {
-  targetType: ReviewTargetType;
-  targetId: string;
-  body: string;
-} = { targetType: "building", targetId: "", body: "" };
+const EMPTY_DRAFT: ReviewTargetValue & { body: string } = {
+  targetType: "building",
+  targetId: "",
+  body: "",
+};
 
 function Stars({
   value,
@@ -263,42 +259,12 @@ export default function ReviewsPage() {
           </DialogHeader>
 
           <div className="space-y-4">
-            <div className="space-y-1.5">
-              <Label>Target type</Label>
-              <Select
-                value={draft.targetType}
-                onValueChange={(value) =>
-                  setDraft((prev) => ({
-                    ...prev,
-                    targetType: value as ReviewTargetType,
-                  }))
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="building">Building</SelectItem>
-                  <SelectItem value="area">Area</SelectItem>
-                  <SelectItem value="agent">Agent</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-1.5">
-              <Label>Target ID</Label>
-              <Input
-                value={draft.targetId}
-                onChange={(event) =>
-                  setDraft((prev) => ({
-                    ...prev,
-                    targetId: event.target.value,
-                  }))
-                }
-                placeholder="MongoDB object id"
-                className="font-mono text-xs"
-              />
-            </div>
+            <ReviewTargetPicker
+              value={draft}
+              onChange={(target) =>
+                setDraft((prev) => ({ ...prev, ...target }))
+              }
+            />
 
             <div className="space-y-1.5">
               <Label>Rating</Label>
