@@ -1,4 +1,10 @@
-import { LandmarkIcon, PencilIcon, PlusIcon, Trash2Icon } from "lucide-react";
+import {
+  LandmarkIcon,
+  PencilIcon,
+  PlusIcon,
+  Trash2Icon,
+  UsersIcon,
+} from "lucide-react";
 import * as React from "react";
 
 import {
@@ -37,7 +43,7 @@ import { queryStore } from "@/lib/query-store";
 import { formKey } from "@/lib/utils";
 import { agencyApi, dashboardApi } from "@/lib/api";
 import { formatShortDate } from "@/lib/format";
-import { pickList, pickPagination } from "@/lib/safe";
+import { pick, pickList, pickPagination } from "@/lib/safe";
 import type { Agency } from "@/lib/types";
 
 type ListResponse = {
@@ -47,10 +53,18 @@ type ListResponse = {
   total: number;
 };
 
+type AgencyMember = {
+  _id: string;
+  name?: string;
+  avatar?: string;
+  userId: string;
+};
+
 export default function AgenciesPage() {
   const [page, setPage] = React.useState(1);
   const [verified, setVerified] = React.useState<"all" | "yes" | "no">("all");
   const [editing, setEditing] = React.useState<Agency | "new" | null>(null);
+  const [detailFor, setDetailFor] = React.useState<Agency | null>(null);
 
   const params = {
     page,
@@ -170,6 +184,14 @@ export default function AgenciesPage() {
                   <Button
                     variant="outline"
                     size="sm"
+                    onClick={() => setDetailFor(agency)}
+                  >
+                    <UsersIcon className="size-4" />
+                    Members
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
                     onClick={() => setEditing(agency)}
                   >
                     <PencilIcon className="size-4" />
@@ -206,7 +228,133 @@ export default function AgenciesPage() {
         onClose={() => setEditing(null)}
         onSaved={invalidate}
       />
+      <AgencyDetailDialog
+        agency={detailFor}
+        onClose={() => setDetailFor(null)}
+      />
     </div>
+  );
+}
+
+function AgencyDetailDialog({
+  agency,
+  onClose,
+}: {
+  agency: Agency | null;
+  onClose: () => void;
+}) {
+  const { data, isLoading, error } = useQuery<{
+    agency: Agency;
+    members: AgencyMember[];
+  }>(
+    agency ? `get|/agencies/${agency._id}|` : null,
+    () => agencyApi.detail(agency?._id ?? ""),
+    { enabled: Boolean(agency) },
+  );
+
+  const detail = pick<Agency>(data, "agency") ?? agency;
+  const members = pickList<AgencyMember>(data, "members");
+
+  return (
+    <Dialog open={Boolean(agency)} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="sm:max-w-xl">
+        <DialogHeader>
+          <DialogTitle>{detail?.name ?? agency?.name}</DialogTitle>
+          <DialogDescription>
+            Agency detail with the member profiles attached to it.
+          </DialogDescription>
+        </DialogHeader>
+
+        {isLoading ? (
+          <LoadingBlock className="py-10" />
+        ) : error ? (
+          <ErrorState message={error} />
+        ) : (
+          <div className="space-y-5">
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-1.5">
+                <p className="text-muted-foreground text-xs uppercase">
+                  Licence number
+                </p>
+                <p className="font-mono text-xs">
+                  {detail?.licenseNo ?? "Not recorded"}
+                </p>
+              </div>
+              <div className="space-y-1.5">
+                <p className="text-muted-foreground text-xs uppercase">
+                  Verification
+                </p>
+                <p className="text-sm font-medium">
+                  {detail?.verified ? "Verified" : "Unverified"}
+                </p>
+              </div>
+              <div className="space-y-1.5">
+                <p className="text-muted-foreground text-xs uppercase">
+                  Created
+                </p>
+                <p className="text-sm font-medium">
+                  {formatShortDate(detail?.createdAt)}
+                </p>
+              </div>
+              <div className="space-y-1.5">
+                <p className="text-muted-foreground text-xs uppercase">
+                  Members
+                </p>
+                <p className="text-sm font-medium tabular-nums">
+                  {members.length}
+                </p>
+              </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <p className="text-muted-foreground text-xs uppercase">
+                Member profiles
+              </p>
+              {members.length === 0 ? (
+                <p className="text-muted-foreground text-sm">
+                  No profiles reference this agency yet.
+                </p>
+              ) : (
+                <ul className="divide-border divide-y rounded-lg border">
+                  {members.map((member) => (
+                    <li
+                      key={member._id}
+                      className="flex items-center gap-3 px-3 py-2.5"
+                    >
+                      {member.avatar ? (
+                        <img
+                          src={member.avatar}
+                          alt={member.name ?? "Member"}
+                          className="size-8 shrink-0 rounded-full object-cover"
+                        />
+                      ) : (
+                        <span className="bg-primary/10 text-primary flex size-8 shrink-0 items-center justify-center rounded-full">
+                          <UsersIcon className="size-3.5" />
+                        </span>
+                      )}
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-sm font-medium">
+                          {member.name ?? "Unnamed profile"}
+                        </p>
+                        <p className="text-muted-foreground truncate font-mono text-xs">
+                          {String(member.userId)}
+                        </p>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </div>
+        )}
+
+        <DialogFooter>
+          <Button variant="outline" onClick={onClose}>
+            Close
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
 

@@ -54,6 +54,10 @@ export const authApi = {
       "/auth/otp/verify",
       payload,
     ),
+  refresh: () =>
+    api.post<ApiEnvelope & { user: User; accessToken: string }>(
+      "/auth/refresh",
+    ),
   me: () =>
     api.get<ApiEnvelope & { user: User }>("/auth/me", { cacheTtl: 15_000 }),
   health: () => api.get<ApiEnvelope & { status: string }>("/health"),
@@ -107,6 +111,8 @@ export type PropertyFilters = {
   lat?: number;
   lng?: number;
   radius?: number;
+  /** Closed GeoJSON ring as a JSON string: `[[lng,lat],…]`. */
+  polygon?: string;
   page?: number;
   limit?: number;
 };
@@ -130,6 +136,10 @@ export const propertyApi = {
       payload,
     ),
   remove: (id: string) => api.delete<ApiEnvelope>(`/properties/${id}`),
+  inquire: (id: string, message: string) =>
+    api.post<ApiEnvelope & { inquiry: Inquiry }>(`/properties/${id}/inquire`, {
+      message,
+    }),
   addMedia: (id: string, payload: Omit<PropertyMedia, "_id" | "propertyId">) =>
     api.post<ApiEnvelope & { media: PropertyMedia }>(
       `/properties/${id}/media`,
@@ -138,7 +148,7 @@ export const propertyApi = {
   reorderMedia: (id: string, mediaIds: string[]) =>
     api.patch<ApiEnvelope & { media: PropertyMedia[] }>(
       `/properties/${id}/media/reorder`,
-      { mediaIds },
+      { order: mediaIds },
     ),
   removeMedia: (id: string, mediaId: string) =>
     api.delete<ApiEnvelope>(`/properties/${id}/media/${mediaId}`),
@@ -264,9 +274,17 @@ export const agencyApi = {
       }
     >("/agencies", { params, cacheTtl: 60_000 }),
   detail: (id: string) =>
-    api.get<ApiEnvelope & { agency: Agency }>(`/agencies/${id}`, {
-      cacheTtl: 60_000,
-    }),
+    api.get<
+      ApiEnvelope & {
+        agency: Agency;
+        members: {
+          _id: string;
+          name?: string;
+          avatar?: string;
+          userId: string;
+        }[];
+      }
+    >(`/agencies/${id}`, { cacheTtl: 60_000 }),
   create: (payload: Partial<Agency>) =>
     api.post<ApiEnvelope & { agency: Agency }>("/agencies", payload),
   update: (id: string, payload: Partial<Agency>) =>
@@ -310,6 +328,12 @@ export const conversationApi = {
     api.get<ApiEnvelope & { conversations: Conversation[] }>("/conversations", {
       cacheTtl: 15_000,
     }),
+  /** Reuses an existing thread between the pair; 200 means one already existed. */
+  create: (payload: { participantId: string; propertyId?: string }) =>
+    api.post<ApiEnvelope & { conversation: Conversation; existing?: boolean }>(
+      "/conversations",
+      payload,
+    ),
   detail: (id: string) =>
     api.get<ApiEnvelope & { conversation: Conversation }>(
       `/conversations/${id}`,
@@ -386,6 +410,9 @@ export const favoriteApi = {
     api.post<ApiEnvelope & { favorite: Favorite }>("/favorites", {
       propertyId,
     }),
+  /** `DELETE /favorites` — the server also accepts the id in the body. */
+  removeByBody: (propertyId: string) =>
+    api.delete<ApiEnvelope>("/favorites", { data: { propertyId } }),
   remove: (propertyId: string) =>
     api.delete<ApiEnvelope>(`/favorites/${propertyId}`),
 };

@@ -6,6 +6,7 @@ import {
   Trash2Icon,
 } from "lucide-react";
 import * as React from "react";
+import { Link } from "react-router-dom";
 
 import {
   EmptyState,
@@ -32,9 +33,9 @@ import { useQuery } from "@/hooks/use-query";
 import { queryStore } from "@/lib/query-store";
 import { formKey } from "@/lib/utils";
 import { buildingApi } from "@/lib/api";
-import { formatShortDate } from "@/lib/format";
-import { pickList, pickPagination } from "@/lib/safe";
-import type { Building, Review } from "@/lib/types";
+import { formatCurrency, formatShortDate } from "@/lib/format";
+import { pick, pickList, pickPagination } from "@/lib/safe";
+import type { Building, Property, Review } from "@/lib/types";
 
 type ListResponse = {
   buildings: Building[];
@@ -49,6 +50,7 @@ export default function BuildingsPage() {
   const [developer, setDeveloper] = React.useState("");
   const [editing, setEditing] = React.useState<Building | "new" | null>(null);
   const [reviewsFor, setReviewsFor] = React.useState<Building | null>(null);
+  const [detailFor, setDetailFor] = React.useState<Building | null>(null);
 
   const params = {
     page,
@@ -148,6 +150,14 @@ export default function BuildingsPage() {
                   <Button
                     variant="outline"
                     size="sm"
+                    onClick={() => setDetailFor(building)}
+                  >
+                    <BuildingIcon className="size-4" />
+                    Listings
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
                     onClick={() => setReviewsFor(building)}
                   >
                     <StarIcon className="size-4" />
@@ -196,7 +206,158 @@ export default function BuildingsPage() {
         building={reviewsFor}
         onClose={() => setReviewsFor(null)}
       />
+      <BuildingDetailDialog
+        building={detailFor}
+        onClose={() => setDetailFor(null)}
+      />
     </div>
+  );
+}
+
+function BuildingDetailDialog({
+  building,
+  onClose,
+}: {
+  building: Building | null;
+  onClose: () => void;
+}) {
+  const { data, isLoading, error } = useQuery<{
+    building: Building;
+    properties: Property[];
+  }>(
+    building ? `get|/buildings/${building._id}|` : null,
+    () => buildingApi.detail(building?._id ?? ""),
+    { enabled: Boolean(building) },
+  );
+
+  const detail = pick<Building>(data, "building") ?? building;
+  const properties = pickList<Property>(data, "properties");
+
+  return (
+    <Dialog
+      open={Boolean(building)}
+      onOpenChange={(open) => !open && onClose()}
+    >
+      <DialogContent className="sm:max-w-2xl">
+        <DialogHeader>
+          <DialogTitle>{detail?.name ?? building?.name}</DialogTitle>
+          <DialogDescription>
+            Building detail with its currently active listings.
+          </DialogDescription>
+        </DialogHeader>
+
+        {isLoading ? (
+          <LoadingBlock className="py-10" />
+        ) : error ? (
+          <ErrorState message={error} />
+        ) : (
+          <div className="space-y-5">
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-1.5">
+                <p className="text-muted-foreground text-xs uppercase">
+                  Developer
+                </p>
+                <p className="text-sm font-medium">
+                  {detail?.developer ?? "—"}
+                </p>
+              </div>
+              <div className="space-y-1.5">
+                <p className="text-muted-foreground text-xs uppercase">
+                  Year built
+                </p>
+                <p className="text-sm font-medium tabular-nums">
+                  {detail?.yearBuilt ?? "—"}
+                </p>
+              </div>
+              <div className="space-y-1.5">
+                <p className="text-muted-foreground text-xs uppercase">
+                  Coordinates (lng, lat)
+                </p>
+                <p className="font-mono text-xs">
+                  {detail?.location?.coordinates
+                    ? detail.location.coordinates
+                        .map((value) => value.toFixed(4))
+                        .join(", ")
+                    : "—"}
+                </p>
+              </div>
+              <div className="space-y-1.5">
+                <p className="text-muted-foreground text-xs uppercase">
+                  Active listings
+                </p>
+                <p className="text-sm font-medium tabular-nums">
+                  {properties.length}
+                </p>
+              </div>
+            </div>
+
+            {detail?.amenities && detail.amenities.length > 0 && (
+              <div className="space-y-1.5">
+                <p className="text-muted-foreground text-xs uppercase">
+                  Amenities
+                </p>
+                <div className="flex flex-wrap gap-1.5">
+                  {detail.amenities.map((amenity) => (
+                    <Badge
+                      key={amenity}
+                      variant="secondary"
+                      className="capitalize"
+                    >
+                      {amenity}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <div className="space-y-1.5">
+              <p className="text-muted-foreground text-xs uppercase">
+                Active listings
+              </p>
+              {properties.length === 0 ? (
+                <p className="text-muted-foreground text-sm">
+                  No active listings reference this building.
+                </p>
+              ) : (
+                <ul className="divide-border divide-y rounded-lg border">
+                  {properties.map((property) => (
+                    <li key={property._id}>
+                      <Link
+                        to={`/properties/${property._id}`}
+                        className="hover:bg-accent/40 flex items-center gap-3 px-3 py-2.5 transition-colors"
+                      >
+                        <div className="min-w-0 flex-1">
+                          <p className="truncate text-sm font-medium">
+                            {property.title}
+                          </p>
+                          <p className="text-muted-foreground truncate text-xs">
+                            {property.address ?? "No address"} ·{" "}
+                            {property.beds ?? 0} bd
+                          </p>
+                        </div>
+                        <span className="text-sm font-medium tabular-nums">
+                          {formatCurrency(
+                            property.price,
+                            property.currency,
+                            true,
+                          )}
+                        </span>
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </div>
+        )}
+
+        <DialogFooter>
+          <Button variant="outline" onClick={onClose}>
+            Close
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
 

@@ -16,6 +16,7 @@ const PropertiesPage = lazy(() => import("@/pages/properties-page"));
 const PropertyDetailPage = lazy(() => import("@/pages/property-detail-page"));
 const ProfilePage = lazy(() => import("@/pages/profile-page"));
 const ReviewsPage = lazy(() => import("@/pages/reviews-page"));
+const ShortlistsPage = lazy(() => import("@/pages/shortlists-page"));
 const SearchPage = lazy(() => import("@/pages/search-page"));
 const UsersPage = lazy(() => import("@/pages/users-page"));
 import { setUnauthorizedHandler } from "@/lib/api-client";
@@ -76,6 +77,7 @@ export default function AppRoutes() {
           <Route path="conversations" element={<ConversationsPage />} />
           <Route path="notifications" element={<NotificationsPage />} />
           <Route path="reviews" element={<ReviewsPage />} />
+          <Route path="shortlists" element={<ShortlistsPage />} />
           <Route path="analytics" element={<AnalyticsPage />} />
           <Route path="profile" element={<ProfilePage />} />
         </Route>

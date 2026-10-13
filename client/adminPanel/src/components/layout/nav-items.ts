@@ -5,6 +5,7 @@ import {
   FileTextIcon,
   LayoutDashboardIcon,
   MapIcon,
+  HeartIcon,
   MessageSquareIcon,
   RadarIcon,
   StarIcon,
@@ -49,6 +50,7 @@ export const navGroups: NavGroup[] = [
     label: "Engagement",
     items: [
       { title: "Reviews", to: "/reviews", icon: StarIcon },
+      { title: "Shortlists", to: "/shortlists", icon: HeartIcon },
       { title: "Conversations", to: "/conversations", icon: MessageSquareIcon },
       { title: "Notifications", to: "/notifications", icon: BellIcon },
     ],

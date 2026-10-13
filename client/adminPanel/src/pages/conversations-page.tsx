@@ -1,4 +1,9 @@
-import { CheckCheckIcon, MessagesSquareIcon, SendIcon } from "lucide-react";
+import {
+  CheckCheckIcon,
+  MessagesSquareIcon,
+  PlusIcon,
+  SendIcon,
+} from "lucide-react";
 import * as React from "react";
 
 import {
@@ -11,7 +16,16 @@ import {
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useMutation } from "@/hooks/use-mutation";
 import { useQuery } from "@/hooks/use-query";
@@ -27,6 +41,7 @@ export default function ConversationsPage() {
   const currentUser = useAuthStore((s) => s.user);
   const [selectedId, setSelectedId] = React.useState<string | null>(null);
   const [draft, setDraft] = React.useState("");
+  const [starting, setStarting] = React.useState(false);
 
   const list = useQuery<{ conversations: Conversation[] }>(
     "get|/conversations|",
@@ -59,6 +74,17 @@ export default function ConversationsPage() {
     onSuccess: () => queryStore.invalidate("get|/conversations"),
   });
 
+  const startThread = useMutation({
+    mutationFn: (payload: { participantId: string; propertyId?: string }) =>
+      conversationApi.create(payload),
+    successMessage: (data) =>
+      data.existing ? "Existing thread opened" : "Conversation started",
+    onSuccess: (data) => {
+      setSelectedId(data.conversation._id);
+      queryStore.invalidate("get|/conversations");
+    },
+  });
+
   const active = conversations.find((c) => c._id === activeId);
 
   const otherParticipant = (conversation?: Conversation) =>
@@ -69,6 +95,12 @@ export default function ConversationsPage() {
       <PageHeader
         title="Conversations"
         description="Threads between buyers and agents. Realtime delivery shares one path with REST."
+        actions={
+          <Button onClick={() => setStarting(true)}>
+            <PlusIcon className="size-4" />
+            New conversation
+          </Button>
+        }
       />
 
       {list.error ? (
@@ -82,6 +114,13 @@ export default function ConversationsPage() {
               <EmptyState
                 icon={MessagesSquareIcon}
                 title="No conversations yet"
+                description="Start a thread with a user id to open a conversation."
+                action={
+                  <Button onClick={() => setStarting(true)}>
+                    <PlusIcon className="size-4" />
+                    Start one
+                  </Button>
+                }
               />
             ) : (
               <ul className="max-h-[560px] overflow-y-auto">
@@ -218,6 +257,101 @@ export default function ConversationsPage() {
           </Panel>
         </div>
       )}
+
+      <StartThreadDialog
+        key={starting ? "open" : "closed"}
+        open={starting}
+        onOpenChange={setStarting}
+        onSubmit={(payload) => startThread.mutateAsync(payload)}
+        pending={startThread.isPending}
+      />
     </div>
+  );
+}
+
+function StartThreadDialog({
+  open,
+  onOpenChange,
+  onSubmit,
+  pending,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onSubmit: (payload: {
+    participantId: string;
+    propertyId?: string;
+  }) => Promise<unknown>;
+  pending: boolean;
+}) {
+  const [participantId, setParticipantId] = React.useState("");
+  const [propertyId, setPropertyId] = React.useState("");
+  const [error, setError] = React.useState<string>();
+
+  const submit = async () => {
+    setError(undefined);
+    const participant = participantId.trim();
+    if (!participant) {
+      setError("Participant user id is required");
+      return;
+    }
+    try {
+      await onSubmit({
+        participantId: participant,
+        propertyId: propertyId.trim() || undefined,
+      });
+      onOpenChange(false);
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Could not start the conversation",
+      );
+    }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-lg">
+        <DialogHeader>
+          <DialogTitle>Start a conversation</DialogTitle>
+          <DialogDescription>
+            An existing thread between the same pair is reused, so this never
+            creates a duplicate.
+          </DialogDescription>
+        </DialogHeader>
+
+        {error && (
+          <div className="border-destructive/40 bg-destructive/8 text-destructive rounded-lg border px-3 py-2 text-sm">
+            {error}
+          </div>
+        )}
+
+        <div className="space-y-4">
+          <div className="space-y-1.5">
+            <Label>Participant user id</Label>
+            <Input
+              value={participantId}
+              onChange={(event) => setParticipantId(event.target.value)}
+              placeholder="6ace16cc066d213846840f88"
+            />
+          </div>
+          <div className="space-y-1.5">
+            <Label>Property id (optional)</Label>
+            <Input
+              value={propertyId}
+              onChange={(event) => setPropertyId(event.target.value)}
+              placeholder="Attach the thread to a listing"
+            />
+          </div>
+        </div>
+
+        <DialogFooter>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
+            Cancel
+          </Button>
+          <Button disabled={pending} onClick={() => void submit()}>
+            Start conversation
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }

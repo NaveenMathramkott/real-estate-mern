@@ -4,6 +4,7 @@ import {
   Building2Icon,
   LayoutGridIcon,
   ListIcon,
+  PlusIcon,
   RotateCcwIcon,
   SearchIcon,
   SlidersHorizontalIcon,
@@ -54,6 +55,8 @@ import { useQuery } from "@/hooks/use-query";
 import { queryStore } from "@/lib/query-store";
 import { dashboardApi, propertyApi, type PropertyFilters } from "@/lib/api";
 import {
+  AMENITIES,
+  CURRENCIES,
   FURNISHED,
   PROPERTY_STATUSES,
   PROPERTY_TYPES,
@@ -73,6 +76,7 @@ export default function PropertiesPage() {
   const [page, setPage] = React.useState(1);
   const [view, setView] = React.useState<"table" | "grid">("table");
   const [filtersOpen, setFiltersOpen] = React.useState(false);
+  const [creating, setCreating] = React.useState(false);
 
   const query: PropertyFilters = {
     ...filters,
@@ -96,6 +100,14 @@ export default function PropertiesPage() {
     mutationFn: ({ id, next }: { id: string; next: boolean }) =>
       dashboardApi.verifyProperty(id, next),
     successMessage: "Listing verification updated",
+    invalidate: () => {
+      queryStore.invalidate("get|/properties", "get|/dashboard");
+    },
+  });
+
+  const create = useMutation({
+    mutationFn: (payload: Partial<Property>) => propertyApi.create(payload),
+    successMessage: "Listing created",
     invalidate: () => {
       queryStore.invalidate("get|/properties", "get|/dashboard");
     },
@@ -143,6 +155,10 @@ export default function PropertiesPage() {
                   {activeFilterCount}
                 </Badge>
               )}
+            </Button>
+            <Button onClick={() => setCreating(true)}>
+              <PlusIcon className="size-4" />
+              New listing
             </Button>
           </>
         }
@@ -340,7 +356,336 @@ export default function PropertiesPage() {
           setPage(1);
         }}
       />
+
+      {/* Remounts on open so the form starts from a blank listing. */}
+      <CreatePropertyDialog
+        key={creating ? "open" : "closed"}
+        open={creating}
+        onOpenChange={setCreating}
+        onSubmit={(payload) => create.mutateAsync(payload)}
+        pending={create.isPending}
+      />
     </div>
+  );
+}
+
+function CreatePropertyDialog({
+  open,
+  onOpenChange,
+  onSubmit,
+  pending,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onSubmit: (payload: Partial<Property>) => Promise<unknown>;
+  pending: boolean;
+}) {
+  const [draft, setDraft] = React.useState(() => ({
+    title: "",
+    description: "",
+    type: "apartment" as Property["type"],
+    purpose: "rent" as Property["purpose"],
+    price: "",
+    currency: "INR",
+    size: "",
+    beds: "",
+    baths: "",
+    furnished: "unfurnished" as NonNullable<Property["furnished"]>,
+    address: "",
+    lat: "",
+    lng: "",
+    amenities: [] as string[],
+    status: "active" as Property["status"],
+  }));
+  const [error, setError] = React.useState<string>();
+
+  const set = (patch: Partial<typeof draft>) =>
+    setDraft((prev) => ({ ...prev, ...patch }));
+
+  const number = (value: string) =>
+    value.trim() === "" ? undefined : Number(value);
+
+  const submit = async () => {
+    setError(undefined);
+    const lat = number(draft.lat);
+    const lng = number(draft.lng);
+
+    if (!draft.title.trim()) {
+      setError("Title is required");
+      return;
+    }
+    if (lat === undefined || lng === undefined) {
+      setError(
+        "Location is required — GeoJSON coordinates are [lng, lat] in that order.",
+      );
+      return;
+    }
+
+    try {
+      await onSubmit({
+        title: draft.title,
+        description: draft.description || undefined,
+        type: draft.type,
+        purpose: draft.purpose,
+        price: Number(draft.price),
+        currency: draft.currency,
+        size: number(draft.size),
+        beds: number(draft.beds),
+        baths: number(draft.baths),
+        furnished: draft.furnished,
+        address: draft.address || undefined,
+        location: { type: "Point", coordinates: [lng, lat] },
+        amenities: draft.amenities,
+        status: draft.status,
+      });
+      onOpenChange(false);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Could not create listing");
+    }
+  };
+
+  const toggleAmenity = (amenity: string) =>
+    setDraft((prev) => ({
+      ...prev,
+      amenities: prev.amenities.includes(amenity)
+        ? prev.amenities.filter((item) => item !== amenity)
+        : [...prev.amenities, amenity],
+    }));
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-2xl sm:max-w-6xl h-11/12 overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>Create listing</DialogTitle>
+          <DialogDescription>
+            You are recorded as both owner and assigned agent. Location uses
+            GeoJSON <span className="font-mono">[lng, lat]</span> order.
+          </DialogDescription>
+        </DialogHeader>
+
+        {error && (
+          <div className="border-destructive/40 bg-destructive/8 text-destructive rounded-lg border px-3 py-2 text-sm">
+            {error}
+          </div>
+        )}
+
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div className="space-y-1.5 sm:col-span-2">
+            <Label>Title</Label>
+            <Input
+              value={draft.title}
+              onChange={(event) => set({ title: event.target.value })}
+              placeholder="2 BHK apartment in Connaught Place"
+            />
+          </div>
+
+          <Field label="Type">
+            <Select
+              value={draft.type}
+              onValueChange={(value) =>
+                set({ type: value as typeof draft.type })
+              }
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {PROPERTY_TYPES.map((type) => (
+                  <SelectItem key={type} value={type} className="capitalize">
+                    {type}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </Field>
+
+          <Field label="Purpose">
+            <Select
+              value={draft.purpose}
+              onValueChange={(value) =>
+                set({ purpose: value as typeof draft.purpose })
+              }
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {PURPOSES.map((purpose) => (
+                  <SelectItem
+                    key={purpose}
+                    value={purpose}
+                    className="capitalize"
+                  >
+                    {purpose}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </Field>
+
+          <Field label="Price">
+            <Input
+              inputMode="numeric"
+              value={draft.price}
+              onChange={(event) => set({ price: event.target.value })}
+              placeholder="42000"
+            />
+          </Field>
+
+          <Field label="Currency">
+            <Select
+              value={draft.currency}
+              onValueChange={(value) => set({ currency: value })}
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {CURRENCIES.map((currency) => (
+                  <SelectItem key={currency} value={currency}>
+                    {currency}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </Field>
+
+          <Field label="Bedrooms">
+            <Input
+              inputMode="numeric"
+              value={draft.beds}
+              onChange={(event) => set({ beds: event.target.value })}
+            />
+          </Field>
+
+          <Field label="Bathrooms">
+            <Input
+              inputMode="numeric"
+              value={draft.baths}
+              onChange={(event) => set({ baths: event.target.value })}
+            />
+          </Field>
+
+          <Field label="Carpet area (sq.ft)">
+            <Input
+              inputMode="numeric"
+              value={draft.size}
+              onChange={(event) => set({ size: event.target.value })}
+            />
+          </Field>
+
+          <Field label="Furnishing">
+            <Select
+              value={draft.furnished}
+              onValueChange={(value) =>
+                set({ furnished: value as typeof draft.furnished })
+              }
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {FURNISHED.map((value) => (
+                  <SelectItem key={value} value={value} className="capitalize">
+                    {value}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </Field>
+
+          <Field label="Initial status">
+            <Select
+              value={draft.status}
+              onValueChange={(value) =>
+                set({ status: value as typeof draft.status })
+              }
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {PROPERTY_STATUSES.map((status) => (
+                  <SelectItem
+                    key={status}
+                    value={status}
+                    className="capitalize"
+                  >
+                    {status}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </Field>
+
+          <Field label="Coordinates" className="sm:col-span-2">
+            <div className="flex gap-2">
+              <Input
+                inputMode="decimal"
+                value={draft.lat}
+                onChange={(event) => set({ lat: event.target.value })}
+                placeholder="lat 28.6139"
+              />
+              <Input
+                inputMode="decimal"
+                value={draft.lng}
+                onChange={(event) => set({ lng: event.target.value })}
+                placeholder="lng 77.2090"
+              />
+            </div>
+          </Field>
+
+          <Field label="Address" className="sm:col-span-2">
+            <Input
+              value={draft.address}
+              onChange={(event) => set({ address: event.target.value })}
+              placeholder="Connaught Place, New Delhi"
+            />
+          </Field>
+
+          <Field label="Description" className="sm:col-span-2">
+            <textarea
+              value={draft.description}
+              onChange={(event) => set({ description: event.target.value })}
+              rows={3}
+              className="border-input focus-visible:border-ring focus-visible:ring-ring/50 w-full rounded-md border bg-transparent px-3 py-2 text-sm shadow-xs outline-none focus-visible:ring-[3px]"
+            />
+          </Field>
+
+          <Field label="Amenities" className="sm:col-span-2">
+            <div className="flex flex-wrap gap-1.5">
+              {AMENITIES.map((amenity) => {
+                const active = draft.amenities.includes(amenity);
+                return (
+                  <button
+                    key={amenity}
+                    type="button"
+                    onClick={() => toggleAmenity(amenity)}
+                    className={cn(
+                      "rounded-md border px-2 py-1 text-xs capitalize transition-colors",
+                      active
+                        ? "border-primary bg-primary/10 text-primary"
+                        : "text-muted-foreground hover:bg-accent",
+                    )}
+                  >
+                    {amenity}
+                  </button>
+                );
+              })}
+            </div>
+          </Field>
+        </div>
+
+        <DialogFooter>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
+            Cancel
+          </Button>
+          <Button disabled={pending} onClick={() => void submit()}>
+            Create listing
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
 
@@ -524,6 +869,21 @@ function FiltersDialog({
                 className="max-w-20"
               />
             </div>
+          </Field>
+          <Field
+            label="Draw-area polygon (JSON ring)"
+            className="sm:col-span-2"
+          >
+            <Input
+              value={draft.polygon ?? ""}
+              onChange={(event) =>
+                set({ polygon: event.target.value || undefined })
+              }
+              placeholder="[[77.19,28.60],[77.23,28.60],[77.23,28.63],[77.19,28.60]]"
+            />
+            <p className="text-muted-foreground text-xs">
+              The ring must be closed — repeat the first point last.
+            </p>
           </Field>
           <Field label="Per page" className="sm:col-span-2">
             <Select

@@ -27,14 +27,15 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useMutation } from "@/hooks/use-mutation";
 import { useQuery } from "@/hooks/use-query";
 import { queryStore } from "@/lib/query-store";
-import { dashboardApi } from "@/lib/api";
+import { dashboardApi, profileApi } from "@/lib/api";
 import { formatRelative, initials } from "@/lib/format";
 import { pick, pickList } from "@/lib/safe";
-import type { AdminDashboard, User } from "@/lib/types";
+import type { AdminDashboard, Profile, User } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 export default function UsersPage() {
@@ -238,6 +239,81 @@ function UserTable({
   );
 }
 
+/**
+ * Public profile for the account, from `GET /profiles/{userId}`. Registration
+ * only creates a profile when a name was supplied, so 404 is expected and
+ * reported as a plain empty state rather than an error.
+ */
+function ProfilePanel({ userId }: { userId: string }) {
+  const { data, isLoading, error, refetch } = useQuery<{ profile: Profile }>(
+    `get|/profiles/${userId}|`,
+    () => profileApi.of(userId),
+    { enabled: Boolean(userId) },
+  );
+
+  const profile = pick<Profile>(data, "profile");
+  const userIdValue = profile?.userId;
+  const linkedId =
+    typeof userIdValue === "string" ? userIdValue : userIdValue?._id;
+
+  return (
+    <div className="border-t pt-5">
+      <p className="text-muted-foreground mb-3 text-xs tracking-wide uppercase">
+        Public profile
+      </p>
+
+      {isLoading ? (
+        <Skeleton className="h-12 w-full" />
+      ) : error ? (
+        <div className="flex items-center gap-3">
+          <p className="text-muted-foreground text-sm">
+            No profile on record for this account.
+          </p>
+          <Button variant="ghost" size="sm" onClick={() => void refetch()}>
+            Retry
+          </Button>
+        </div>
+      ) : profile ? (
+        <div className="grid gap-4 sm:grid-cols-2">
+          <KeyValue label="Display name">{profile.name ?? "—"}</KeyValue>
+          <KeyValue label="User id">
+            <span className="font-mono text-xs">{linkedId ?? userId}</span>
+          </KeyValue>
+          <KeyValue label="Agency">
+            <span className="font-mono text-xs">{profile.agencyId ?? "—"}</span>
+          </KeyValue>
+          <KeyValue label="Avatar">
+            {profile.avatar ? (
+              <a
+                href={profile.avatar}
+                target="_blank"
+                rel="noreferrer"
+                className="text-primary text-xs underline underline-offset-2"
+              >
+                Open image
+              </a>
+            ) : (
+              "—"
+            )}
+          </KeyValue>
+          {profile.bio && (
+            <div className="space-y-1.5 sm:col-span-2">
+              <span className="text-muted-foreground text-xs tracking-wide uppercase">
+                Bio
+              </span>
+              <p className="text-sm">{profile.bio}</p>
+            </div>
+          )}
+        </div>
+      ) : (
+        <p className="text-muted-foreground text-sm">
+          No profile on record for this account.
+        </p>
+      )}
+    </div>
+  );
+}
+
 function UserDetailDialog({
   user,
   onClose,
@@ -299,6 +375,8 @@ function UserDetailDialog({
                 )}
               </KeyValue>
             </div>
+
+            <ProfilePanel userId={user._id} />
           </div>
         )}
 

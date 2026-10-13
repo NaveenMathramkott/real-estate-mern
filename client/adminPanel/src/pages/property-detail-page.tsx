@@ -3,10 +3,14 @@ import {
   BadgeCheckIcon,
   Building2Icon,
   CalendarIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
   FilmIcon,
   ImageIcon,
   MapPinIcon,
+  MessageSquarePlusIcon,
   PencilIcon,
+  PlusIcon,
   StarIcon,
   Trash2Icon,
   TrendingDownIcon,
@@ -61,6 +65,7 @@ import { queryStore } from "@/lib/query-store";
 import { dashboardApi, propertyApi } from "@/lib/api";
 import {
   FURNISHED,
+  MEDIA_TYPES,
   PROPERTY_STATUSES,
   PROPERTY_TYPES,
   PURPOSES,
@@ -87,6 +92,8 @@ export default function PropertyDetailPage() {
   const { id = "" } = useParams();
   const navigate = useNavigate();
   const [editing, setEditing] = React.useState(false);
+  const [addingMedia, setAddingMedia] = React.useState(false);
+  const [inquiring, setInquiring] = React.useState(false);
 
   const detail = useQuery<Detail>(`get|/properties/${id}|`, () =>
     propertyApi.detail(id),
@@ -129,6 +136,30 @@ export default function PropertyDetailPage() {
     },
   });
 
+  const addMedia = useMutation({
+    mutationFn: (payload: Omit<PropertyMedia, "_id" | "propertyId">) =>
+      propertyApi.addMedia(id, payload),
+    successMessage: "Media attached",
+    invalidate: () => queryStore.invalidate(`get|/properties/${id}`),
+  });
+
+  const reorderMedia = useMutation({
+    mutationFn: (mediaIds: string[]) => propertyApi.reorderMedia(id, mediaIds),
+    invalidate: () => queryStore.invalidate(`get|/properties/${id}`),
+  });
+
+  const removeMedia = useMutation({
+    mutationFn: (mediaId: string) => propertyApi.removeMedia(id, mediaId),
+    successMessage: "Media removed",
+    invalidate: () => queryStore.invalidate(`get|/properties/${id}`),
+  });
+
+  const inquire = useMutation({
+    mutationFn: (message: string) => propertyApi.inquire(id, message),
+    successMessage: "Inquiry sent",
+    invalidate: () => queryStore.invalidate("get|/inquiries"),
+  });
+
   if (detail.isLoading && !detail.data) return <LoadingBlock />;
   if (detail.error)
     return <ErrorState message={detail.error} onRetry={detail.refetch} />;
@@ -160,6 +191,10 @@ export default function PropertyDetailPage() {
         description={property.address ?? "No address on record"}
         actions={
           <>
+            <Button variant="outline" onClick={() => setInquiring(true)}>
+              <MessageSquarePlusIcon className="size-4" />
+              Send inquiry
+            </Button>
             <Button variant="outline" onClick={() => setEditing(true)}>
               <PencilIcon className="size-4" />
               Edit
@@ -294,22 +329,56 @@ export default function PropertyDetailPage() {
       <Panel
         title="Media"
         description={`${media.length} asset${media.length === 1 ? "" : "s"} attached`}
+        action={
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setAddingMedia(true)}
+          >
+            <PlusIcon className="size-4" />
+            Attach media
+          </Button>
+        }
       >
         {media.length === 0 ? (
           <EmptyState
             icon={ImageIcon}
             title="No media attached"
             description="Attach images, video, floorplans or virtual tours from the listing API."
+            action={
+              <Button onClick={() => setAddingMedia(true)}>
+                <PlusIcon className="size-4" />
+                Attach the first asset
+              </Button>
+            }
           />
         ) : (
-          <div className="grid gap-3 p-5 sm:grid-cols-2 lg:grid-cols-4">
-            {images.map((item) => (
-              <MediaTile key={item._id} item={item} />
-            ))}
-            {others.map((item) => (
-              <MediaTile key={item._id} item={item} />
-            ))}
-          </div>
+          <>
+            <div className="grid gap-3 p-5 sm:grid-cols-2 lg:grid-cols-4">
+              {[...images, ...others].map((item, index) => (
+                <MediaTile
+                  key={item._id}
+                  item={item}
+                  busy={reorderMedia.isPending || removeMedia.isPending}
+                  onMove={(direction) => {
+                    const order = [...images, ...others].map((m) => m._id);
+                    const target = index + direction;
+                    if (target < 0 || target >= order.length) return;
+                    [order[index], order[target]] = [
+                      order[target],
+                      order[index],
+                    ];
+                    reorderMedia.mutate(order);
+                  }}
+                  onRemove={() => removeMedia.mutate(item._id)}
+                />
+              ))}
+            </div>
+            <p className="text-muted-foreground border-t px-5 py-3 text-xs">
+              Reordering writes the full order array in one call, so every
+              position lands in a single round trip.
+            </p>
+          </>
         )}
       </Panel>
 
@@ -563,11 +632,230 @@ export default function PropertyDetailPage() {
         onSubmit={(payload) => update.mutateAsync(payload)}
         pending={update.isPending}
       />
+      <AddMediaDialog
+        key={addingMedia ? "open" : "closed"}
+        open={addingMedia}
+        onOpenChange={setAddingMedia}
+        nextOrder={media.length}
+        onSubmit={(payload) => addMedia.mutateAsync(payload)}
+        pending={addMedia.isPending}
+      />
+      <InquireDialog
+        key={inquiring ? property._id : "closed"}
+        open={inquiring}
+        onOpenChange={setInquiring}
+        title={property.title}
+        onSubmit={(message) => inquire.mutateAsync(message)}
+        pending={inquire.isPending}
+      />
     </div>
   );
 }
 
-function MediaTile({ item }: { item: PropertyMedia }) {
+function AddMediaDialog({
+  open,
+  onOpenChange,
+  nextOrder,
+  onSubmit,
+  pending,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  nextOrder: number;
+  onSubmit: (
+    payload: Omit<PropertyMedia, "_id" | "propertyId">,
+  ) => Promise<unknown>;
+  pending: boolean;
+}) {
+  const [draft, setDraft] = React.useState(() => ({
+    type: "image" as PropertyMedia["type"],
+    url: "",
+    publicId: "",
+    blurhash: "",
+    order: String(nextOrder),
+  }));
+
+  const submit = async () => {
+    await onSubmit({
+      type: draft.type,
+      url: draft.url,
+      publicId: draft.publicId || undefined,
+      blurhash: draft.blurhash || undefined,
+      order: Number(draft.order) || 0,
+    });
+    onOpenChange(false);
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-lg">
+        <DialogHeader>
+          <DialogTitle>Attach media</DialogTitle>
+          <DialogDescription>
+            Uploads take a hosted URL — multipart uploads need a multipart
+            middleware on the server.
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="space-y-4">
+          <div className="space-y-1.5">
+            <Label>Type</Label>
+            <Select
+              value={draft.type}
+              onValueChange={(value) =>
+                setDraft((prev) => ({
+                  ...prev,
+                  type: value as PropertyMedia["type"],
+                }))
+              }
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {MEDIA_TYPES.map((type) => (
+                  <SelectItem key={type} value={type} className="capitalize">
+                    {type}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-1.5">
+            <Label>URL</Label>
+            <Input
+              value={draft.url}
+              onChange={(event) =>
+                setDraft((prev) => ({ ...prev, url: event.target.value }))
+              }
+              placeholder="https://res.cloudinary.com/…"
+            />
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="space-y-1.5">
+              <Label>Public ID</Label>
+              <Input
+                value={draft.publicId}
+                onChange={(event) =>
+                  setDraft((prev) => ({
+                    ...prev,
+                    publicId: event.target.value,
+                  }))
+                }
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label>Blurhash</Label>
+              <Input
+                value={draft.blurhash}
+                onChange={(event) =>
+                  setDraft((prev) => ({
+                    ...prev,
+                    blurhash: event.target.value,
+                  }))
+                }
+              />
+            </div>
+          </div>
+
+          <div className="space-y-1.5">
+            <Label>Display order</Label>
+            <Input
+              inputMode="numeric"
+              value={draft.order}
+              onChange={(event) =>
+                setDraft((prev) => ({ ...prev, order: event.target.value }))
+              }
+            />
+          </div>
+        </div>
+
+        <DialogFooter>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
+            Cancel
+          </Button>
+          <Button
+            disabled={pending || !draft.url.trim()}
+            onClick={() => void submit()}
+          >
+            Attach
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function InquireDialog({
+  open,
+  onOpenChange,
+  title,
+  onSubmit,
+  pending,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  title: string;
+  onSubmit: (message: string) => Promise<unknown>;
+  pending: boolean;
+}) {
+  const [message, setMessage] = React.useState("");
+
+  const submit = async () => {
+    await onSubmit(message.trim());
+    onOpenChange(false);
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-lg">
+        <DialogHeader>
+          <DialogTitle>Send inquiry</DialogTitle>
+          <DialogDescription>
+            Routed to the assigned agent, or the owner when none is set.
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="space-y-1.5">
+          <Label>Message about {title}</Label>
+          <textarea
+            value={message}
+            onChange={(event) => setMessage(event.target.value)}
+            rows={4}
+            placeholder="Is this still available? Can I schedule a viewing?"
+            className="border-input focus-visible:border-ring focus-visible:ring-ring/50 w-full rounded-md border bg-transparent px-3 py-2 text-sm shadow-xs outline-none focus-visible:ring-[3px]"
+          />
+        </div>
+
+        <DialogFooter>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
+            Cancel
+          </Button>
+          <Button
+            disabled={pending || !message.trim()}
+            onClick={() => void submit()}
+          >
+            Send inquiry
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function MediaTile({
+  item,
+  busy,
+  onMove,
+  onRemove,
+}: {
+  item: PropertyMedia;
+  busy?: boolean;
+  onMove?: (direction: -1 | 1) => void;
+  onRemove?: () => void;
+}) {
   const Icon =
     item.type === "image"
       ? ImageIcon
@@ -585,14 +873,53 @@ function MediaTile({ item }: { item: PropertyMedia }) {
           className="h-32 w-full object-cover transition-transform duration-300 group-hover:scale-105"
         />
       ) : (
-        <div className="flex h-32 w-full items-center justify-center">
+        <a
+          href={item.url}
+          target="_blank"
+          rel="noreferrer"
+          className="flex h-32 w-full items-center justify-center"
+        >
           <Icon className="text-muted-foreground size-6" />
-        </div>
+        </a>
       )}
       <div className="absolute inset-x-0 bottom-0 flex items-center justify-between bg-gradient-to-t from-black/70 to-transparent px-2.5 pt-6 pb-1.5 text-white">
         <span className="text-[11px] font-medium capitalize">{item.type}</span>
         <span className="text-[11px] opacity-80">#{item.order}</span>
       </div>
+      {onMove && onRemove && (
+        <div className="absolute top-2 right-2 flex gap-1 opacity-0 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100">
+          <Button
+            variant="secondary"
+            size="icon-sm"
+            className="size-7"
+            disabled={busy}
+            aria-label="Move earlier"
+            onClick={() => onMove(-1)}
+          >
+            <ChevronLeftIcon className="size-3.5" />
+          </Button>
+          <Button
+            variant="secondary"
+            size="icon-sm"
+            className="size-7"
+            disabled={busy}
+            aria-label="Move later"
+            onClick={() => onMove(1)}
+          >
+            <ChevronRightIcon className="size-3.5" />
+          </Button>
+          <Button
+            variant="destructive"
+            size="icon-sm"
+            className="size-7"
+            disabled={busy}
+            aria-label="Remove media"
+            onClick={onRemove}
+          >
+            <Trash2Icon className="size-3.5" />
+          </Button>
+        </div>
+      )}
     </div>
   );
 }

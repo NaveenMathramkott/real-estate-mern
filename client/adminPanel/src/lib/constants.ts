@@ -45,6 +45,8 @@ export const CURRENCIES = ["INR", "USD", "EUR", "GBP", "AED", "SGD"];
 export const LOCALES = ["en", "hi", "fr", "de", "es", "ar"];
 export const ALERT_FREQUENCIES = ["off", "daily", "weekly", "instant"] as const;
 
+export const MEDIA_TYPES = ["image", "video", "floorplan", "tour"] as const;
+
 export const ROLE_VARIANT: Record<
   string,
   "default" | "secondary" | "warning" | "muted"

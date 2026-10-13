@@ -1,5 +1,6 @@
 import {
   ChartNoAxesColumnIcon,
+  InfoIcon,
   MapIcon,
   PencilIcon,
   PlusIcon,
@@ -59,6 +60,7 @@ export default function AreasPage() {
   const [city, setCity] = React.useState("");
   const [editing, setEditing] = React.useState<Area | "new" | null>(null);
   const [insightsFor, setInsightsFor] = React.useState<Area | null>(null);
+  const [detailFor, setDetailFor] = React.useState<Area | null>(null);
 
   const params = {
     page,
@@ -155,6 +157,14 @@ export default function AreasPage() {
                   <Button
                     variant="outline"
                     size="sm"
+                    onClick={() => setDetailFor(area)}
+                  >
+                    <InfoIcon className="size-4" />
+                    Boundary
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
                     onClick={() => setInsightsFor(area)}
                   >
                     <TrendingUpIcon className="size-4" />
@@ -200,7 +210,138 @@ export default function AreasPage() {
         onSaved={invalidate}
       />
       <InsightsDialog area={insightsFor} onClose={() => setInsightsFor(null)} />
+      <AreaDetailDialog
+        area={detailFor}
+        onClose={() => setDetailFor(null)}
+        onEdit={(area) => {
+          setDetailFor(null);
+          setEditing(area);
+        }}
+      />
     </div>
+  );
+}
+
+function AreaDetailDialog({
+  area,
+  onClose,
+  onEdit,
+}: {
+  area: Area | null;
+  onClose: () => void;
+  onEdit: (area: Area) => void;
+}) {
+  const { data, isLoading, error } = useQuery<{ area: Area }>(
+    area ? `get|/areas/${area._id}|` : null,
+    () => areaApi.detail(area?._id ?? ""),
+    { enabled: Boolean(area) },
+  );
+
+  const detail = pick<Area>(data, "area") ?? area;
+  const ring = detail?.boundary?.coordinates?.[0] ?? [];
+  const points = ring.filter(
+    (point) => Array.isArray(point) && point.length >= 2,
+  );
+  const bounds = points.length
+    ? {
+        minLng: Math.min(...points.map((p) => p[0])),
+        maxLng: Math.max(...points.map((p) => p[0])),
+        minLat: Math.min(...points.map((p) => p[1])),
+        maxLat: Math.max(...points.map((p) => p[1])),
+      }
+    : null;
+  const centroid = bounds
+    ? {
+        lng: ((bounds.minLng + bounds.maxLng) / 2).toFixed(4),
+        lat: ((bounds.minLat + bounds.maxLat) / 2).toFixed(4),
+      }
+    : null;
+
+  return (
+    <Dialog open={Boolean(area)} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="sm:max-w-2xl">
+        <DialogHeader>
+          <DialogTitle>{detail?.name ?? area?.name}</DialogTitle>
+          <DialogDescription>
+            Area detail including its boundary polygon, as stored on the server.
+          </DialogDescription>
+        </DialogHeader>
+
+        {isLoading ? (
+          <LoadingBlock className="py-10" />
+        ) : error ? (
+          <ErrorState message={error} />
+        ) : (
+          <div className="space-y-5">
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-1.5">
+                <p className="text-muted-foreground text-xs uppercase">City</p>
+                <p className="text-sm font-medium">{detail?.city ?? "—"}</p>
+              </div>
+              <div className="space-y-1.5">
+                <p className="text-muted-foreground text-xs uppercase">
+                  Area id
+                </p>
+                <p className="font-mono text-xs">{detail?._id}</p>
+              </div>
+              <div className="space-y-1.5">
+                <p className="text-muted-foreground text-xs uppercase">
+                  Ring points
+                </p>
+                <p className="text-sm font-medium">{points.length}</p>
+              </div>
+              <div className="space-y-1.5">
+                <p className="text-muted-foreground text-xs uppercase">
+                  Centroid (lng, lat)
+                </p>
+                <p className="text-sm font-medium tabular-nums">
+                  {centroid ? `${centroid.lng}, ${centroid.lat}` : "—"}
+                </p>
+              </div>
+            </div>
+
+            {bounds && (
+              <div className="space-y-1.5">
+                <p className="text-muted-foreground text-xs uppercase">
+                  Bounding box
+                </p>
+                <p className="font-mono text-xs">
+                  lng {bounds.minLng.toFixed(4)} → {bounds.maxLng.toFixed(4)} ·
+                  lat {bounds.minLat.toFixed(4)} → {bounds.maxLat.toFixed(4)}
+                </p>
+              </div>
+            )}
+
+            <div className="space-y-1.5">
+              <p className="text-muted-foreground text-xs uppercase">
+                Boundary (GeoJSON)
+              </p>
+              {detail?.boundary ? (
+                <pre className="bg-muted/50 max-h-56 overflow-auto rounded-lg border p-3 font-mono text-xs">
+                  {JSON.stringify(detail.boundary, null, 2)}
+                </pre>
+              ) : (
+                <p className="text-muted-foreground text-sm">
+                  No boundary stored — insights and draw-area search need one.
+                </p>
+              )}
+            </div>
+          </div>
+        )}
+
+        <DialogFooter>
+          <Button variant="outline" onClick={onClose}>
+            Close
+          </Button>
+          {area && (
+            <Button onClick={() => onEdit(area)}>
+              <PencilIcon className="size-4" />
+              Edit area
+            </Button>
+          )}
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
 
