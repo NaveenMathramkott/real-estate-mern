@@ -350,7 +350,7 @@ export default function SearchPage() {
   const paramsForApi = filtersToParams(filters);
   const cacheKey = `get|/properties|${JSON.stringify(paramsForApi)}`;
 
-  const { data, isLoading, error, refetch } = useQuery(
+  const { data, isLoading, isValidating, error, refetch } = useQuery(
     cacheKey,
     () => propertyApi.search(paramsForApi),
     { enabled: !filters.polygon?.length },
@@ -411,7 +411,11 @@ export default function SearchPage() {
             <h1 className="font-display text-2xl leading-none font-medium tracking-tight sm:text-3xl">
               {filters.purpose === "buy" ? "Homes for sale" : "Homes for rent"}
             </h1>
-            <ResultCount total={total} isLoading={isLoading} />
+            <ResultCount
+              total={total}
+              isLoading={isLoading}
+              isValidating={isValidating}
+            />
           </div>
 
           <div className="flex items-center gap-2">

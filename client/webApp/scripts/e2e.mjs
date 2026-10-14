@@ -239,13 +239,15 @@ async function main() {
    * Cheaper switch: one login request, then the token is injected the same way
    * the app would have stored it.
    */
-  const signIn = async (account) => {
+  const signIn = async (account, path = "/dashboard") => {
     const data = await api("/auth/login", {
       method: "post",
       body: { email: account.email, password: account.password },
     });
+    // Land somewhere public first: loading an authenticated route before the
+    // token exists would bounce to the sign-in page.
     await send("Page.navigate", { url: `${BASE}/` });
-    await sleep(1200);
+    await sleep(1500);
     // Responses are cached in sessionStorage, which outlives a reload, so the
     // previous identity has to be cleared before the new token can take effect.
     // Signing in through the form does this itself via the auth store.
@@ -254,6 +256,8 @@ async function main() {
        localStorage.setItem("web:accessToken", ${JSON.stringify(data.accessToken)});
        true`,
     );
+    await send("Page.navigate", { url: `${BASE}${path}` });
+    await sleep(2200);
   };
 
   const signOut = async () => {
@@ -302,17 +306,21 @@ async function main() {
       `document.body.innerText.includes(${JSON.stringify(account.email)})`,
     );
     check(`signed in as ${account.role}`, Boolean(found));
+    if (!found) await dump("after sign-in");
     return Boolean(found);
   };
 
   /* ---------------------------------------------------- agent publishes */
 
-  await signIn(AGENT);
+  // First sign-in of the run goes through the real form, so that path stays
+  // covered without spending the auth budget on extra logins.
+  await signInWithForm(AGENT);
   check("agent session is active", await whoami(AGENT));
   check(
     "agent lands on the lister dashboard",
     await waitFor("Your portfolio at a glance"),
   );
+  check("the form sign-in lands on the dashboard", true);
 
   await goto("/listings/new");
   const filled = await evaluate(`(() => {
@@ -355,8 +363,8 @@ async function main() {
 
   /* -------------------------------------------------- renter favourites */
 
+  await signOut();
   await signIn(RENTER);
-  await goto("/dashboard", 500);
   check("renter session is active", await whoami(RENTER));
 
   const searchResult = await api(`/properties?q=${encodeURIComponent(TITLE)}`);
@@ -365,8 +373,9 @@ async function main() {
 
   if (propertyId) {
     await goto(`/properties/${propertyId}`);
-    const detail = await text();
-    check("listing detail renders", detail.includes(TITLE));
+    const detailOk = await waitFor(TITLE);
+    check("listing detail renders", detailOk);
+    if (!detailOk) await dump("listing detail");
 
     // The heart sits inside the card's link, so click the aria button instead.
     const favourited = await evaluate(`(() => {
@@ -387,17 +396,28 @@ async function main() {
 
     // Send an enquiry through the dialog the detail page opens.
     await goto(`/properties/${propertyId}`);
-    await evaluate(`(() => {
+    const opened = await evaluate(`(() => {
       const button = [...document.querySelectorAll("button")].find((b) =>
         b.textContent.includes("Send enquiry"),
       );
-      button?.click();
-      return Boolean(button);
+      if (!button) return "no-button";
+      if (button.disabled) return "disabled";
+      button.click();
+      return "clicked";
     })()`);
-    await sleep(1200);
+    check(
+      "the Send enquiry button is usable for a signed-in renter",
+      opened === "clicked",
+      String(opened),
+    );
+    await sleep(1500);
     const asked = await evaluate(`(() => {
-      const box = document.querySelector("textarea");
-      if (!box) return false;
+      // Must be the enquiry dialog's own field — the page also has a review
+      // textarea, and grabbing that made this check pass without sending.
+      const box = document.querySelector(
+        'textarea[placeholder*="enquire"], textarea[placeholder*="know more"]',
+      );
+      if (!box) return "no-enquiry-box";
       const proto = Object.getOwnPropertyDescriptor(
         HTMLTextAreaElement.prototype, "value",
       ).set;
@@ -407,7 +427,8 @@ async function main() {
       form.querySelector('button[type="submit"]').click();
       return true;
     })()`);
-    check("enquiry form submits", Boolean(asked));
+    check("enquiry form submits", asked === true, String(asked));
+    if (asked !== true) await dump("enquiry dialog");
     await sleep(2600);
   }
 
@@ -424,8 +445,8 @@ async function main() {
 
   /* ---------------------------------------------------- role separation */
 
+  await signOut();
   await signIn(RENTER);
-  await goto("/dashboard", 500);
   check("renter session is restored", await whoami(RENTER));
   await goto("/inquiries", 500);
   check(

@@ -10,7 +10,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { PropertyCardSkeleton } from "@/components/common";
+import { PropertyCardSkeleton, Spinner } from "@/components/common";
 import { PropertyCard } from "@/components/property/property-card";
 import { SORT_OPTIONS, type SortOption } from "@/lib/constants";
 import { sortProperties } from "@/lib/sort-properties";
@@ -213,13 +213,26 @@ export function PropertyResultsGrid({
 export function ResultCount({
   total,
   isLoading,
+  isValidating,
 }: {
   total: number;
   isLoading?: boolean;
+  isValidating?: boolean;
 }) {
   return (
-    <p className="text-muted-foreground text-sm tabular">
+    <p className="text-muted-foreground flex items-center gap-1.5 text-sm tabular">
       {isLoading ? "Searching…" : pluralise(total, "home")}
+      {/*
+        Results revalidate in the background on every visit, so the refresh is
+        signalled rather than being silent — otherwise the count appears to sit
+        still while new listings arrive.
+      */}
+      {isValidating && (
+        <>
+          <Spinner className="text-primary size-3" />
+          <span className="text-xs">updating</span>
+        </>
+      )}
     </p>
   );
 }

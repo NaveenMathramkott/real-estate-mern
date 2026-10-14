@@ -142,6 +142,26 @@ type RequestOptions = AxiosRequestConfig & {
   fresh?: boolean;
 };
 
+/**
+ * Depth counter for cache bypass. A background revalidation has to reach the
+ * server even though a warm entry exists, and the fetchers passed to
+ * `useQuery` are plain closures that cannot thread a `fresh` flag through.
+ */
+let bypassDepth = 0;
+
+/**
+ * Runs `fn` with the GET response cache disabled, so the call inside is a real
+ * network request rather than a cache hit. Used for background revalidation.
+ */
+export async function withFreshCache<T>(fn: () => Promise<T>): Promise<T> {
+  bypassDepth += 1;
+  try {
+    return await fn();
+  } finally {
+    bypassDepth -= 1;
+  }
+}
+
 function methodOf(config: AxiosRequestConfig) {
   return (config.method ?? "get").toLowerCase();
 }
@@ -165,7 +185,10 @@ function keyOf(config: AxiosRequestConfig) {
 }
 
 async function request<T>(config: RequestOptions): Promise<T> {
-  const isCacheable = methodOf(config) === "get" && (config.cacheTtl ?? 0) > 0;
+  const isCacheable =
+    methodOf(config) === "get" &&
+    (config.cacheTtl ?? 0) > 0 &&
+    bypassDepth === 0;
   const key = keyOf(config);
 
   if (isCacheable && !config.fresh) {

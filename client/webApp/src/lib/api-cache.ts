@@ -1,66 +1,59 @@
 /**
- * In-memory + sessionStorage response cache for GET requests.
- * Every entry has a TTL and an in-flight de-duplication map so that
- * multiple components requesting the same key share one network call.
+ * In-memory response cache for GET requests.
+ *
+ * Every entry carries a hard expiry plus the time it was written, which lets
+ * callers decide whether a cached value may be shown without a network round
+ * trip. Requests are de-duplicated so several components asking for the same
+ * key share one call.
+ *
+ * Deliberately memory-only: an earlier version also mirrored entries into
+ * sessionStorage, and because that survives a reload it made every page look
+ * frozen at whatever it had fetched last. Freshness on navigation matters more
+ * here than a faster first paint.
  */
 
-type Entry = { value: unknown; expires: number };
+type Entry = { value: unknown; expires: number; storedAt: number };
 type Pending = Promise<unknown>;
 
 const memory = new Map<string, Entry>();
 const inflight = new Map<string, Pending>();
 const listeners = new Set<() => void>();
-const NAMESPACE = "web:cache:";
 const DEFAULT_TTL = 60_000;
 
-function storageKey(key: string) {
-  return NAMESPACE + key;
-}
-
-function readSession(key: string): Entry | undefined {
-  try {
-    const raw = sessionStorage.getItem(storageKey(key));
-    if (!raw) return undefined;
-    const entry = JSON.parse(raw) as Entry;
-    if (entry.expires < Date.now()) {
-      sessionStorage.removeItem(storageKey(key));
-      return undefined;
-    }
-    return entry;
-  } catch {
-    return undefined;
-  }
-}
-
-function writeSession(key: string, entry: Entry) {
-  try {
-    sessionStorage.setItem(storageKey(key), JSON.stringify(entry));
-  } catch {
-    /* quota exceeded — memory cache still applies */
-  }
+function alive(entry: Entry | undefined): entry is Entry {
+  return Boolean(entry) && entry!.expires > Date.now();
 }
 
 export const apiCache = {
+  /** The cached value, or `undefined` once the entry has expired. */
   peek<T>(key: string): T | undefined {
-    const entry = memory.get(key) ?? readSession(key);
-    if (!entry) return undefined;
-    if (entry.expires < Date.now()) {
+    const entry = memory.get(key);
+    if (!alive(entry)) {
       memory.delete(key);
-      sessionStorage.removeItem(storageKey(key));
       return undefined;
     }
     return entry.value as T;
   },
 
   set(key: string, value: unknown, ttl = DEFAULT_TTL) {
-    const entry: Entry = { value, expires: Date.now() + ttl };
-    memory.set(key, entry);
-    writeSession(key, entry);
+    const now = Date.now();
+    memory.set(key, { value, expires: now + ttl, storedAt: now });
+  },
+
+  /** Milliseconds since the entry was written, or `Infinity` when absent. */
+  age(key: string): number {
+    const entry = memory.get(key);
+    if (!alive(entry)) return Number.POSITIVE_INFINITY;
+    return Date.now() - entry.storedAt!;
+  },
+
+  /** True when the entry is missing, expired, or older than `staleTime`. */
+  isStale(key: string, staleTime = 0): boolean {
+    return this.age(key) >= staleTime;
   },
 
   delete(key: string) {
     memory.delete(key);
-    sessionStorage.removeItem(storageKey(key));
   },
 
   /** Subscribe to invalidations so dependent stores can drop derived state. */
@@ -73,26 +66,20 @@ export const apiCache = {
 
   /** Drop every entry whose key starts with one of the prefixes. */
   invalidate(...prefixes: string[]) {
-    for (const key of memory.keys()) {
-      if (prefixes.some((p) => key.startsWith(p))) {
-        memory.delete(key);
-        sessionStorage.removeItem(storageKey(key));
+    if (prefixes.length === 0) {
+      memory.clear();
+    } else {
+      for (const key of memory.keys()) {
+        if (prefixes.some((prefix) => key.startsWith(prefix))) {
+          memory.delete(key);
+        }
       }
-    }
-    for (const key of Object.keys(sessionStorage)) {
-      if (!key.startsWith(NAMESPACE)) continue;
-      const short = key.slice(NAMESPACE.length);
-      if (prefixes.some((p) => short.startsWith(p)))
-        sessionStorage.removeItem(key);
     }
     for (const listener of listeners) listener();
   },
 
   clear() {
     memory.clear();
-    for (const key of Object.keys(sessionStorage)) {
-      if (key.startsWith(NAMESPACE)) sessionStorage.removeItem(key);
-    }
     for (const listener of listeners) listener();
   },
 

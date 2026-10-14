@@ -9,6 +9,8 @@ type Record_ = {
   status: QueryStatus;
   /** Bumped on invalidation so consumers know they must refetch. */
   version: number;
+  /** When `data` was last written, used to decide whether it is stale. */
+  at: number;
 };
 
 /**
@@ -29,7 +31,13 @@ const inflight = new Set<string>();
 function recordFor(key: string): Record_ {
   let record = records.get(key);
   if (!record) {
-    record = { data: undefined, error: undefined, status: "idle", version: 0 };
+    record = {
+      data: undefined,
+      error: undefined,
+      status: "idle",
+      version: 0,
+      at: 0,
+    };
     records.set(key, record);
   }
   return record;
@@ -46,11 +54,15 @@ function write(
   options: { bumpVersion?: boolean } = {},
 ) {
   const record = recordFor(key);
+  const data = "data" in next ? next.data : record.data;
   records.set(key, {
-    data: "data" in next ? next.data : record.data,
+    data,
     error: "error" in next ? next.error : record.error,
     status: next.status ?? record.status,
     version: options.bumpVersion ? record.version + 1 : record.version,
+    // Only stamp a fresh time when the value itself changed, so a status-only
+    // write does not make old data look recent.
+    at: "data" in next ? Date.now() : record.at,
   });
   notify(key);
 }
@@ -74,9 +86,9 @@ export const queryStore = {
   },
 
   /**
-   * Reads are lazy so a fresh cache entry resolves on the very first render
-   * without a network round trip. The snapshot object is reused until the
-   * record changes, keeping React's change detection correct.
+   * Reads are lazy so a warm entry resolves on the very first render without a
+   * network round trip. The snapshot object is reused until the record changes,
+   * keeping React's change detection correct.
    */
   snapshot(key: string): Snapshot {
     const cached = snapshots.get(key);
@@ -86,12 +98,24 @@ export const queryStore = {
     if (record.status === "idle") {
       const value = apiCache.peek(key);
       if (value !== undefined) {
-        records.set(key, { ...record, data: value, status: "success" });
+        records.set(key, {
+          ...record,
+          data: value,
+          status: "success",
+          at: Date.now(),
+        });
       }
     }
     const snapshot = records.get(key)!;
     snapshots.set(key, snapshot);
     return snapshot;
+  },
+
+  /** Milliseconds since this key's data was written; `Infinity` when absent. */
+  age(key: string): number {
+    const record = records.get(key);
+    if (!record || record.data === undefined) return Number.POSITIVE_INFINITY;
+    return Date.now() - record.at;
   },
 
   /** Cache read, used to skip a request when the data is already warm. */
@@ -152,6 +176,16 @@ export const queryStore = {
   },
 
   resetAll() {
+    for (const key of records.keys()) {
+      write(key, { status: "idle" }, { bumpVersion: true });
+    }
+  },
+
+  /**
+   * Marks every key as needing a refetch while keeping the current data on
+   * screen, so a pull-to-refresh or a mutation does not blank the page.
+   */
+  markAllStale() {
     for (const key of records.keys()) {
       write(key, { status: "idle" }, { bumpVersion: true });
     }
