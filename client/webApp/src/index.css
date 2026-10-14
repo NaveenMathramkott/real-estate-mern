@@ -1,0 +1,363 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+/*
+ * Theme: "Ivory & Emerald".
+ * A white-first, editorial palette — paper-white surfaces, hairline borders and
+ * an emerald accent that carries every primary action. Display type is a serif
+ * so headings read as considered rather than dashboard-generic.
+ */
+:root {
+  --radius: 0.65rem;
+
+  --background: oklch(0.998 0.001 160);
+  --foreground: oklch(0.24 0.015 168);
+
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.24 0.015 168);
+
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.24 0.015 168);
+
+  --primary: oklch(0.56 0.115 166);
+  --primary-foreground: oklch(0.99 0.005 165);
+
+  --secondary: oklch(0.972 0.006 165);
+  --secondary-foreground: oklch(0.34 0.03 168);
+
+  --muted: oklch(0.968 0.004 165);
+  --muted-foreground: oklch(0.54 0.014 168);
+
+  --accent: oklch(0.955 0.02 168);
+  --accent-foreground: oklch(0.4 0.075 168);
+
+  --destructive: oklch(0.58 0.19 27);
+  --destructive-foreground: oklch(0.99 0 0);
+
+  --success: oklch(0.6 0.115 158);
+  --success-foreground: oklch(0.99 0 0);
+
+  --warning: oklch(0.74 0.14 72);
+  --warning-foreground: oklch(0.26 0.05 72);
+
+  --border: oklch(0.918 0.006 165);
+  --input: oklch(0.93 0.006 165);
+  --ring: oklch(0.56 0.115 166);
+
+  --chart-1: oklch(0.56 0.115 166);
+  --chart-2: oklch(0.68 0.12 85);
+  --chart-3: oklch(0.62 0.13 250);
+  --chart-4: oklch(0.66 0.16 20);
+  --chart-5: oklch(0.6 0.14 310);
+
+  --surface-soft: oklch(0.988 0.003 165);
+  --gold: oklch(0.72 0.13 80);
+}
+
+.dark {
+  --background: oklch(0.17 0.012 168);
+  --foreground: oklch(0.96 0.005 165);
+
+  --card: oklch(0.21 0.014 168);
+  --card-foreground: oklch(0.96 0.005 165);
+
+  --popover: oklch(0.22 0.015 168);
+  --popover-foreground: oklch(0.96 0.005 165);
+
+  --primary: oklch(0.72 0.13 167);
+  --primary-foreground: oklch(0.18 0.02 168);
+
+  --secondary: oklch(0.27 0.016 168);
+  --secondary-foreground: oklch(0.96 0.005 165);
+
+  --muted: oklch(0.26 0.015 168);
+  --muted-foreground: oklch(0.7 0.016 168);
+
+  --accent: oklch(0.3 0.035 168);
+  --accent-foreground: oklch(0.92 0.03 168);
+
+  --destructive: oklch(0.65 0.18 25);
+  --destructive-foreground: oklch(0.16 0.02 25);
+
+  --success: oklch(0.7 0.12 158);
+  --success-foreground: oklch(0.16 0.02 158);
+
+  --warning: oklch(0.8 0.13 78);
+  --warning-foreground: oklch(0.2 0.04 78);
+
+  --border: oklch(0.3 0.016 168);
+  --input: oklch(0.33 0.018 168);
+  --ring: oklch(0.68 0.12 167);
+
+  --surface-soft: oklch(0.2 0.012 168);
+  --gold: oklch(0.78 0.12 80);
+}
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+
+  --color-surface-soft: var(--surface-soft);
+  --color-gold: var(--gold);
+
+  --font-sans:
+    "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+    sans-serif;
+  --font-display:
+    "Fraunces", ui-serif, Georgia, Cambria, "Times New Roman", serif;
+  --font-mono:
+    ui-monospace, "SFMono-Regular", "JetBrains Mono", Menlo, Consolas, monospace;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    font-feature-settings: "cv11", "ss01";
+  }
+
+  /* Tabular figures everywhere numbers are compared column-wise. */
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+
+  ::selection {
+    @apply bg-primary/20;
+  }
+
+  /* Leaflet renders outside the shadcn layer, so it needs its own theming. */
+  .leaflet-container {
+    @apply bg-muted font-sans;
+    z-index: 0;
+  }
+
+  .leaflet-popup-content-wrapper {
+    @apply rounded-xl border border-border bg-popover text-popover-foreground shadow-lg;
+  }
+
+  .leaflet-popup-content {
+    @apply m-0 p-0;
+  }
+
+  .leaflet-bar a {
+    @apply border-border bg-popover text-foreground;
+  }
+}
+
+@layer utilities {
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+  }
+
+  .scrollbar-none {
+    scrollbar-width: none;
+  }
+
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
+  }
+
+  .card-surface {
+    @apply bg-card border-border rounded-xl border shadow-xs;
+  }
+
+  .grid-dots {
+    background-image: radial-gradient(var(--border) 1px, transparent 1px);
+    background-size: 22px 22px;
+  }
+
+  .grid-lines {
+    background-image:
+      linear-gradient(var(--border) 1px, transparent 1px),
+      linear-gradient(90deg, var(--border) 1px, transparent 1px);
+    background-size: 64px 64px;
+  }
+
+  /* Elevation that grows on hover — the site's main interaction cue. */
+  .lift {
+    transition-property:
+      color, background-color, border-color, box-shadow, transform;
+    transition-duration: 300ms;
+    transition-timing-function: cubic-bezier(0, 0, 0.2, 1);
+  }
+
+  .lift-hover {
+    transition-property:
+      color, background-color, border-color, box-shadow, transform;
+    transition-duration: 300ms;
+    transition-timing-function: cubic-bezier(0, 0, 0.2, 1);
+  }
+
+  .lift-hover:hover {
+    transform: translateY(-0.25rem);
+    border-color: color-mix(in oklch, var(--primary) 30%, transparent);
+    box-shadow:
+      0 10px 30px -12px color-mix(in oklch, var(--primary) 18%, transparent),
+      0 2px 6px -2px rgb(0 0 0 / 0.05);
+  }
+
+  .zoom-hover {
+    @apply overflow-hidden;
+  }
+
+  .zoom-hover img {
+    @apply transition-transform duration-700 ease-out;
+  }
+
+  .zoom-hover:hover img {
+    @apply scale-105;
+  }
+
+  .animate-in-up {
+    animation: in-up 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  .animate-marquee {
+    animation: marquee 32s linear infinite;
+  }
+
+  .shimmer {
+    background: linear-gradient(
+      90deg,
+      var(--muted) 0%,
+      var(--accent) 50%,
+      var(--muted) 100%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.6s ease-in-out infinite;
+  }
+}
+
+@keyframes in-up {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@keyframes shimmer {
+  from {
+    background-position: 200% 0;
+  }
+  to {
+    background-position: -200% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+/* ---------------------------------------------------------- map price pins */
+
+.leaflet-marker-icon.pin {
+  display: block;
+}
+
+.pin {
+  display: inline-block;
+  transform: translate(-50%, -100%);
+  background: var(--foreground);
+  color: var(--background);
+  font-size: 11px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+  padding: 4px 9px;
+  border-radius: 999px;
+  white-space: nowrap;
+  box-shadow:
+    0 2px 6px rgb(0 0 0 / 0.16),
+    0 0 0 1px rgb(0 0 0 / 0.04);
+  transition:
+    transform 160ms ease,
+    background-color 160ms ease,
+    color 160ms ease;
+  cursor: pointer;
+}
+
+.pin::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 100%;
+  width: 2px;
+  height: 8px;
+  background: var(--foreground);
+  transform: translateX(-50%);
+}
+
+.pin:hover {
+  transform: translate(-50%, -100%) scale(1.08);
+  background: var(--primary);
+  color: var(--primary-foreground);
+}
+
+.pin-active {
+  background: var(--primary);
+  color: var(--primary-foreground);
+  transform: translate(-50%, -100%) scale(1.12);
+  z-index: 10;
+}
