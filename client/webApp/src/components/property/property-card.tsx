@@ -1,7 +1,6 @@
 import {
   BathIcon,
   BedDoubleIcon,
-  Building2Icon,
   CheckCircle2Icon,
   HeartIcon,
   MapPinIcon,
@@ -20,23 +19,10 @@ import {
   pricePerSqft,
 } from "@/lib/format";
 import { PROPERTY_TYPE_LABELS } from "@/lib/constants";
+import { PropertyCover } from "@/components/property/property-cover";
+import { propertyImages } from "@/features/property-images";
 import type { Property, PropertyMedia } from "@/lib/types";
 import { cn } from "@/lib/utils";
-
-/** Deterministic gradient so every card gets stable, distinct placeholder art. */
-function placeholderStyle(property: Property) {
-  const seed = (property._id ?? property.title ?? "")
-    .split("")
-    .reduce((total, char) => total + char.charCodeAt(0), 0);
-  const hue = 150 + (seed % 90);
-  return {
-    backgroundImage: `linear-gradient(135deg, oklch(0.95 0.03 ${hue}) 0%, oklch(0.88 0.06 ${hue + 18}) 55%, oklch(0.82 0.07 ${hue + 30}) 100%)`,
-  };
-}
-
-function firstImage(media?: PropertyMedia[]) {
-  return media?.find((item) => item.type === "image")?.url;
-}
 
 export function FavoriteButton({
   propertyId,
@@ -94,7 +80,7 @@ export function PropertyCard({
   className?: string;
   footer?: React.ReactNode;
 }) {
-  const image = firstImage(media);
+  const images = propertyImages(property, media);
   const perSqft = pricePerSqft(property.price, property.size);
   const isVerified = Boolean(property.verifiedAt);
 
@@ -105,26 +91,18 @@ export function PropertyCard({
         className,
       )}
     >
-      <Link
-        to={`/properties/${property._id}`}
-        className="relative block aspect-[4/3] overflow-hidden"
-        aria-label={property.title}
+      <PropertyCover
+        property={property}
+        images={images}
+        media={media}
+        alt={property.title}
+        className="relative block aspect-[4/3] [&>img]:transition-transform [&>img]:duration-700 [&>img]:ease-out group-hover:[&>img]:scale-105"
       >
-        {image ? (
-          <img
-            src={image}
-            alt={property.title}
-            loading="lazy"
-            className="size-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
-          />
-        ) : (
-          <div
-            className="grid-dots flex size-full items-center justify-center"
-            style={placeholderStyle(property)}
-          >
-            <Building2Icon className="size-10 text-foreground/25" />
-          </div>
-        )}
+        <Link
+          to={`/properties/${property._id}`}
+          className="absolute inset-0"
+          aria-label={property.title}
+        />
 
         <div className="absolute inset-x-0 top-0 flex items-start justify-between p-3">
           <div className="flex flex-wrap gap-1.5">
@@ -150,7 +128,13 @@ export function PropertyCard({
             {property.status}
           </div>
         )}
-      </Link>
+
+        {images.length > 1 && (
+          <span className="bg-foreground/70 text-background absolute bottom-3 left-3 rounded-full px-2 py-0.5 text-[11px] font-medium tabular backdrop-blur-sm">
+            1 / {images.length}
+          </span>
+        )}
+      </PropertyCover>
 
       <div className="flex flex-1 flex-col gap-3 p-4">
         <div className="flex items-start justify-between gap-3">
@@ -242,30 +226,21 @@ export function PropertyRow({
   onFavoriteClick: () => void;
   actions?: React.ReactNode;
 }) {
-  const image = firstImage(media);
-
   return (
     <article className="group bg-card flex gap-4 rounded-xl border p-3 transition-colors hover:border-primary/30">
-      <Link
-        to={`/properties/${property._id}`}
-        className="relative size-24 shrink-0 overflow-hidden rounded-lg sm:size-28"
+      <PropertyCover
+        property={property}
+        media={media}
+        alt={property.title}
+        iconSize="size-6"
+        className="size-24 shrink-0 rounded-lg sm:size-28 [&>img]:transition-transform [&>img]:duration-500 group-hover:[&>img]:scale-105"
       >
-        {image ? (
-          <img
-            src={image}
-            alt={property.title}
-            loading="lazy"
-            className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
-          />
-        ) : (
-          <div
-            className="grid-dots flex size-full items-center justify-center"
-            style={placeholderStyle(property)}
-          >
-            <Building2Icon className="size-6 text-foreground/25" />
-          </div>
-        )}
-      </Link>
+        <Link
+          to={`/properties/${property._id}`}
+          className="absolute inset-0"
+          aria-label={property.title}
+        />
+      </PropertyCover>
 
       <div className="flex min-w-0 flex-1 flex-col gap-1.5">
         <div className="flex items-start justify-between gap-2">

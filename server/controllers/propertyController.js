@@ -76,6 +76,38 @@ export const buildPropertyFilter = (query) => {
   return filter;
 };
 
+// Attaches an `images` array of urls (plus a `thumbnail`) to each property in
+// a page of results, using a single query for the whole page.
+const attachImages = async (properties) => {
+  if (!properties.length) return properties;
+
+  const media = await propertyMediaModel
+    .find({
+      propertyId: { $in: properties.map((property) => property._id) },
+      type: "image",
+    })
+    .sort({ order: 1 })
+    .select("propertyId url blurhash");
+
+  const grouped = media.reduce((acc, item) => {
+    const key = item.propertyId.toString();
+    acc[key] = acc[key] || [];
+    acc[key].push(item);
+    return acc;
+  }, {});
+
+  // Spread into a plain object — assigning `images` onto the document would
+  // be dropped by Mongoose's strict mode since it is not a schema path.
+  return properties.map((property) => {
+    const images = grouped[property._id.toString()] || [];
+    return {
+      ...property.toObject(),
+      images: images.map((image) => image.url),
+      thumbnail: images[0]?.url || null,
+    };
+  });
+};
+
 // GET /properties
 export const getProperties = async (req, res) => {
   try {
@@ -115,13 +147,17 @@ export const getProperties = async (req, res) => {
       propertyModel.countDocuments(countFilter),
     ]);
 
+    // Images live in a separate collection, so fetch them for the whole page
+    // in one query rather than populating per property.
+    const mediaByProperty = await attachImages(properties);
+
     res.status(200).json({
       success: true,
       page,
       limit,
       total,
       pages: Math.ceil(total / limit),
-      properties,
+      properties: mediaByProperty,
     });
   } catch (error) {
     console.log(error);

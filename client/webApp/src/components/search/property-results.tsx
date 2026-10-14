@@ -32,6 +32,7 @@ export function ActiveFilterChips({
 }) {
   const filters = useSearchStore((s) => s.filters);
   const setFilters = useSearchStore((s) => s.setFilters);
+  const reset = useSearchStore((s) => s.reset);
   const chips = describeFilters(filters);
 
   if (chips.length === 0 && !onSaveSearch) return null;
@@ -50,10 +51,12 @@ export function ActiveFilterChips({
         </button>
       ))}
 
-      {chips.length > 1 && (
+      {chips.length > 0 && (
+        // `setFilters` merges, so an empty patch would clear nothing — reset
+        // the whole filter set instead.
         <button
           type="button"
-          onClick={() => setFilters({})}
+          onClick={reset}
           className="text-muted-foreground hover:text-foreground cursor-pointer px-1 text-xs underline-offset-4 transition hover:underline"
         >
           Clear all

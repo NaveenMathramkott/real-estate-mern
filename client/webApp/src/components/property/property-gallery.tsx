@@ -13,31 +13,23 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { PropertyTypeIcon } from "@/features/property-type-icon";
+import { PropertyCover } from "@/components/property/property-cover";
 import { bedsLabel } from "@/lib/format";
-import type { PropertyMedia } from "@/lib/types";
+import type { Property, PropertyMedia } from "@/lib/types";
 import { cn } from "@/lib/utils";
-
-/** Deterministic placeholder so galleries still read as designed when empty. */
-function placeholder(propertyId?: string) {
-  const seed = (propertyId ?? "")
-    .split("")
-    .reduce((total, char) => total + char.charCodeAt(0), 0);
-  const hue = 150 + (seed % 90);
-  return {
-    backgroundImage: `linear-gradient(135deg, oklch(0.95 0.03 ${hue}) 0%, oklch(0.88 0.06 ${hue + 18}) 55%, oklch(0.82 0.07 ${hue + 30}) 100%)`,
-  };
-}
 
 const MEDIA_TABS = ["image", "video", "floorplan", "tour"] as const;
 
 export function PropertyGallery({
   media,
+  images,
   title,
   propertyId,
   propertyType,
 }: {
   media: PropertyMedia[];
+  /** Image urls from the listing payload, used when media carries none. */
+  images?: string[];
   title: string;
   propertyId?: string;
   propertyType?: string;
@@ -45,20 +37,41 @@ export function PropertyGallery({
   const [tab, setTab] = React.useState<(typeof MEDIA_TABS)[number]>("image");
   const [lightbox, setLightbox] = React.useState(false);
 
+  /**
+   * Image media is the ordered source of truth, but a payload can carry only
+   * the `images` array — synthesising entries for those keeps the carousel,
+   * the lightbox and the counter working on either shape.
+   */
+  const gallery = React.useMemo(() => {
+    const fromMedia = media
+      .filter((item) => item.type === "image")
+      .sort((a, b) => a.order - b.order);
+    if (fromMedia.length > 0) return fromMedia;
+
+    return (images ?? []).filter(Boolean).map((url, index) => ({
+      _id: `img-${index}`,
+      propertyId: propertyId ?? "",
+      type: "image" as const,
+      url,
+      order: index,
+    }));
+  }, [media, images, propertyId]);
+
   const visible = React.useMemo(
     () =>
-      media
-        .filter((item) => item.type === tab)
-        .sort((a, b) => a.order - b.order),
-    [media, tab],
+      tab === "image" ? gallery : media.filter((item) => item.type === tab),
+    [gallery, media, tab],
   );
+
   const counts = React.useMemo(() => {
     const map = new Map<string, number>();
+    map.set("image", gallery.length);
     for (const item of media) {
+      if (item.type === "image") continue;
       map.set(item.type, (map.get(item.type) ?? 0) + 1);
     }
     return map;
-  }, [media]);
+  }, [gallery, media]);
 
   const available = MEDIA_TABS.filter((type) => (counts.get(type) ?? 0) > 0);
   // The cursor is reset as soon as the tab changes, during render rather than
@@ -77,25 +90,20 @@ export function PropertyGallery({
   const step = (delta: number) =>
     setIndex((current) => (current + delta + visible.length) % visible.length);
 
-  const hero = visible[0];
-
   return (
     <div className="space-y-3">
-      <div className="relative aspect-[16/9] overflow-hidden rounded-2xl border bg-muted">
-        {hero ? (
-          <img src={hero.url} alt={title} className="size-full object-cover" />
-        ) : (
-          <div
-            className="grid-dots flex size-full items-center justify-center"
-            style={placeholder(propertyId)}
-          >
-            <PropertyTypeIcon
-              type={propertyType}
-              className="text-foreground/20 size-14"
-            />
-          </div>
-        )}
-
+      <PropertyCover
+        property={{
+          _id: propertyId ?? "",
+          title,
+          // The cover only needs the type for its fallback icon.
+          type: (propertyType ?? "apartment") as Property["type"],
+        }}
+        images={visible.map((item) => item.url)}
+        alt={title}
+        iconSize="size-14"
+        className="relative aspect-[16/9] rounded-2xl border"
+      >
         {visible.length > 1 && (
           <>
             <Button
@@ -143,7 +151,7 @@ export function PropertyGallery({
             </DialogContent>
           </Dialog>
         </div>
-      </div>
+      </PropertyCover>
 
       {available.length > 1 && (
         <div className="scrollbar-none flex gap-2 overflow-x-auto pb-1">

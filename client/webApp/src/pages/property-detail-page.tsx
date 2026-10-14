@@ -536,6 +536,7 @@ export default function PropertyDetailPage() {
         <div className="min-w-0 space-y-8">
           <PropertyGallery
             media={media}
+            images={property.images}
             title={property.title}
             propertyId={property._id}
             propertyType={property.type}
