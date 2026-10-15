@@ -158,12 +158,18 @@ export function PropertyResultsGrid({
   emptyState,
   className,
   columns = 3,
+  eager = false,
 }: {
   properties: Property[];
   isLoading?: boolean;
   emptyState?: React.ReactNode;
   className?: string;
   columns?: 2 | 3 | 4;
+  /**
+   * Resolve missing media immediately rather than on scroll. Worth it for a
+   * short, fully-visible grid; costly for a long result set.
+   */
+  eager?: boolean;
 }) {
   const onFavorite = useFavoriteAction();
   const sort = useSearchStore((s) => s.filters.sort) ?? "relevance";
@@ -204,6 +210,7 @@ export function PropertyResultsGrid({
           key={property._id}
           property={property}
           onFavoriteClick={() => void onFavorite(property._id)}
+          eager={eager}
         />
       ))}
     </div>

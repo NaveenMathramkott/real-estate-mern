@@ -361,3 +361,21 @@
   transform: translate(-50%, -100%) scale(1.12);
   z-index: 10;
 }
+
+/* -------------------------------------------------------- hero float loop */
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-9px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lg\:animate-\[float_7s_ease-in-out_infinite\] {
+    animation: none !important;
+  }
+}

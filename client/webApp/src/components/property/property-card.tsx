@@ -21,6 +21,10 @@ import {
 import { PROPERTY_TYPE_LABELS } from "@/lib/constants";
 import { PropertyCover } from "@/components/property/property-cover";
 import { propertyImages } from "@/features/property-images";
+import {
+  mergeProperty,
+  usePropertyDetails,
+} from "@/store/property-details-store";
 import type { Property, PropertyMedia } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -72,6 +76,7 @@ export function PropertyCard({
   onFavoriteClick,
   className,
   footer,
+  eager = false,
 }: {
   property: Property;
   media?: PropertyMedia[];
@@ -79,10 +84,15 @@ export function PropertyCard({
   onFavoriteClick: () => void;
   className?: string;
   footer?: React.ReactNode;
+  eager?: boolean;
 }) {
-  const images = propertyImages(property, media);
-  const perSqft = pricePerSqft(property.price, property.size);
-  const isVerified = Boolean(property.verifiedAt);
+  // `/favorites` and the dashboards hand back a field subset, so pull the full
+  // record when it has been resolved and fill in anything missing.
+  const resolved = usePropertyDetails((s) => s.details[property._id]);
+  const merged = mergeProperty(property, resolved);
+  const images = propertyImages(merged, media);
+  const perSqft = pricePerSqft(merged.price, merged.size);
+  const isVerified = Boolean(merged.verifiedAt);
 
   return (
     <article
@@ -96,6 +106,7 @@ export function PropertyCard({
         images={images}
         media={media}
         alt={property.title}
+        eager={eager}
         className="relative block aspect-[4/3] [&>img]:transition-transform [&>img]:duration-700 [&>img]:ease-out group-hover:[&>img]:scale-105"
       >
         <Link
@@ -107,7 +118,7 @@ export function PropertyCard({
         <div className="absolute inset-x-0 top-0 flex items-start justify-between p-3">
           <div className="flex flex-wrap gap-1.5">
             <Badge className="bg-background/92 text-foreground backdrop-blur-sm">
-              {property.purpose === "rent" ? "For rent" : "For sale"}
+              {merged.purpose === "rent" ? "For rent" : "For sale"}
             </Badge>
             {isVerified && (
               <Badge className="bg-success/95 text-success-foreground backdrop-blur-sm">
@@ -123,9 +134,9 @@ export function PropertyCard({
           />
         </div>
 
-        {property.status !== "active" && (
+        {merged.status !== "active" && (
           <div className="absolute inset-x-0 bottom-0 bg-foreground/85 px-3 py-1.5 text-center text-xs font-medium text-background capitalize backdrop-blur-sm">
-            {property.status}
+            {merged.status}
           </div>
         )}
 
@@ -158,41 +169,41 @@ export function PropertyCard({
               to={`/properties/${property._id}`}
               className="transition-colors hover:text-primary"
             >
-              {property.title}
+              {merged.title}
             </Link>
           </h3>
           <p className="text-muted-foreground flex items-start gap-1.5 text-xs">
             <MapPinIcon className="mt-0.5 size-3 shrink-0" />
             <span className="line-clamp-1">
-              {property.address ?? "Address on request"}
+              {merged.address ?? "Address on request"}
             </span>
           </p>
         </div>
 
         <div className="text-muted-foreground mt-auto flex flex-wrap items-center gap-x-3.5 gap-y-1.5 border-t pt-3 text-xs">
-          {property.beds !== undefined && (
+          {merged.beds !== undefined && (
             <span className="inline-flex items-center gap-1.5">
               <BedDoubleIcon className="size-3.5" />
-              {bedsLabel(property.beds)}
+              {bedsLabel(merged.beds)}
             </span>
           )}
-          {property.baths !== undefined && (
+          {merged.baths !== undefined && (
             <span className="inline-flex items-center gap-1.5">
               <BathIcon className="size-3.5" />
-              {property.baths} bath
+              {merged.baths} bath
             </span>
           )}
-          {property.size ? (
+          {merged.size ? (
             <span className="inline-flex items-center gap-1.5">
               <MaximizeIcon className="size-3.5" />
-              {formatSize(property.size)}
+              {formatSize(merged.size)}
             </span>
           ) : null}
         </div>
 
         <div className="flex flex-wrap items-center gap-1.5">
           <Badge variant="muted">
-            {PROPERTY_TYPE_LABELS[property.type] ?? property.type}
+            {PROPERTY_TYPE_LABELS[merged.type] ?? merged.type}
           </Badge>
           {property.furnished && property.furnished !== "unfurnished" && (
             <Badge variant="muted">
@@ -216,22 +227,28 @@ export function PropertyCard({
 
 /** Dense horizontal variant for dashboards and search results in map mode. */
 export function PropertyRow({
-  property,
+  property: base,
   media,
   onFavoriteClick,
   actions,
+  eager = false,
 }: {
   property: Property;
   media?: PropertyMedia[];
   onFavoriteClick: () => void;
   actions?: React.ReactNode;
+  eager?: boolean;
 }) {
+  const resolved = usePropertyDetails((s) => s.details[base._id]);
+  const property = mergeProperty(base, resolved);
+
   return (
     <article className="group bg-card flex gap-4 rounded-xl border p-3 transition-colors hover:border-primary/30">
       <PropertyCover
         property={property}
         media={media}
         alt={property.title}
+        eager={eager}
         iconSize="size-6"
         className="size-24 shrink-0 rounded-lg sm:size-28 [&>img]:transition-transform [&>img]:duration-500 group-hover:[&>img]:scale-105"
       >

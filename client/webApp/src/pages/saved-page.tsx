@@ -30,6 +30,9 @@ function asProperty(value: Favorite["propertyId"]): Property | null {
   return typeof value === "string" ? null : value;
 }
 
+/** Above this many cards, fall back to resolving on scroll. */
+const EAGER_LIMIT = 24;
+
 export function SavedPage() {
   const onFavorite = useFavoriteAction();
   const load = useFavoritesStore((s) => s.load);
@@ -92,12 +95,15 @@ export function SavedPage() {
         />
       )}
 
+      {/* A shortlist is short by definition, so every card is worth resolving
+          its media up front rather than as it scrolls past. */}
       <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
         {properties.map((property) => (
           <PropertyCard
             key={property._id}
             property={property}
             onFavoriteClick={() => void onFavorite(property._id)}
+            eager={properties.length <= EAGER_LIMIT}
           />
         ))}
       </div>
