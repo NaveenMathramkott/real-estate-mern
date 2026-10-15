@@ -500,18 +500,14 @@ export default function DashboardPage() {
       {isLoading && <LoadingBlock />}
       {error && <ErrorState message={error} onRetry={() => void refetch()} />}
 
-      {/*
-        The API echoes the caller's own role, so a consumer dashboard arrives
-        tagged "buyer" or "renter" and a lister one "agent" or "landlord".
-        Branching on the payload shape rather than the role keeps both correct.
-      */}
-      {!isLoading && !error && data && "portfolioValue" in data && (
+      {/* "portfolioValue" in data   && "favoriteSummary" in data*/}
+      {!isLoading && !error && data && (
         <ListerDashboard
           data={data as AgentDashboard}
           isLandlord={user?.role === "landlord"}
         />
       )}
-      {!isLoading && !error && data && "favoriteSummary" in data && (
+      {!isLoading && !error && data && (
         <BuyerDashboard data={data as BuyerDashboard} />
       )}
     </div>
