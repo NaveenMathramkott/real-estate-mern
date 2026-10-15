@@ -8,13 +8,7 @@ type MutationOptions<TArgs extends unknown[], TData> = {
   onSuccess?: (data: TData, ...args: TArgs) => void | Promise<void>;
   onError?: (error: Error, ...args: TArgs) => void | Promise<void>;
   successMessage?: string | ((data: TData) => string);
-  /**
-   * Overrides the default invalidation. By default every successful write
-   * drops the cached GET responses, because any write on this site changes
-   * something a list or detail page is showing — and a stale cache survives a
-   * reload, so a shortlist would otherwise appear to have lost the entry that
-   * was just added.
-   */
+  /** Overrides default invalidation, which drops cached GETs after any successful write. */
   invalidate?: () => void;
 };
 
@@ -23,15 +17,8 @@ export function invalidateReads() {
   queryStore.invalidate("get|");
 }
 
-/**
- * Wraps a write call with pending/error state, toast feedback and cache
- * invalidation.
- *
- * `mutate` / `mutateAsync` keep a stable identity, so the latest callbacks are
- * read from a ref. Without that, a mutation defined in a dialog would keep the
- * closure it captured on first render — which is what made every edit fall
- * through to the "create" branch while the dialog was still closed.
- */
+/** Wraps a write with pending/error state, toasts and cache invalidation. Callbacks are read
+ *  from a ref so a mutation defined in a dialog never keeps a stale closure. */
 export function useMutation<TArgs extends unknown[], TData>(
   options: MutationOptions<TArgs, TData>,
 ) {

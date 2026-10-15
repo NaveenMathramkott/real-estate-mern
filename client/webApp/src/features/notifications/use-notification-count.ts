@@ -2,10 +2,7 @@ import { notificationApi } from "@/lib/api";
 import { useQuery } from "@/hooks/use-query";
 import { useAuthStore } from "@/store/auth-store";
 
-/**
- * Unread badge count for the sidebar. Shares the query key with the
- * notifications page so marking one read updates both.
- */
+/** Sidebar unread badge. Shares a query key with the notifications page, so both update. */
 export function useNotificationCount() {
   const user = useAuthStore((s) => s.user);
   const { data } = useQuery(

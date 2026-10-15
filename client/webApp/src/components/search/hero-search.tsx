@@ -29,11 +29,7 @@ export type HeroSearchProps = {
   variant?: "hero" | "compact";
 };
 
-/**
- * Autocomplete over `GET /search/suggest`, which spans areas, cities, listing
- * titles and addresses. Typing is debounced and requests are cached, so a fast
- * typist doesn't fire a request per keystroke.
- */
+/** Autocomplete over GET /search/suggest, debounced and cached so typing stays cheap. */
 function useSuggestions(term: string) {
   const trimmed = term.trim();
   const enabled = trimmed.length >= 2;

@@ -42,11 +42,7 @@ type NavItem = {
   badge?: number;
 };
 
-/**
- * Sidebar contents depend on role — a buyer gets Saved and Reviews, a lister
- * gets Listings, Media and Enquiries. `admin` is not a self-service role on the
- * public site, so it borrows the lister view.
- */
+/** Role-aware sidebar: consumers get Saved and Reviews, listers get Listings and Enquiries. */
 function navForRole(role: string | undefined): {
   primary: NavItem[];
   secondary: NavItem[];
@@ -187,15 +183,11 @@ function SidebarBody({ onNavigate }: { onNavigate?: () => void }) {
   );
 }
 
-/**
- * Authenticated shell. Sidebar on desktop, a sheet on mobile, and the public
- * footer kept at the bottom so long pages still resolve.
- */
+/** Authenticated shell: sidebar on desktop, sheet on mobile, public footer kept. */
 export function AppLayout() {
   const location = useLocation();
-  // The drawer closes itself by becoming stale: it is only "open" while the
-  // route is still the one it was opened on, so navigation dismisses it
-  // without an effect.
+  // Open only while the route is still the one it was opened on, so navigating
+  // dismisses the drawer without an effect.
   const [openedOn, setOpenedOn] = React.useState<string | null>(null);
   const open = openedOn === location.pathname;
   const setOpen = (next: boolean) =>

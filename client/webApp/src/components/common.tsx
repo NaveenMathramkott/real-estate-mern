@@ -102,10 +102,7 @@ export function EmptyState({
   );
 }
 
-/**
- * Editorial section header — an eyebrow, a serif title and optional lede. Used
- * down the whole marketing side so the vertical rhythm stays consistent.
- */
+/** Editorial section header — eyebrow, serif title and optional lede. */
 export function SectionHeading({
   eyebrow,
   title,

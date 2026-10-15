@@ -3,10 +3,7 @@ import * as React from "react";
 
 import { cn } from "@/lib/utils";
 
-/**
- * Single-value or two-thumb range slider. The price filter uses the two-thumb
- * form; bed counts use the single-thumb form.
- */
+/** One- or two-thumb range slider. Price uses two thumbs, bed counts use one. */
 function Slider({
   className,
   ...props

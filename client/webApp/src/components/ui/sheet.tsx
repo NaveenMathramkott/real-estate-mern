@@ -20,10 +20,7 @@ const SIDE_CLASSES: Record<SheetSide, string> = {
     "inset-x-0 bottom-0 h-auto max-h-[92vh] rounded-t-2xl border-t data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom",
 };
 
-/**
- * Edge-anchored panel built on the Dialog primitive. Used for the mobile nav,
- * the results filter drawer and other overlay surfaces.
- */
+/** Edge-anchored panel on the Dialog primitive: mobile nav, filter drawer, overlays. */
 export function Sheet({
   side = "right",
   open,

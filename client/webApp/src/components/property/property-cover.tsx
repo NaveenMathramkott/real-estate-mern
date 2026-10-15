@@ -7,12 +7,7 @@ import { usePropertyDetails } from "@/store/property-details-store";
 import type { Property, PropertyMedia } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
-/**
- * Fires once when the element scrolls into view, so a card only asks for its
- * media when it is actually about to be seen. The callback is expected to be
- * memoised; a changing identity simply re-runs the effect, which bails out
- * once the trigger has fired.
- */
+/** Fires once on scroll-into-view, so a card only requests media when it is seen. */
 function useInView<T extends HTMLElement>(
   onEnter: () => void,
   options: IntersectionObserverInit = { rootMargin: "300px" },
@@ -52,15 +47,8 @@ function useInView<T extends HTMLElement>(
 /** Stable observer config, so the effect above does not re-run every render. */
 const VIEWPORT_MARGIN: IntersectionObserverInit = { rootMargin: "300px" };
 
-/**
- * Cover image for a listing.
- *
- * Three states, in order of preference: images already on the payload, media
- * fetched on demand because the endpoint returned a partial property, and
- * seeded artwork. The artwork also replaces an image that fails to load —
- * third-party thumbnail links in this dataset go stale, and a broken-image
- * glyph is far worse than an empty, on-brand panel.
- */
+/** Cover image: payload images, else media fetched on demand, else seeded artwork — which
+ *  also replaces an image that fails to load, since third-party thumbnails go stale. */
 export function PropertyCover({
   property,
   images,

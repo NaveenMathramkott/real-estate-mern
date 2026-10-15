@@ -3,11 +3,7 @@ import type { Role } from "./types";
 /** Roles that publish listings — the ones the API lets create and own stock. */
 export const LISTER_ROLES: Role[] = ["agent", "landlord", "admin"];
 
-/**
- * Roles a self-serve registration form may pick. `admin` is deliberately
- * excluded — the API allows self-selection today, but the docs flag that as
- * something to restrict before deploying.
- */
+/** Roles self-service signup may pick. `admin` is excluded until the API restricts it. */
 export const SELECTABLE_ROLES: Role[] = [
   "buyer",
   "renter",

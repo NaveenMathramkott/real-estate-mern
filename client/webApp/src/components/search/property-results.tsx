@@ -165,10 +165,7 @@ export function PropertyResultsGrid({
   emptyState?: React.ReactNode;
   className?: string;
   columns?: 2 | 3 | 4;
-  /**
-   * Resolve missing media immediately rather than on scroll. Worth it for a
-   * short, fully-visible grid; costly for a long result set.
-   */
+  /** Resolve media immediately rather than on scroll; costly for a long result set. */
   eager?: boolean;
 }) {
   const onFavorite = useFavoriteAction();

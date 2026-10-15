@@ -76,12 +76,8 @@ export interface Property {
   status: PropertyStatus;
   verifiedAt?: string | null;
   availableFrom?: string;
-  /**
-   * Image urls derived from the property's media, and the first of them.
-   * `GET /properties` attaches both so a result grid can render covers without
-   * a detail request per card. Not schema paths — the controller spreads them
-   * onto a plain object.
-   */
+  /** Image urls and the first of them, attached by GET /properties so a grid needs no detail
+   *  request per card. Not schema paths — the controller spreads them onto a plain object. */
   images?: string[];
   thumbnail?: string | null;
   createdAt: string;

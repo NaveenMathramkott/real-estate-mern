@@ -3,11 +3,7 @@ import { persist } from "zustand/middleware";
 
 import type { SortOption } from "@/lib/constants";
 
-/**
- * Mirrors the `GET /properties` query contract. Every field is optional and the
- * values here are exactly what gets sent as query params, so the store doubles
- * as the API request shape.
- */
+/** Mirrors the GET /properties query contract, so the store doubles as the request shape. */
 export type SearchFilters = {
   q?: string;
   purpose?: "rent" | "buy";

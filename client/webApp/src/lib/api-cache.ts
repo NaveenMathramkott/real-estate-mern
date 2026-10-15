@@ -1,16 +1,5 @@
-/**
- * In-memory response cache for GET requests.
- *
- * Every entry carries a hard expiry plus the time it was written, which lets
- * callers decide whether a cached value may be shown without a network round
- * trip. Requests are de-duplicated so several components asking for the same
- * key share one call.
- *
- * Deliberately memory-only: an earlier version also mirrored entries into
- * sessionStorage, and because that survives a reload it made every page look
- * frozen at whatever it had fetched last. Freshness on navigation matters more
- * here than a faster first paint.
- */
+// In-memory response cache for GETs, with a hard expiry and a write timestamp so callers
+// can judge staleness. Memory-only: mirroring to sessionStorage froze pages on reload.
 
 type Entry = { value: unknown; expires: number; storedAt: number };
 type Pending = Promise<unknown>;

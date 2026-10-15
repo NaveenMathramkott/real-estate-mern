@@ -37,11 +37,7 @@ export function PropertyGallery({
   const [tab, setTab] = React.useState<(typeof MEDIA_TABS)[number]>("image");
   const [lightbox, setLightbox] = React.useState(false);
 
-  /**
-   * Image media is the ordered source of truth, but a payload can carry only
-   * the `images` array — synthesising entries for those keeps the carousel,
-   * the lightbox and the counter working on either shape.
-   */
+  /** Image media is the source of truth; synthesise entries when only `images` is present. */
   const gallery = React.useMemo(() => {
     const fromMedia = media
       .filter((item) => item.type === "image")

@@ -5,11 +5,7 @@ import { toast } from "@/store/toast-store";
 import { useAuthStore } from "@/store/auth-store";
 import { useFavoritesStore } from "@/store/favorites-store";
 
-/**
- * Single entry point for the heart button so every surface behaves the same:
- * signed out → send to sign-in with a return path, signed in → optimistic toggle
- * plus a confirmation toast.
- */
+/** One entry point for the heart: signed out to sign-in, signed in to an optimistic toggle. */
 export function useFavoriteAction() {
   const navigate = useNavigate();
   const user = useAuthStore((s) => s.user);

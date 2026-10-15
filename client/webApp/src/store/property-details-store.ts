@@ -4,18 +4,8 @@ import { propertyApi } from "@/lib/api";
 import { propertyImages } from "@/features/property-images";
 import type { Property } from "@/lib/types";
 
-/**
- * Enriches the partial property objects that some endpoints return.
- *
- * `GET /properties` attaches an `images` array and a `thumbnail` itself, but
- * `/favorites` and the dashboards populate only a field subset — no media, no
- * `size`, no `baths`. Rather than change every call site, cards ask this store
- * for the full record and it resolves it on demand.
- *
- * Resolution is deliberately lazy: a hook in `property-cover` triggers it only
- * when the card scrolls into view, so a 20-item grid costs a handful of
- * requests rather than twenty, and each property is fetched once per session.
- */
+// Enriches the partial properties some endpoints return: /favorites and the dashboards
+// populate no media, size or baths. Cards ask this store and it resolves them on demand.
 
 type State = {
   details: Record<string, Property>;
@@ -43,9 +33,7 @@ export const usePropertyDetails = create<State>((set, get) => ({
       const data = await propertyApi.detail(propertyId);
       const property = data.property;
       if (property) {
-        // The detail endpoint returns media separately; only the list endpoint
-        // derives `images`/`thumbnail` from it, so do the same here or the
-        // card would resolve with nothing to show.
+        // The detail endpoint returns media separately, so derive `images` here too.
         const images = propertyImages(property, data.media);
         const enriched: Property = {
           ...property,
@@ -75,11 +63,7 @@ export const usePropertyDetails = create<State>((set, get) => ({
   clear: () => set({ details: {}, loading: {}, failed: {} }),
 }));
 
-/**
- * The best version of a property available: the caller's copy, overlaid with
- * anything the detail endpoint knows. The caller's values win, so a newer list
- * response is never rolled back by a stale cache entry.
- */
+/** Caller's copy overlaid with the detail record; caller values win so fresh data is kept. */
 export function useResolvedProperty(
   property?: Pick<Property, "_id"> | null,
 ): (Property & Record<string, unknown>) | undefined {

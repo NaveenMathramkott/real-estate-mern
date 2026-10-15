@@ -1,13 +1,7 @@
 import type { Property, PropertyMedia } from "@/lib/types";
 
-/**
- * The property's image urls, in display order.
- *
- * Search and listing responses already carry `images` (plus a `thumbnail`
- * shortcut) assembled by the API from the property's media, so a card never
- * needs its own detail request. The detail endpoint returns `media` instead,
- * so both sources are accepted and merged with `images` winning on order.
- */
+// Image urls in display order. List responses already carry `images`; the detail endpoint
+// returns `media` instead, so both are accepted with `images` winning.
 export function propertyImages(
   property?: Pick<Property, "images" | "thumbnail"> | null,
   media?: PropertyMedia[],
@@ -38,11 +32,7 @@ export function propertyCover(
   return propertyImages(property, media)[0];
 }
 
-/**
- * Deterministic gradient so an image-less listing still reads as designed
- * rather than as a broken card. Seeded from the id, so a given listing always
- * gets the same artwork.
- */
+/** Deterministic gradient so an image-less listing still reads as designed, not broken. */
 export function placeholderArt(property?: Pick<Property, "_id" | "title">) {
   const seed = (property?._id ?? property?.title ?? "")
     .split("")
@@ -50,18 +40,5 @@ export function placeholderArt(property?: Pick<Property, "_id" | "title">) {
   const hue = 150 + (seed % 90);
   return {
     backgroundImage: `linear-gradient(135deg, oklch(0.95 0.03 ${hue}) 0%, oklch(0.88 0.06 ${hue + 18}) 55%, oklch(0.82 0.07 ${hue + 30}) 100%)`,
-  };
-}
-
-/**
- * A cover image that survives a dead URL. Google thumbnail links are short
- * lived, so an `onError` that falls back to the artwork stops the browser's
- * broken-image glyph taking over the card.
- */
-export function coverImageProps(property?: Pick<Property, "_id" | "title">) {
-  const art = placeholderArt(property);
-  return {
-    art,
-    style: { backgroundImage: art.backgroundImage },
   };
 }

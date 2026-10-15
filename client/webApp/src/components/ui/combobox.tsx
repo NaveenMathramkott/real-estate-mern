@@ -39,15 +39,8 @@ export type ComboboxProps = {
   id?: string;
 };
 
-/**
- * A searchable dropdown built on Popover rather than a native `<select>`.
- *
- * The list is filtered client-side over the options it is given, so callers own
- * fetching and can pass whatever slice of their catalogue they already hold.
- * Keyboard handling is manual: arrows move the active row, Enter commits it,
- * Escape closes. Only the highlighted row is ever reachable, which keeps the
- * list usable without a mouse.
- */
+/** Searchable Popover dropdown, filtered client-side so callers own fetching. Only the
+ *  highlighted row is reachable, which keeps the list usable without a mouse. */
 export function Combobox({
   options,
   value,

@@ -64,10 +64,7 @@ const ReviewsPage = lazy(() =>
 );
 const NotFoundPage = lazy(() => import("@/pages/not-found-page"));
 
-/**
- * Blocks a route for signed-out visitors, remembering where they were headed so
- * sign-in can return them there.
- */
+/** Blocks a route for signed-out visitors, remembering where they were headed. */
 function RequireAuth({ children }: { children: ReactNode }) {
   const status = useAuthStore((s) => s.status);
   const user = useAuthStore((s) => s.user);

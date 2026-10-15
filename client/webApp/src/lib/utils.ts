@@ -5,13 +5,8 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-/**
- * React key for a form dialog driven by a selected record.
- *
- * Returning a distinct value for "closed" forces a remount on both open and
- * close, so a form's `useState` initialiser re-runs and an edit dialog opens
- * pre-filled with the record being edited.
- */
+/** React key for a form dialog bound to a record; a distinct value per selection forces the
+ *  dialog to remount, so its state initialiser re-runs and the form opens pre-filled. */
 export function formKey(
   target?: { _id?: string | null } | string | null,
 ): string {

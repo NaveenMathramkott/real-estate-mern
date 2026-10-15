@@ -13,11 +13,7 @@ type Record_ = {
   at: number;
 };
 
-/**
- * Immutable snapshot handed to React. A new object is only allocated when the
- * underlying record actually changes, which is what lets
- * `useSyncExternalStore` detect updates via its `Object.is` comparison.
- */
+/** Snapshot for React; a new object is allocated only when the record actually changes. */
 type Snapshot = Readonly<Record_>;
 
 type Listener = () => void;
@@ -85,11 +81,7 @@ export const queryStore = {
     };
   },
 
-  /**
-   * Reads are lazy so a warm entry resolves on the very first render without a
-   * network round trip. The snapshot object is reused until the record changes,
-   * keeping React's change detection correct.
-   */
+  /** Lazy read, so a warm entry resolves on first render with no network round trip. */
   snapshot(key: string): Snapshot {
     const cached = snapshots.get(key);
     if (cached) return cached;
@@ -123,10 +115,7 @@ export const queryStore = {
     return apiCache.peek<T>(key);
   },
 
-  /**
-   * Publish a resolved request. The api layer already cached the value with the
-   * endpoint's own TTL, so this only updates the store.
-   */
+  /** Publish a resolved request; the api layer has already cached the value. */
   applyResult(key: string, data: unknown) {
     write(key, { data, error: undefined, status: "success" });
   },
@@ -162,10 +151,7 @@ export const queryStore = {
     inflight.delete(key);
   },
 
-  /**
-   * Drop every entry whose key starts with one of the prefixes and bump its
-   * version, so mounted consumers refetch automatically.
-   */
+  /** Drop matching keys and bump their version so mounted consumers refetch. */
   invalidate(...prefixes: string[]) {
     apiCache.invalidate(...prefixes);
     for (const key of records.keys()) {
@@ -181,10 +167,7 @@ export const queryStore = {
     }
   },
 
-  /**
-   * Marks every key as needing a refetch while keeping the current data on
-   * screen, so a pull-to-refresh or a mutation does not blank the page.
-   */
+  /** Marks keys stale but keeps their data, so a refresh does not blank the page. */
   markAllStale() {
     for (const key of records.keys()) {
       write(key, { status: "idle" }, { bumpVersion: true });

@@ -28,10 +28,7 @@ export function setUnauthorizedHandler(fn: () => void) {
   onUnauthorized = fn;
 }
 
-/**
- * Set once a refresh has failed for this session. Without it every request
- * would fire its own `POST /auth/refresh` before giving up.
- */
+/** Set once a refresh has failed, so later requests stop firing their own. */
 let refreshUnavailable = false;
 
 /** Cleared whenever we obtain fresh credentials. */
@@ -142,17 +139,10 @@ type RequestOptions = AxiosRequestConfig & {
   fresh?: boolean;
 };
 
-/**
- * Depth counter for cache bypass. A background revalidation has to reach the
- * server even though a warm entry exists, and the fetchers passed to
- * `useQuery` are plain closures that cannot thread a `fresh` flag through.
- */
+/** Depth counter for cache bypass, used when a revalidation must reach the server. */
 let bypassDepth = 0;
 
-/**
- * Runs `fn` with the GET response cache disabled, so the call inside is a real
- * network request rather than a cache hit. Used for background revalidation.
- */
+/** Runs `fn` with the GET response cache disabled, forcing a real network request. */
 export async function withFreshCache<T>(fn: () => Promise<T>): Promise<T> {
   bypassDepth += 1;
   try {

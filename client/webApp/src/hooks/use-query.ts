@@ -30,25 +30,12 @@ export type QueryResult<T> = {
 
 export type UseQueryOptions = {
   enabled?: boolean;
-  /**
-   * How long data may be reused without a network call. Defaults to `0`, so
-   * every mount revalidates — navigating back to a page should never show a
-   * result set frozen from a minute ago. Raise it for hot keys like
-   * autocomplete, where the extra chatter is not worth it.
-   */
+  /** How long data may be reused. Defaults to 0 so every mount revalidates; raise for hot keys. */
   staleTime?: number;
 };
 
-/**
- * Read-through query hook layered on the shared response cache.
- *
- * State lives in an external store so several components asking for the same
- * key share one request and one cache entry. The important behaviour is
- * revalidation: a query re-runs every time it becomes active. Cached data stays
- * on screen while the refresh is in flight, so revisiting a page is instant
- * *and* current — the earlier version only fetched while a key was `idle`,
- * which meant a key that had once succeeded never refreshed again.
- */
+/** Read-through query over a shared store, so one key means one request. Revalidates whenever
+ *  the query becomes active, keeping cached data on screen while it refreshes underneath. */
 export function useQuery<T>(
   key: string | null,
   fetcher: () => Promise<T>,

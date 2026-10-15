@@ -17,10 +17,7 @@ import { DEFAULT_CENTER, DEFAULT_ZOOM } from "@/lib/constants";
 import type { Property, PropertyMapBounds } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
-/**
- * Leaflet needs a CDN icon fixup under bundlers — the default marker images are
- * resolved relative to CSS and silently 404 otherwise.
- */
+/** Leaflet default marker images 404 under bundlers; point them at a CDN. */
 function useDefaultIconFix() {
   useEffect(() => {
     L.Icon.Default.mergeOptions({
@@ -63,14 +60,8 @@ function FitBounds({ bounds }: { bounds?: PropertyMapBounds | null }) {
   return null;
 }
 
-/**
- * Pans the map when the centre genuinely changes.
- *
- * Two guards matter here: the key check skips the redundant pan that StrictMode
- * and the first paint both trigger, and the size check avoids Leaflet's
- * projection step entirely on a container that has not been laid out yet — it
- * throws `Invalid LatLng object: (NaN, NaN)` on a zero-sized map.
- */
+// Pans on a genuine centre change. The key check skips the StrictMode and first-paint pan,
+// and the size check avoids a NaN projection on a container not yet laid out.
 function Recenter({ center }: { center: [number, number] }) {
   const map = useMap();
   const last = useRef<string | null>(null);
@@ -98,11 +89,7 @@ function Recenter({ center }: { center: [number, number] }) {
 
 export type DrawMode = "none" | "draw";
 
-/**
- * Draws the search area. The API rejects unclosed rings, so the first point is
- * appended automatically on close — this is the single most common 400 from
- * this endpoint, so it is handled here rather than at the call site.
- */
+/** Draws the search area. The API rejects unclosed rings, so the first point is appended. */
 function DrawControl({
   mode,
   onComplete,

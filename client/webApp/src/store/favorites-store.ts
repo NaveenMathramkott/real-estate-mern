@@ -58,10 +58,7 @@ export const useFavoritesStore = create<FavoritesState>((set, get) => ({
     }
   },
 
-  /**
-   * Flips the shortlist optimistically and rolls back if the server refuses.
-   * Returns the resulting state so the caller can drive its own toast copy.
-   */
+  /** Optimistic shortlist toggle that rolls back if the server refuses. */
   toggle: async (propertyId) => {
     const user = useAuthStore.getState().user;
     if (!user) return false;

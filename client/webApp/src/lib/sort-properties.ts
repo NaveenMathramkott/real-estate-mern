@@ -1,10 +1,7 @@
 import type { SortOption } from "@/lib/constants";
 import type { Property } from "@/lib/types";
 
-/**
- * Client-side ordering. `GET /properties` accepts no `sort` param, so sorting
- * happens here over the current page rather than triggering a refetch.
- */
+/** Client-side ordering; GET /properties has no sort param, so this never refetches. */
 export function sortProperties(properties: Property[], sort: SortOption) {
   const copy = [...properties];
   switch (sort) {

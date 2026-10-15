@@ -35,9 +35,8 @@ export function FilterPanel({ className }: { className?: string }) {
   const toggleArrayFilter = useSearchStore((s) => s.toggleArrayFilter);
   const reset = useSearchStore((s) => s.reset);
 
-  // The slider is always two-thumb; the API reads priceMin/priceMax off it.
-  // Re-keyed on the committed bounds so chips and presets outside this panel
-  // drag the handles with them.
+  // Always two-thumb, re-keyed on the committed bounds so chips and presets set
+  // elsewhere in the page drag the handles with them.
   const priceKey = `${filters.priceMin ?? 0}:${filters.priceMax ?? 0}`;
   const [sliderValue, setSliderValue] = useResettableState<[number, number]>(
     () => [filters.priceMin ?? 0, filters.priceMax ?? PRICE_CEILING],

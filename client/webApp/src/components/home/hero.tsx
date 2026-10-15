@@ -34,15 +34,8 @@ function usePrefersReducedMotion() {
   return reduce;
 }
 
-/**
- * Counts from zero to `value` whenever the value changes.
- *
- * Deliberately not gated on an IntersectionObserver: the first render carries
- * `0` while the query is in flight, and an observer that fired during that
- * window would latch at zero and never animate the real figure once it
- * arrived. The hero stats sit above the fold, so there is nothing to gain by
- * waiting for visibility.
- */
+// Counts to `value` on every change. Not gated on an IntersectionObserver: the first
+// render carries 0 while the query loads, so an early trigger would latch at zero.
 function CountUp({
   value,
   format,
@@ -167,10 +160,7 @@ function DrawCard({ className, delay }: { className?: string; delay: string }) {
   );
 }
 
-/**
- * A listing card that floats over the hero. Uses a real listing when one is
- * available so the collage reflects live inventory rather than a mock-up.
- */
+/** Floating hero card. Uses a real listing so the collage reflects live inventory. */
 function FloatingCard({
   property,
   className,
@@ -223,10 +213,7 @@ function FloatingCard({
   );
 }
 
-/**
- * The hero leans on the pointer for a shallow parallax. Disabled for touch and
- * for anyone who has asked for reduced motion.
- */
+/** Pointer parallax for the hero collage; off on touch and reduced motion. */
 function usePointerParallax() {
   const [offset, setOffset] = React.useState({ x: 0, y: 0 });
 

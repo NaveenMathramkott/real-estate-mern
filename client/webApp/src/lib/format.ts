@@ -153,11 +153,7 @@ export function pluralise(count: number, singular: string, plural?: string) {
   return `${formatNumber(count)} ${count === 1 ? singular : (plural ?? `${singular}s`)}`;
 }
 
-/**
- * Reads the id out of a reference that may arrive as a bare id or as a
- * populated document — list endpoints populate `ownerId`/`agentId`, detail
- * endpoints usually do not.
- */
+/** Reads an id from a reference that may be a bare id or a populated document. */
 export function idOf(value: unknown): string | undefined {
   if (typeof value === "string") return value;
   if (value && typeof value === "object" && "_id" in value) {

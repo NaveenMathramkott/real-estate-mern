@@ -30,10 +30,7 @@ import { MEDIA_TYPES } from "@/lib/constants";
 import { toast } from "@/store/toast-store";
 import { cn } from "@/lib/utils";
 
-/**
- * Media is attached by URL — the API does not accept multipart uploads yet, so
- * this manager handles ordering and removal and takes a hosted link for adds.
- */
+/** Media attaches by URL only — the API has no multipart upload yet. */
 export function MediaManager({ propertyId }: { propertyId: string }) {
   const navigate = useNavigate();
   const { data, isLoading, error, refetch } = useQuery(

@@ -12,10 +12,7 @@ type Props = {
 
 type State = { error: Error | null };
 
-/**
- * Keeps one failing screen from blanking the whole console. Renders a recovery
- * panel instead, with a retry that clears the error and remounts the subtree.
- */
+/** Keeps one failing screen from blanking the app; renders a retry panel instead. */
 export class ErrorBoundary extends React.Component<Props, State> {
   state: State = { error: null };
 
