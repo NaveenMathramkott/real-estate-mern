@@ -28,7 +28,7 @@ const propertySchema = new mongoose.Schema(
     },
     currency: {
       type: String,
-      default: "INR",
+      default: "AED",
     },
     size: {
       type: Number,

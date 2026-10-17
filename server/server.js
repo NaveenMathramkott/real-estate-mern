@@ -33,7 +33,12 @@ const server = http.createServer(app);
 connectDB();
 
 //middleWare
-app.use(cors({ origin: process.env.CLIENT_URL, credentials: true }));
+app.use(
+  cors({
+    origin: [process.env.CLIENT_URL, process.env.CLIENT_WEB_URL],
+    credentials: true,
+  }),
+);
 app.use(express.json({ limit: "10mb" }));
 app.use(cookieParser());
 
