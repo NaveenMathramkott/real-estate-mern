@@ -15,6 +15,7 @@ import {
   PageHeader,
   Panel,
 } from "@/components/common";
+import { LocationField } from "@/features/shared/location-field";
 import { ConfirmDialog, Pagination } from "@/features/shared/widgets";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -33,7 +34,8 @@ import { useQuery } from "@/hooks/use-query";
 import { queryStore } from "@/lib/query-store";
 import { formKey } from "@/lib/utils";
 import { buildingApi } from "@/lib/api";
-import { formatCurrency, formatShortDate } from "@/lib/format";
+import { coordinatesToLatLng, formatCurrency, formatShortDate } from "@/lib/format";
+import type { LatLng } from "@/lib/geo";
 import { pick, pickList, pickPagination } from "@/lib/safe";
 import type { Building, Property, Review } from "@/lib/types";
 
@@ -379,6 +381,12 @@ function BuildingDialog({
     yearBuilt: building?.yearBuilt ? String(building.yearBuilt) : "",
     amenities: (building?.amenities ?? []).join(", "),
   }));
+  const [location, setLocation] = React.useState<LatLng | undefined>(
+    () =>
+      coordinatesToLatLng(building?.location?.coordinates ?? undefined) ??
+      undefined,
+  );
+  const [error, setError] = React.useState<string>();
 
   const save = useMutation({
     mutationFn: (payload: Partial<Building>) =>
@@ -392,17 +400,57 @@ function BuildingDialog({
     },
   });
 
+  const submit = async () => {
+    setError(undefined);
+
+    if (!draft.name.trim()) {
+      setError("Name is required");
+      return;
+    }
+    // The server rejects a create without location.coordinates, so a missing
+    // point fails here rather than as an opaque 400.
+    if (!location) {
+      setError(
+        "Location is required — click the map, type the coordinates, or paste a Google Maps link.",
+      );
+      return;
+    }
+
+    try {
+      await save.mutateAsync({
+        name: draft.name,
+        developer: draft.developer || undefined,
+        yearBuilt: draft.yearBuilt ? Number(draft.yearBuilt) : undefined,
+        amenities: draft.amenities
+          .split(",")
+          .map((item) => item.trim())
+          .filter(Boolean),
+        // GeoJSON is [lng, lat], the reverse of the lat/lng inputs above.
+        location: { type: "Point", coordinates: [location.lng, location.lat] },
+      });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Could not save the building");
+    }
+  };
+
   return (
     <Dialog open={Boolean(state)} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-lg">
+      <DialogContent className="sm:max-w-6xl h-11/12 overflow-y-auto scrollbar-track-transparent">
         <DialogHeader>
           <DialogTitle>
             {isNew ? "Create building" : `Edit ${building?.name}`}
           </DialogTitle>
           <DialogDescription>
-            Amenities are stored as a comma-separated list.
+            Amenities are stored as a comma-separated list. Location uses GeoJSON{" "}
+            <span className="font-mono">[lng, lat]</span> order.
           </DialogDescription>
         </DialogHeader>
+
+        {error && (
+          <div className="border-destructive/40 bg-destructive/8 text-destructive rounded-lg border px-3 py-2 text-sm">
+            {error}
+          </div>
+        )}
 
         <div className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-1.5 sm:col-span-2">
@@ -445,26 +493,20 @@ function BuildingDialog({
           </div>
         </div>
 
+        <LocationField
+          mode="point"
+          label="Location"
+          hint="Click the map, enter the coordinates, or paste a Google Maps link. Stored as a GeoJSON point in [lng, lat] order."
+          point={location}
+          onPointChange={setLocation}
+          onRingChange={() => undefined}
+        />
+
         <DialogFooter>
           <Button variant="outline" onClick={onClose}>
             Cancel
           </Button>
-          <Button
-            disabled={save.isPending}
-            onClick={() =>
-              void save.mutateAsync({
-                name: draft.name,
-                developer: draft.developer || undefined,
-                yearBuilt: draft.yearBuilt
-                  ? Number(draft.yearBuilt)
-                  : undefined,
-                amenities: draft.amenities
-                  .split(",")
-                  .map((item) => item.trim())
-                  .filter(Boolean),
-              })
-            }
-          >
+          <Button disabled={save.isPending} onClick={() => void submit()}>
             {isNew ? "Create building" : "Save changes"}
           </Button>
         </DialogFooter>
