@@ -1,6 +1,5 @@
-import { Link, useRouteLoaderData } from "react-router";
-import type { Route } from "./+types/home";
-import type { loader as rootLoader } from "~/root";
+import * as React from "react";
+import { Link } from "react-router";
 import { ArrowRightIcon, StarIcon } from "lucide-react";
 
 import { Logo } from "~/components/docs/logo";
@@ -12,11 +11,12 @@ import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { NAV_SECTIONS } from "~/content/nav";
 import { SECTIONS } from "~/content/registry";
+import { useRouteLoaderData } from "react-router";
+import type { loader as rootLoader } from "~/root";
 import { REPO_URL, REPO_STAR_URL } from "~/lib/site";
+import { cn } from "~/lib/utils";
 
-type Meta = Array<{ title: string } | { name: string; content: string }>;
-
-export function meta(): Meta {
+export function meta() {
   return [
     { title: "Tenementary Storybook — the complete full-stack build" },
     {
@@ -66,7 +66,7 @@ export default function Home() {
   const { repoStats: stats } = useRouteLoaderData<typeof rootLoader>("root")!;
 
   return (
-    <div className="bg-background min-h-screen">
+    <div className="bg-background flex min-h-screen flex-col overflow-x-clip">
       {/* --------------------------------- header -------------------------------- */}
       <header className="bg-background/85 sticky top-0 z-40 border-b backdrop-blur-md">
         <div className="mx-auto flex h-16 w-full max-w-6xl items-center gap-2 px-4 sm:gap-4 sm:px-8">
@@ -87,61 +87,73 @@ export default function Home() {
       </header>
 
       {/* ---------------------------------- hero --------------------------------- */}
-      <section className="relative overflow-hidden border-b">
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-0 opacity-[0.35]"
-          style={{
-            backgroundImage:
-              "radial-gradient(circle at 20% 0%, color-mix(in oklch, var(--primary) 22%, transparent), transparent 45%), radial-gradient(circle at 85% 10%, color-mix(in oklch, var(--gold) 18%, transparent), transparent 40%)",
-          }}
-        />
-        <div className="relative mx-auto w-full max-w-6xl px-5 py-20 sm:px-8 sm:py-28">
-          <Badge variant="secondary" className="mb-6">
-            <span className="bg-primary mr-1.5 inline-block size-1.5 rounded-full" />
-            Open source · free for learning
-          </Badge>
 
-          <h1 className="max-w-3xl text-4xl leading-[1.08] font-semibold tracking-tight text-balance sm:text-6xl">
-            The complete build of{" "}
-            <span className="text-primary">Tenementary Full Stack App</span>
-          </h1>
+      <section className="border-b">
+        <div className="relative mx-auto w-full max-w-6xl px-5 py-16 text-center sm:px-8 sm:py-20">
+          <div className="mx-auto max-w-3xl">
+            <Badge variant="secondary" className="mb-6">
+              <span className="bg-primary mr-1.5 inline-block size-1.5 rounded-full" />
+              Open source · free for learning
+            </Badge>
 
-          <p className="text-muted-foreground mt-6 max-w-2xl text-lg leading-relaxed text-pretty sm:text-xl">
-            A real-estate marketplace built as four separate applications on one
-            shared API. This storybook walks the entire system in the order it
-            was actually built — the backend, then the admin console, then the
-            public web app, then the mobile app — with every endpoint, model,
-            screen and design decision documented as it exists in the code.
-          </p>
+            <h1 className="text-4xl leading-[1.08] font-semibold tracking-tight text-balance sm:text-6xl">
+              The complete build of{" "}
+              <span className="text-primary">Tenementary</span>
+            </h1>
 
-          <div className="mt-9 flex flex-wrap items-center gap-3">
-            <Button asChild size="lg">
-              <Link to={`/docs/${first.slug}`}>
-                Read the documentation
-                <ArrowRightIcon />
-              </Link>
-            </Button>
-            <Button asChild size="lg" variant="outline">
-              <a href={REPO_STAR_URL} target="_blank" rel="noreferrer noopener">
-                <StarIcon />
-                Star on GitHub
-              </a>
-            </Button>
+            <p className="text-muted-foreground mt-6 text-lg leading-relaxed text-pretty sm:text-xl">
+              A real-estate marketplace built as four separate applications on
+              one shared API. This storybook walks the entire system in the
+              order it was actually built — the backend, then the admin console,
+              then the public web app, then the mobile app — with every
+              endpoint, model, screen and design decision documented as it
+              exists in the code.
+            </p>
+
+            <div className="mt-9 flex flex-wrap items-center justify-center gap-3">
+              <Button asChild size="lg">
+                <Link to={`/docs/${first.slug}`}>
+                  Read the documentation
+                  <ArrowRightIcon />
+                </Link>
+              </Button>
+              <Button asChild size="lg" variant="outline">
+                <a
+                  href={REPO_STAR_URL}
+                  target="_blank"
+                  rel="noreferrer noopener"
+                >
+                  <StarIcon />
+                  Star on GitHub
+                </a>
+              </Button>
+            </div>
+
+            <dl className="mt-16 grid grid-cols-2 gap-x-8 gap-y-6 sm:grid-cols-4">
+              {STATS.map((stat) => (
+                <div key={stat.label}>
+                  <dt className="text-3xl font-semibold tracking-tight">
+                    {stat.value}
+                  </dt>
+                  <dd className="text-muted-foreground mt-1 text-sm">
+                    {stat.label}
+                  </dd>
+                </div>
+              ))}
+            </dl>
           </div>
 
-          <dl className="mt-16 grid max-w-2xl grid-cols-2 gap-x-8 gap-y-6 sm:grid-cols-4">
-            {STATS.map((stat) => (
-              <div key={stat.label}>
-                <dt className="text-3xl font-semibold tracking-tight">
-                  {stat.value}
-                </dt>
-                <dd className="text-muted-foreground mt-1 text-sm">
-                  {stat.label}
-                </dd>
-              </div>
-            ))}
-          </dl>
+          <div className="mx-auto mt-16 w-full max-w-4xl">
+            <figure className="overflow-hidden rounded-2xl border shadow-sm">
+              <img
+                src="/tenementary_feature_graphic.png"
+                alt="Tenementary — real estate marketplace for the web and mobile"
+                className="block w-full bg-white"
+                loading="eager"
+                decoding="async"
+              />
+            </figure>
+          </div>
         </div>
       </section>
 
@@ -221,7 +233,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* --------------------------------- footer -------------------------------- */}
       <SiteFooter width="narrow" />
     </div>
   );

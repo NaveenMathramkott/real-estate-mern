@@ -1,0 +1,22 @@
+import { chromium } from 'playwright';
+const b = await chromium.launch();
+const p = await b.newPage({ viewport:{width:1600,height:1000}, deviceScaleFactor:2 });
+const errs=[];
+p.on('console',m=>{if(m.type()==='error')errs.push(m.text().slice(0,150))});
+p.on('pageerror',e=>errs.push('PAGEERROR: '+e.message.slice(0,150)));
+await p.goto('http://localhost:3000/',{waitUntil:'networkidle'});
+await p.waitForTimeout(600);
+await p.screenshot({ path:'/tmp/home-hero.png' });
+const img = await p.evaluate(()=>{
+  const im=document.querySelector('img[src="/tenementary_feature_graphic.png"]');
+  const r=im.getBoundingClientRect();
+  const sec=im.closest('section').getBoundingClientRect();
+  return { imgW:Math.round(r.width), imgH:Math.round(r.height), sectionH:Math.round(sec.height), imgTop:Math.round(r.top-sec.top), imgVisible:r.width>0&&r.height>0 };
+});
+console.log('hero image:', img);
+await p.evaluate(()=>window.scrollTo(0,document.body.scrollHeight));
+await p.waitForTimeout(500);
+await p.screenshot({ path:'/tmp/home-footer.png' });
+console.log('footer links:', await p.evaluate(()=>[...document.querySelectorAll('footer a')].map(a=>a.href)));
+console.log('errors:', errs.length?errs:'NONE');
+await b.close();
