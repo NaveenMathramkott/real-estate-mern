@@ -4,6 +4,7 @@ import { XIcon } from "lucide-react";
 
 import { Logo } from "~/components/docs/logo";
 import { DocsSidebar } from "~/components/docs/sidebar";
+import { SiteFooter } from "~/components/docs/site-footer";
 import { SiteHeader, Breadcrumbs } from "~/components/docs/site-header";
 import { TableOfContents } from "~/components/docs/toc";
 import type { Heading } from "~/content/types";
@@ -58,7 +59,7 @@ export function DocsLayout({
       inner `overflow-x-auto` regions scroll normally. Unlike `hidden`, it does
       not create a scroll container, so the sticky header keeps working.
     */
-    <div className="bg-background min-h-screen overflow-x-clip">
+    <div className="bg-background flex min-h-screen flex-col overflow-x-clip">
       <SiteHeader
         sections={SECTIONS}
         stats={rootData?.repoStats ?? null}
@@ -97,7 +98,7 @@ export function DocsLayout({
         </div>
       )}
 
-      <div className="mx-auto flex w-full max-w-[110rem]">
+      <div className="mx-auto flex w-full max-w-[110rem] flex-1">
         {/* ------------------------------ left column --------------------------- */}
         <aside className="border-border scroll-slim sticky top-16 hidden h-[calc(100vh-4rem)] w-72 shrink-0 border-r lg:block xl:w-80">
           <DocsSidebar sections={SECTIONS} currentSlug={sectionSlug} />
@@ -119,6 +120,11 @@ export function DocsLayout({
           <GithubCard />
         </aside>
       </div>
+
+      <SiteFooter
+        width="wide"
+        note="Tenementary Storybook — free to use and adapt for learning."
+      />
 
       <span className="sr-only">{meta.title}</span>
     </div>

@@ -1,0 +1,146 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 820" width="1200" height="820" font-family="ui-sans-serif, -apple-system, Segoe UI, Helvetica, Arial, sans-serif">
+  <title>Tenementary platform architecture</title>
+  <desc>Clients (web app, admin panel, mobile app) call the Express API, which serves REST routes, Socket.IO realtime and Swagger docs, backed by MongoDB, Cloudinary and Redis.</desc>
+
+  <style>
+    :root { color-scheme: light dark; }
+    .box   { fill: #ffffff; stroke: #94a3b8; stroke-width: 1.5; }
+    .panel { fill: none; stroke: #cbd5e1; stroke-width: 1.5; stroke-dasharray: 6 6; }
+    .accent{ fill: #ecfdf5; stroke: #10b981; stroke-width: 1.5; }
+    .t   { font-size: 16px; font-weight: 600; }
+    .ts  { font-size: 12.5px; }
+    .lbl { font-size: 12px; font-weight: 700; letter-spacing: .12em; }
+    .ttl { font-size: 20px; font-weight: 700; }
+    .a   { stroke: #64748b; stroke-width: 1.75; fill: none; marker-end: url(#arrow); }
+    .a2  { stroke: #10b981; stroke-width: 1.75; fill: none; marker-end: url(#arrow2); }
+    text { fill: #334155; }
+    .lbl { fill: #64748b; }
+    .muted { fill: #64748b; }
+    .green { fill: #059669; }
+
+    @media (prefers-color-scheme: dark) {
+      .box   { fill: #0f172a; stroke: #475569; }
+      .panel { stroke: #334155; }
+      .accent{ fill: #052e23; stroke: #34d399; }
+      text { fill: #e2e8f0; }
+      .lbl { fill: #94a3b8; }
+      .muted { fill: #94a3b8; }
+      .green { fill: #34d399; }
+      .a  { stroke: #64748b; }
+      .a2 { stroke: #34d399; }
+    }
+  </style>
+
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#64748b"/>
+    </marker>
+    <marker id="arrow2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#10b981"/>
+    </marker>
+  </defs>
+
+  <text class="ttl" x="40" y="44">Tenementary — platform architecture</text>
+
+  <!-- CLIENTS -->
+  <text class="lbl" x="40" y="92">CLIENTS</text>
+
+  <g>
+    <rect class="box" x="40" y="110" width="352" height="120" rx="14"/>
+    <text class="t" x="64" y="144">Web App</text>
+    <text class="ts muted" x="64" y="168">Vite · React 19 · TypeScript</text>
+    <text class="ts muted" x="64" y="190">React Router · Zustand · Tailwind v4</text>
+    <text class="ts muted" x="64" y="212">Leaflet maps · Recharts · axios cache</text>
+  </g>
+
+  <g>
+    <rect class="box" x="424" y="110" width="352" height="120" rx="14"/>
+    <text class="t" x="448" y="144">Admin Panel</text>
+    <text class="ts muted" x="448" y="168">Vite · React 19 · TypeScript</text>
+    <text class="ts muted" x="448" y="190">Radix UI · Zustand · Recharts</text>
+    <text class="ts muted" x="448" y="212">Moderation · verification · analytics</text>
+  </g>
+
+  <g>
+    <rect class="box" x="808" y="110" width="352" height="120" rx="14"/>
+    <text class="t" x="832" y="144">Mobile App</text>
+    <text class="ts muted" x="832" y="168">Expo SDK 57 · React Native</text>
+    <text class="ts muted" x="832" y="190">expo-router · gluestack-ui · UniWind</text>
+    <text class="ts muted" x="832" y="212">react-native-maps · SecureStore</text>
+  </g>
+
+  <!-- arrows down to API -->
+  <path class="a" d="M216 230 V 292"/>
+  <path class="a" d="M600 230 V 292"/>
+  <path class="a" d="M984 230 V 292"/>
+  
+
+  <!-- API -->
+  <text class="lbl" x="40" y="288">API</text>
+
+  <rect class="panel" x="40" y="296" width="1120" height="250" rx="16"/>
+
+  <g>
+    <rect class="accent" x="72" y="326" width="330" height="86" rx="12"/>
+    <text class="t green" x="96" y="358">REST API</text>
+    <text class="ts muted" x="96" y="382">/api/v1  ·  axios + cache client</text>
+    <text class="ts muted" x="96" y="402">JWT bearer · httpOnly refresh</text>
+  </g>
+
+  <g>
+    <rect class="accent" x="435" y="326" width="330" height="86" rx="12"/>
+    <text class="t green" x="459" y="358">Socket.IO</text>
+    <text class="ts muted" x="459" y="382">Real-time chat threads</text>
+    <text class="ts muted" x="459" y="402">Live notifications · typing</text>
+  </g>
+
+  <g>
+    <rect class="accent" x="798" y="326" width="330" height="86" rx="12"/>
+    <text class="t green" x="822" y="358">Swagger / OpenAPI</text>
+    <text class="ts muted" x="822" y="382">Interactive UI · /api-docs</text>
+    <text class="ts muted" x="822" y="402">Raw spec · /api-docs.json</text>
+  </g>
+
+  <g>
+    <rect class="box" x="72" y="440" width="1056" height="76" rx="12"/>
+    <text class="t" x="96" y="472">Middleware</text>
+    <text class="ts muted" x="96" y="496">cors (CLIENT_URL · CLIENT_WEB_URL) · cookieParser · express-rate-limit · json body limit · error handler</text>
+  </g>
+
+  <!-- API internals -->
+  <text class="ts muted" x="600" y="264" text-anchor="middle">HTTP/JSON · WebSocket</text>
+
+  <!-- ROUTES -->
+  <text class="lbl" x="40" y="592">ROUTES &amp; CONTROLLERS</text>
+
+  <g>
+    <rect class="box" x="40" y="608" width="1120" height="58" rx="12"/>
+    <text class="ts" x="64" y="634">auth · properties · search · favorites · saved-searches · inquiries · conversations</text>
+    <text class="ts muted" x="64" y="654">notifications · reviews · areas · buildings · agencies · profiles · dashboard</text>
+  </g>
+
+  <path class="a" d="M600 546 V 602"/>
+
+  <!-- DATA -->
+  <text class="lbl" x="40" y="712">DATA &amp; SERVICES</text>
+
+  <g>
+    <rect class="box" x="40" y="728" width="352" height="72" rx="12"/>
+    <text class="t" x="64" y="756">MongoDB</text>
+    <text class="ts muted" x="64" y="780">Mongoose models · GeoJSON indexes</text>
+  </g>
+
+  <g>
+    <rect class="box" x="424" y="728" width="352" height="72" rx="12"/>
+    <text class="t" x="448" y="756">Cloudinary</text>
+    <text class="ts muted" x="448" y="780">Images · video · floorplans · tours</text>
+  </g>
+
+  <g>
+    <rect class="box" x="808" y="728" width="352" height="72" rx="12"/>
+    <text class="t" x="832" y="756">Upstash Redis</text>
+    <text class="ts muted" x="832" y="780">Optional response caching</text>
+  </g>
+
+  <path class="a" d="M600 666 V 728"/>
+</svg>

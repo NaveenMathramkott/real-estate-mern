@@ -6,6 +6,7 @@ import { ArrowRightIcon, StarIcon } from "lucide-react";
 import { Logo } from "~/components/docs/logo";
 import { ThemeToggle } from "~/components/docs/theme";
 import { GitHubCluster } from "~/components/docs/github";
+import { SiteFooter } from "~/components/docs/site-footer";
 import { DocSearch } from "~/components/docs/search-box";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
@@ -221,26 +222,7 @@ export default function Home() {
       </section>
 
       {/* --------------------------------- footer -------------------------------- */}
-      <footer className="border-t">
-        <div className="text-muted-foreground mx-auto flex w-full max-w-6xl flex-col gap-4 px-5 py-10 text-sm sm:flex-row sm:items-center sm:px-8">
-          <p>
-            Tenementary Storybook — built for learning, free to use and adapt.
-          </p>
-          <div className="flex items-center gap-4 sm:ml-auto">
-            <Link to={`/docs/${first.slug}`} className="hover:text-foreground">
-              Introduction
-            </Link>
-            <a
-              href={REPO_STAR_URL}
-              target="_blank"
-              rel="noreferrer noopener"
-              className="hover:text-foreground"
-            >
-              Star the repo
-            </a>
-          </div>
-        </div>
-      </footer>
+      <SiteFooter width="narrow" />
     </div>
   );
 }
