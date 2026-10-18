@@ -1,5 +1,6 @@
 import favoriteModel from "../models/favoriteModel.js";
 import propertyModel from "../models/propertyModel.js";
+import { attachImages } from "../utils/attachImages.js";
 
 // GET /favorites
 export const getFavorites = async (req, res) => {
@@ -7,12 +8,34 @@ export const getFavorites = async (req, res) => {
     const favorites = await favoriteModel
       .find({ userId: req.userId })
       .populate({
+        // Every field a listing card renders. This used to select a 9-field
+        // subset with no media, so the shortlist had no photos and no specs.
         path: "propertyId",
         select:
-          "title price currency type purpose beds address location status",
+          "title description price currency type purpose size beds baths floor " +
+          "furnished amenities address location buildingId ownerId agentId " +
+          "status verifiedAt availableFrom createdAt updatedAt",
         populate: { path: "buildingId", select: "name" },
       })
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      // Plain objects, so the `images`/`thumbnail` added below survive: assigning
+      // them onto a Document would be dropped by Mongoose's strict mode, since
+      // neither is a schema path on Favorite or Property.
+      .lean();
+
+    // Media lives in its own collection, so the populated properties need the
+    // same `images`/`thumbnail` treatment the search endpoint applies. Batched
+    // into one query for the whole page rather than one per favourite.
+    const populated = favorites
+      .map((favorite, index) => ({ favorite, index }))
+      .filter(({ favorite }) => favorite.propertyId?._id);
+    const withImages = await attachImages(
+      populated.map(({ favorite }) => favorite.propertyId),
+    );
+
+    populated.forEach(({ favorite, index }, position) => {
+      favorites[index].propertyId = withImages[position];
+    });
 
     res.status(200).json({ success: true, favorites });
   } catch (error) {

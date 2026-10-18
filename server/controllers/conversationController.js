@@ -29,8 +29,14 @@ const deliverMessage = async (message, conversation) => {
   }
 };
 
+// `participants` is a raw ObjectId list on most queries, but the detail handler
+// populates it first — so compare against `_id` when a document comes back,
+// otherwise `toString()` yields "[object Object]" and every request 403s.
 const isParticipant = (conversation, userId) =>
-  conversation.participants.some((id) => id.toString() === userId.toString());
+  conversation.participants.some(
+    (participant) =>
+      (participant?._id ?? participant).toString() === userId?.toString(),
+  );
 
 // GET /conversations
 export const getConversations = async (req, res) => {
