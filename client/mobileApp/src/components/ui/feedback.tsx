@@ -1,35 +1,34 @@
 import { Ionicons } from "@expo/vector-icons";
 import type { ReactNode } from "react";
-import { Pressable, StyleSheet, View } from "react-native";
 
 import { formatCurrency } from "@/lib/format";
-import { useTheme } from "@/theme";
-import { Button, Card, Divider, Txt } from "./primitives";
+import { Alert, AlertIcon, AlertText } from "@/components/ui/alert";
+import { Box } from "@/components/ui/box";
+import { Center } from "@/components/ui/center";
+import { Divider } from "@/components/ui/divider";
+import { HStack } from "@/components/ui/hstack";
+import { Pressable } from "@/components/ui/pressable";
+import { Spinner } from "@/components/ui/spinner";
+import { VStack } from "@/components/ui/vstack";
+import { Button, Card, Txt } from "./primitives";
+
+type IconName = React.ComponentProps<typeof Ionicons>["name"];
 
 /** Full-screen busy state. */
 export function LoadingBlock({ label = "Loading…" }: { label?: string }) {
-  const theme = useTheme();
   return (
-    <View style={styles.center}>
-      <Txt variant="title" tone="muted">
-        …
-      </Txt>
-      <Txt variant="small" tone="muted" style={{ marginTop: 8 }}>
-        {label}
-      </Txt>
-      <View
-        style={{
-          height: 4,
-          width: 120,
-          marginTop: 12,
-          backgroundColor: theme.border,
-          borderRadius: 2,
-        }}
-      />
-    </View>
+    <Center className="gap-2 px-6 py-10">
+      <Spinner size="small" className="text-primary" />
+      {label ? (
+        <Txt variant="small" tone="muted">
+          {label}
+        </Txt>
+      ) : null}
+    </Center>
   );
 }
 
+/** Error state, built on gluestack's `Alert` so the role/status are announced. */
 export function ErrorState({
   message,
   onRetry,
@@ -38,24 +37,27 @@ export function ErrorState({
   onRetry?: () => void;
 }) {
   return (
-    <View style={styles.center}>
-      <Ionicons name="alert-circle-outline" size={34} color="#D4483A" />
-      <Txt variant="subheading" center style={{ marginTop: 12 }}>
-        Something went wrong
-      </Txt>
-      <Txt variant="small" tone="muted" center style={{ marginTop: 6 }}>
-        {message}
-      </Txt>
+    <Center className="gap-2 px-6 py-10">
+      <Alert className="items-center border-destructive/40 bg-destructive/10">
+        <AlertIcon className="text-destructive" />
+        <AlertText className="flex-1">
+          <Txt variant="subheading" center>
+            Something went wrong
+          </Txt>
+          <Txt variant="small" tone="muted" center>
+            {message}
+          </Txt>
+        </AlertText>
+      </Alert>
       {onRetry ? (
         <Button
           title="Try again"
           variant="outline"
           size="sm"
           onPress={onRetry}
-          style={{ marginTop: 16 }}
         />
       ) : null}
-    </View>
+    </Center>
   );
 }
 
@@ -65,27 +67,26 @@ export function EmptyState({
   description,
   action,
 }: {
-  icon?: React.ComponentProps<typeof Ionicons>["name"];
+  icon?: IconName;
   title: string;
   description?: string;
   action?: ReactNode;
 }) {
-  const theme = useTheme();
   return (
-    <View style={styles.center}>
-      <View style={[styles.emptyIcon, { backgroundColor: theme.accent }]}>
-        <Ionicons name={icon} size={24} color={theme.foregroundMuted} />
-      </View>
-      <Txt variant="subheading" center style={{ marginTop: 14 }}>
+    <Center className="gap-2 px-6 py-10">
+      <Center className="h-13 w-13 rounded-full bg-accent">
+        <Ionicons name={icon} size={24} color="#647771" />
+      </Center>
+      <Txt variant="subheading" center className="mt-2">
         {title}
       </Txt>
       {description ? (
-        <Txt variant="small" tone="muted" center style={{ marginTop: 6 }}>
+        <Txt variant="small" tone="muted" center>
           {description}
         </Txt>
       ) : null}
-      {action ? <View style={{ marginTop: 16 }}>{action}</View> : null}
-    </View>
+      {action ? <Box className="mt-3">{action}</Box> : null}
+    </Center>
   );
 }
 
@@ -102,24 +103,24 @@ export function SectionHeading({
   action?: ReactNode;
 }) {
   return (
-    <View style={{ gap: 6 }}>
+    <VStack space="sm">
       {eyebrow ? (
         <Txt variant="tiny" tone="primary" uppercase>
           {eyebrow}
         </Txt>
       ) : null}
-      <View style={styles.headingRow}>
-        <Txt variant="title" style={{ flex: 1 }}>
+      <HStack className="items-center gap-2">
+        <Txt variant="title" className="flex-1">
           {title}
         </Txt>
         {action}
-      </View>
+      </HStack>
       {description ? (
         <Txt variant="small" tone="muted">
           {description}
         </Txt>
       ) : null}
-    </View>
+    </VStack>
   );
 }
 
@@ -134,33 +135,30 @@ export function KeyValue({
   label: string;
   value: ReactNode;
   hint?: string;
-  icon?: React.ComponentProps<typeof Ionicons>["name"];
+  icon?: IconName;
   flex?: boolean;
 }) {
-  const theme = useTheme();
   return (
-    <View style={[styles.keyValue, flex && { flex: 1 }]}>
-      <View style={styles.keyValueLabel}>
-        {icon ? (
-          <Ionicons name={icon} size={12} color={theme.foregroundMuted} />
-        ) : null}
+    <Box className={flex ? "flex-1" : undefined}>
+      <HStack className="items-center gap-1">
+        {icon ? <Ionicons name={icon} size={12} color="#647771" /> : null}
         <Txt variant="tiny" tone="muted" uppercase>
           {label}
         </Txt>
-      </View>
+      </HStack>
       {typeof value === "string" || typeof value === "number" ? (
-        <Txt variant="bodyStrong" style={{ marginTop: 3 }}>
+        <Txt variant="bodyStrong" className="mt-0.5">
           {value}
         </Txt>
       ) : (
         value
       )}
       {hint ? (
-        <Txt variant="tiny" tone="muted" style={{ marginTop: 2 }}>
+        <Txt variant="tiny" tone="muted" className="mt-0.5">
           {hint}
         </Txt>
       ) : null}
-    </View>
+    </Box>
   );
 }
 
@@ -175,24 +173,23 @@ export function StatTile({
   label: string;
   value: ReactNode;
   hint?: string;
-  icon?: React.ComponentProps<typeof Ionicons>["name"];
+  icon?: IconName;
   onPress?: () => void;
 }) {
-  const theme = useTheme();
   const body = (
-    <Card style={styles.statTile}>
-      <View style={styles.statHeader}>
+    <Card className="min-h-[84px] flex-1 gap-1">
+      <HStack className="items-center gap-1.5">
         <Txt
           variant="tiny"
           tone="muted"
           uppercase
           numberOfLines={1}
-          style={{ flex: 1 }}
+          className="flex-1"
         >
           {label}
         </Txt>
-        {icon ? <Ionicons name={icon} size={15} color={theme.primary} /> : null}
-      </View>
+        {icon ? <Ionicons name={icon} size={15} color="#0E9F6E" /> : null}
+      </HStack>
       {typeof value === "string" ? <Txt variant="title">{value}</Txt> : value}
       {hint ? (
         <Txt variant="tiny" tone="muted" numberOfLines={1}>
@@ -201,13 +198,22 @@ export function StatTile({
       ) : null}
     </Card>
   );
+
   if (!onPress) return body;
   return (
-    <Pressable onPress={onPress} style={styles.statPress}>
+    <Pressable onPress={onPress} className="flex-1 flex-row">
       {body}
     </Pressable>
   );
 }
+
+const CHART = [
+  "bg-primary",
+  "bg-gold",
+  "bg-info",
+  "bg-destructive",
+  "bg-warning",
+];
 
 /** Horizontal distribution bar + legend for status/bedroom mixes. */
 export function Distribution({
@@ -217,7 +223,6 @@ export function Distribution({
   data: Record<string, { count: number; avgPrice?: number } | number>;
   currency?: string;
 }) {
-  const theme = useTheme();
   const entries = Object.entries(data).filter(
     ([, value]) =>
       (typeof value === "number" ? value : (value?.count ?? 0)) > 0,
@@ -237,52 +242,44 @@ export function Distribution({
   }
 
   return (
-    <View style={{ gap: 10 }}>
-      <View style={styles.distBar}>
+    <VStack space="md">
+      <HStack className="h-2 overflow-hidden rounded-full">
         {entries.map(([key, value], index) => {
           const count = typeof value === "number" ? value : (value?.count ?? 0);
           return (
-            <View
+            <Box
               key={key}
-              style={{
-                flex: count,
-                backgroundColor: theme.chart[index % theme.chart.length],
-              }}
+              className={CHART[index % CHART.length]}
+              style={{ flexGrow: count }}
             />
           );
         })}
-      </View>
+      </HStack>
+
       {entries.map(([key, value], index) => {
         const isCount = typeof value === "number";
         const count = isCount ? value : (value?.count ?? 0);
         const avg = isCount ? undefined : value?.avgPrice;
         return (
-          <View key={key} style={styles.distRow}>
-            <View
-              style={[
-                styles.distDot,
-                { backgroundColor: theme.chart[index % theme.chart.length] },
-              ]}
+          <HStack key={key} className="items-center gap-2">
+            <Box
+              className={`h-2 w-2 rounded-full ${CHART[index % CHART.length]}`}
             />
-            <Txt variant="small" style={{ flex: 1 }} numberOfLines={1}>
+            <Txt variant="small" numberOfLines={1} className="flex-1">
               {key.charAt(0).toUpperCase() + key.slice(1)}
             </Txt>
             <Txt variant="small" tone="muted">
               {count}
             </Txt>
             {avg !== undefined ? (
-              <Txt
-                variant="tiny"
-                tone="muted"
-                style={{ width: 64, textAlign: "right" }}
-              >
+              <Txt variant="tiny" tone="muted" className="w-16 text-right">
                 {formatCurrency(avg, currency, true)}
               </Txt>
             ) : null}
-          </View>
+          </HStack>
         );
       })}
-    </View>
+    </VStack>
   );
 }
 
@@ -298,7 +295,7 @@ export function Pagination({
 }) {
   if (pages <= 1) return null;
   return (
-    <View style={styles.pagination}>
+    <HStack className="items-center justify-between py-3">
       <Button
         title="Previous"
         variant="outline"
@@ -316,11 +313,11 @@ export function Pagination({
         disabled={page >= pages}
         onPress={() => onChange(page + 1)}
       />
-    </View>
+    </HStack>
   );
 }
 
-/** Tappable settings-style row used by the account hub. */
+/** Tappable settings-style row used by the profile hub. */
 export function ListRow({
   icon,
   label,
@@ -329,67 +326,45 @@ export function ListRow({
   onPress,
   danger,
 }: {
-  icon: React.ComponentProps<typeof Ionicons>["name"];
+  icon: IconName;
   label: string;
   description?: string;
   value?: string;
   onPress?: () => void;
   danger?: boolean;
 }) {
-  const theme = useTheme();
-  const tint = danger ? theme.destructive : theme.foreground;
   return (
     <Pressable
       accessibilityRole="button"
       onPress={onPress}
-      style={({ pressed }) => [
-        styles.listRow,
-        {
-          backgroundColor: pressed ? theme.accent : "transparent",
-          borderColor: theme.border,
-        },
-      ]}
+      className="flex-row items-center gap-3 rounded-xl border border-border bg-card px-3 py-3"
     >
-      <View
-        style={[
-          styles.listIcon,
-          {
-            backgroundColor: danger ? theme.destructiveSoft : theme.primarySoft,
-          },
-        ]}
+      <Center
+        className={`h-8 w-8 rounded-[10px] ${danger ? "bg-destructive/10" : "bg-primary/10"}`}
       >
         <Ionicons
           name={icon}
           size={16}
-          color={danger ? theme.destructive : theme.primary}
+          color={danger ? "#D4483A" : "#0E9F6E"}
         />
-      </View>
-      <View style={{ flex: 1 }}>
-        <Txt variant="bodyStrong" style={{ color: tint }}>
+      </Center>
+      <Box className="flex-1">
+        <Txt variant="bodyStrong" tone={danger ? "destructive" : "default"}>
           {label}
         </Txt>
         {description ? (
-          <Txt
-            variant="tiny"
-            tone="muted"
-            numberOfLines={2}
-            style={{ marginTop: 2 }}
-          >
+          <Txt variant="tiny" tone="muted" numberOfLines={2} className="mt-0.5">
             {description}
           </Txt>
         ) : null}
-      </View>
+      </Box>
       {value ? (
         <Txt variant="small" tone="muted">
           {value}
         </Txt>
       ) : null}
       {onPress ? (
-        <Ionicons
-          name="chevron-forward"
-          size={16}
-          color={theme.foregroundMuted}
-        />
+        <Ionicons name="chevron-forward" size={16} color="#647771" />
       ) : null}
     </Pressable>
   );
@@ -406,68 +381,14 @@ export function SectionCard({
 }) {
   return (
     <Card>
-      <View style={styles.headingRow}>
-        <Txt variant="heading" style={{ flex: 1 }}>
+      <HStack className="items-center gap-2">
+        <Txt variant="heading" className="flex-1">
           {title}
         </Txt>
         {action}
-      </View>
+      </HStack>
       <Divider />
       {children}
     </Card>
   );
 }
-
-const styles = StyleSheet.create({
-  center: {
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: 40,
-    paddingHorizontal: 24,
-    gap: 2,
-  },
-  emptyIcon: {
-    width: 52,
-    height: 52,
-    borderRadius: 26,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  headingRow: { flexDirection: "row", alignItems: "center", gap: 8 },
-  keyValue: { minWidth: 100 },
-  keyValueLabel: { flexDirection: "row", alignItems: "center", gap: 4 },
-  statTile: { flex: 1, gap: 4, minHeight: 84 },
-  statPress: { flex: 1, flexDirection: "row" },
-  statHeader: { flexDirection: "row", alignItems: "center", gap: 6 },
-  distBar: {
-    flexDirection: "row",
-    height: 8,
-    borderRadius: 4,
-    overflow: "hidden",
-    gap: 2,
-  },
-  distRow: { flexDirection: "row", alignItems: "center", gap: 8 },
-  distDot: { width: 8, height: 8, borderRadius: 4 },
-  pagination: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingVertical: 12,
-  },
-  listRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-    paddingVertical: 12,
-    paddingHorizontal: 12,
-    borderRadius: 12,
-    borderWidth: StyleSheet.hairlineWidth,
-  },
-  listIcon: {
-    width: 32,
-    height: 32,
-    borderRadius: 10,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-});

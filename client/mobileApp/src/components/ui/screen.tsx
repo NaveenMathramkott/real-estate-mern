@@ -1,23 +1,19 @@
 import { Ionicons } from "@expo/vector-icons";
 import type { ReactNode } from "react";
-import {
-  KeyboardAvoidingView,
-  Platform,
-  Pressable,
-  RefreshControl,
-  ScrollView,
-  StyleSheet,
-  View,
-} from "react-native";
+import { KeyboardAvoidingView, Platform, RefreshControl } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { useTheme } from "@/theme";
+import { Box } from "@/components/ui/box";
+import { HStack } from "@/components/ui/hstack";
+import { Pressable } from "@/components/ui/pressable";
+import { ScrollView } from "@/components/ui/scroll-view";
+import { VStack } from "@/components/ui/vstack";
 import { Txt } from "./primitives";
 
 /**
- * Page scaffold: background, safe-area handling and optional scrolling.
- * Native tabs apply the bottom inset, so only the top is padded here — screens
- * hide the native header and draw `ScreenHeader` instead for a consistent bar.
+ * Page scaffold. Native tabs apply the bottom inset, so only the top is padded
+ * here — screens hide the native header and draw `ScreenHeader` instead for a
+ * consistent bar.
  */
 export function Screen({
   children,
@@ -40,46 +36,49 @@ export function Screen({
   /** Set false for full-bleed content such as a map or an image carousel. */
   edges?: boolean;
 }) {
-  const theme = useTheme();
   const insets = useSafeAreaInsets();
-  const pad = {
-    paddingTop: edges && header ? insets.top : 0,
-    paddingHorizontal: padded ? 16 : 0,
-  };
-
-  const content = scroll ? (
-    <ScrollView
-      style={styles.flex}
-      contentContainerStyle={[
-        pad,
-        { paddingBottom: insets.bottom + 40, gap: 16 },
-        contentStyle,
-      ]}
-      keyboardShouldPersistTaps="handled"
-      showsVerticalScrollIndicator={false}
-      refreshControl={
-        onRefresh ? (
-          <RefreshControl
-            refreshing={Boolean(refreshing)}
-            onRefresh={onRefresh}
-            tintColor={theme.foregroundMuted}
-          />
-        ) : undefined
-      }
-    >
-      {children}
-    </ScrollView>
-  ) : (
-    <View style={[styles.flex, pad, contentStyle]}>{children}</View>
-  );
 
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : undefined}
       keyboardVerticalOffset={0}
-      style={[styles.flex, { backgroundColor: theme.background }]}
+      className="flex-1 bg-background"
     >
-      {content}
+      <Box
+        style={[
+          {
+            paddingTop: edges && header ? insets.top : 0,
+            paddingHorizontal: padded ? 16 : 0,
+          },
+          contentStyle,
+        ]}
+        className={scroll ? "flex-1" : "flex-1"}
+      >
+        {scroll ? (
+          <ScrollView
+            className="flex-1"
+            contentContainerStyle={{
+              paddingBottom: insets.bottom + 40,
+              gap: 16,
+            }}
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={false}
+            refreshControl={
+              onRefresh ? (
+                <RefreshControl
+                  refreshing={Boolean(refreshing)}
+                  onRefresh={onRefresh}
+                  tintColor="#647771"
+                />
+              ) : undefined
+            }
+          >
+            {children}
+          </ScrollView>
+        ) : (
+          children
+        )}
+      </Box>
     </KeyboardAvoidingView>
   );
 }
@@ -98,23 +97,21 @@ export function ScreenHeader({
   right?: ReactNode;
   large?: boolean;
 }) {
-  const theme = useTheme();
-
   return (
-    <View style={styles.header}>
-      <View style={styles.headerRow}>
+    <VStack className="pb-2.5 pt-1.5" space="xs">
+      <HStack className="min-h-[38px] items-center gap-2.5">
         {onBack ? (
           <Pressable
             accessibilityRole="button"
             accessibilityLabel="Go back"
             onPress={onBack}
             hitSlop={10}
-            style={styles.back}
+            className="-ml-1.5 py-1"
           >
-            <Ionicons name="chevron-back" size={22} color={theme.foreground} />
+            <Ionicons name="chevron-back" size={22} color="#0B2A23" />
           </Pressable>
         ) : null}
-        <View style={{ flex: 1 }}>
+        <Box className="flex-1">
           <Txt variant={large ? "display" : "heading"} numberOfLines={1}>
             {title}
           </Txt>
@@ -123,21 +120,9 @@ export function ScreenHeader({
               {subtitle}
             </Txt>
           ) : null}
-        </View>
+        </Box>
         {right}
-      </View>
-    </View>
+      </HStack>
+    </VStack>
   );
 }
-
-const styles = StyleSheet.create({
-  flex: { flex: 1 },
-  header: { paddingTop: 6, paddingBottom: 10 },
-  headerRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
-    minHeight: 38,
-  },
-  back: { marginLeft: -6, paddingVertical: 4 },
-});

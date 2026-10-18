@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import * as React from "react";
-import { Pressable, StyleSheet, View } from "react-native";
+import { StyleSheet, View } from "react-native";
 import MapView, {
   Marker,
   Polygon,
@@ -11,7 +11,9 @@ import MapView, {
 import { coordinatesToLatLng, formatCompact } from "@/lib/format";
 import type { Property } from "@/lib/types";
 import { useTheme } from "@/theme";
-import { Txt } from "@/components/ui/primitives";
+import { Box } from "@/components/ui/box";
+import { Pressable } from "@/components/ui/pressable";
+import { Text as GSText } from "@/components/ui/text";
 
 type Props = {
   properties: Property[];
@@ -156,19 +158,23 @@ export function PropertyMap({
               tracksViewChanges={false}
               anchor={{ x: 0.5, y: 1 }}
             >
-              <View
-                style={[
-                  styles.pin,
-                  {
-                    backgroundColor: active ? theme.primary : theme.foreground,
-                    transform: [{ scale: active ? 1.08 : 1 }],
-                  },
-                ]}
+              <Box
+                className={`rounded-full px-2 py-1 ${
+                  active ? "bg-primary" : "bg-foreground"
+                }`}
+                style={{
+                  transform: [{ scale: active ? 1.08 : 1 }],
+                  shadowColor: "#000",
+                  shadowOpacity: 0.2,
+                  shadowRadius: 4,
+                  shadowOffset: { width: 0, height: 2 },
+                  elevation: 3,
+                }}
               >
-                <Txt variant="tiny" style={styles.pinText}>
+                <GSText className="text-xs font-bold text-white">
                   {formatCompact(property.price)}
-                </Txt>
-              </View>
+                </GSText>
+              </Box>
             </Marker>
           );
         })}
@@ -179,12 +185,9 @@ export function PropertyMap({
           accessibilityRole="button"
           accessibilityLabel="Fit map to listings"
           onPress={fitToProperties}
-          style={[
-            styles.control,
-            { backgroundColor: theme.surface, borderColor: theme.border },
-          ]}
+          className="absolute bottom-2.5 right-2.5 h-9 w-9 items-center justify-center rounded-full border border-border bg-card"
         >
-          <Ionicons name="locate-outline" size={18} color={theme.foreground} />
+          <Ionicons name="locate-outline" size={18} color="#0B2A23" />
         </Pressable>
       ) : null}
     </View>
@@ -196,28 +199,6 @@ const styles = StyleSheet.create({
     width: "100%",
     overflow: "hidden",
     borderRadius: 12,
-    borderWidth: StyleSheet.hairlineWidth,
-  },
-  pin: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 999,
-    shadowColor: "#000",
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    shadowOffset: { width: 0, height: 2 },
-    elevation: 3,
-  },
-  pinText: { color: "#FFFFFF", fontWeight: "700" },
-  control: {
-    position: "absolute",
-    right: 10,
-    bottom: 10,
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    alignItems: "center",
-    justifyContent: "center",
     borderWidth: StyleSheet.hairlineWidth,
   },
 });

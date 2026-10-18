@@ -1,27 +1,25 @@
-import { Image as ExpoImage } from "expo-image";
-import type { ReactNode } from "react";
-import {
-  ActivityIndicator,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  type TextProps,
-  View,
-  type ViewProps,
-} from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import type { ComponentProps, ReactNode } from "react";
+import { ScrollView, type StyleProp } from "react-native";
 
 import { initials } from "@/lib/format";
-import { useTheme } from "@/theme";
-
-type Tone =
-  | "default"
-  | "muted"
-  | "primary"
-  | "info"
-  | "success"
-  | "warning"
-  | "destructive";
+import {
+  Avatar as GSAvatar,
+  AvatarFallback,
+  AvatarFallbackText,
+  AvatarImage,
+} from "@/components/ui/avatar";
+import { Badge as GSBadge, BadgeText } from "@/components/ui/badge";
+import { Box } from "@/components/ui/box";
+import {
+  Button as GSButton,
+  ButtonSpinner,
+  ButtonText,
+} from "@/components/ui/button";
+import { Divider as GSDivider } from "@/components/ui/divider";
+import { Heading } from "@/components/ui/heading";
+import { Pressable } from "@/components/ui/pressable";
+import { Text as GSText } from "@/components/ui/text";
 
 /* --------------------------------------------------------------- typography */
 
@@ -36,38 +34,47 @@ type Variant =
   | "tiny"
   | "mono";
 
-const VARIANTS: Record<
-  Variant,
-  {
-    fontSize: number;
-    fontWeight?: "400" | "500" | "600" | "700";
-    letterSpacing?: number;
-  }
-> = {
-  display: { fontSize: 30, fontWeight: "700", letterSpacing: -0.6 },
-  title: { fontSize: 22, fontWeight: "700", letterSpacing: -0.3 },
-  heading: { fontSize: 17, fontWeight: "600", letterSpacing: -0.2 },
-  subheading: { fontSize: 15, fontWeight: "600" },
-  body: { fontSize: 15, fontWeight: "400" },
-  bodyStrong: { fontSize: 15, fontWeight: "600" },
-  small: { fontSize: 13, fontWeight: "400" },
-  tiny: { fontSize: 11, fontWeight: "500", letterSpacing: 0.3 },
-  mono: { fontSize: 12, fontWeight: "400" },
+const VARIANT_STYLE: Record<Variant, string> = {
+  display: "text-3xl font-bold tracking-tight",
+  title: "text-2xl font-bold tracking-tight",
+  heading: "text-lg font-semibold tracking-tight",
+  subheading: "text-base font-semibold",
+  body: "text-base font-normal",
+  bodyStrong: "text-base font-semibold",
+  small: "text-sm font-normal",
+  tiny: "text-xs font-medium tracking-wide",
+  mono: "text-xs font-normal font-mono",
 };
 
-export type TextProps_ = TextProps & {
+const TONE_STYLE = {
+  default: "text-foreground",
+  muted: "text-muted-foreground",
+  primary: "text-primary",
+  destructive: "text-destructive",
+  success: "text-success",
+  warning: "text-warning",
+  gold: "text-gold",
+  onPrimary: "text-primary-foreground",
+} as const;
+
+export type Tone = keyof typeof TONE_STYLE;
+
+/** `display` and `title` render as a Gluestack `Heading`; the rest as `Text`. */
+const HEADING_VARIANTS = new Set<Variant>(["display", "title", "heading"]);
+
+export type TxtProps = {
   variant?: Variant;
-  tone?:
-    | "default"
-    | "muted"
-    | "primary"
-    | "destructive"
-    | "success"
-    | "warning"
-    | "gold"
-    | "onPrimary";
+  tone?: Tone;
   center?: boolean;
   uppercase?: boolean;
+  className?: string;
+  /** Escape hatch for the per-screen tweaks className cannot express.
+   *  Widened deliberately: gluestack's Text accepts the web TextStyle on the
+   *  `.web` variant and React Native's on native, so neither type is assignable
+   *  to the other and `StyleProp<any>` keeps both platforms compiling. */
+  style?: StyleProp<any>;
+  children?: ReactNode;
+  numberOfLines?: number;
 };
 
 export function Txt({
@@ -75,119 +82,119 @@ export function Txt({
   tone = "default",
   center,
   uppercase,
+  className = "",
   style,
+  children,
   ...rest
-}: TextProps_) {
-  const theme = useTheme();
-  const colors: Record<string, string> = {
-    default: theme.foreground,
-    muted: theme.foregroundMuted,
-    primary: theme.primary,
-    destructive: theme.destructive,
-    success: theme.success,
-    warning: theme.warning,
-    gold: theme.gold,
-    onPrimary: theme.onPrimary,
-  };
+}: TxtProps) {
+  const styles = [
+    VARIANT_STYLE[variant],
+    TONE_STYLE[tone],
+    center && "text-center",
+    uppercase && "uppercase",
+    className,
+  ].join(" ");
+
+  if (HEADING_VARIANTS.has(variant)) {
+    return (
+      <Heading {...rest} style={style} className={styles}>
+        {children}
+      </Heading>
+    );
+  }
   return (
-    <Text
-      {...rest}
-      style={[
-        VARIANTS[variant],
-        { color: colors[tone] },
-        center && { textAlign: "center" },
-        uppercase && styles.uppercase,
-        variant === "mono" && styles.mono,
-        style,
-      ]}
-    />
+    <GSText {...rest} style={style} className={styles}>
+      {children}
+    </GSText>
   );
 }
 
 /* -------------------------------------------------------------------- card */
 
 export function Card({
-  style,
   padded = true,
-  ...rest
-}: ViewProps & { padded?: boolean }) {
-  const theme = useTheme();
+  className = "",
+  style,
+  children,
+}: {
+  padded?: boolean;
+  className?: string;
+  style?: ComponentProps<typeof Box>["style"];
+  children: ReactNode;
+}) {
   return (
-    <View
-      {...rest}
-      style={[
-        {
-          backgroundColor: theme.surface,
-          borderColor: theme.border,
-          borderWidth: StyleSheet.hairlineWidth,
-          borderRadius: 14,
-          padding: padded ? 16 : 0,
-          gap: 12,
-        },
-        style,
-      ]}
-    />
+    <Box
+      style={style}
+      className={`rounded-xl border border-border bg-card ${padded ? "gap-3 p-4" : ""} ${className}`}
+    >
+      {children}
+    </Box>
   );
 }
 
-export function Divider({ style }: { style?: object }) {
-  const theme = useTheme();
-  return (
-    <View
-      style={[
-        { height: StyleSheet.hairlineWidth, backgroundColor: theme.border },
-        style,
-      ]}
-    />
-  );
+export function Divider({ className = "" }: { className?: string }) {
+  return <GSDivider className={`bg-border ${className}`} />;
 }
 
 /* ------------------------------------------------------------------- badge */
 
-const BADGE_TONES: Record<Tone, { bg: string; fg: string }> = {
-  default: { bg: "#0E9F6E", fg: "#FFFFFF" },
-  muted: { bg: "#EEF2F0", fg: "#41544E" },
-  primary: { bg: "#0E9F6E", fg: "#FFFFFF" },
-  success: { bg: "#1E9E64", fg: "#FFFFFF" },
-  warning: { bg: "#B07C14", fg: "#FFFFFF" },
-  destructive: { bg: "#D4483A", fg: "#FFFFFF" },
-  info: { bg: "#2C6BCF", fg: "#FFFFFF" },
+const BADGE_TONE: Record<string, { bg: string; fg: string }> = {
+  default: { bg: "bg-primary", fg: "text-primary-foreground" },
+  primary: { bg: "bg-primary", fg: "text-primary-foreground" },
+  info: { bg: "bg-info", fg: "text-white" },
+  success: { bg: "bg-success", fg: "text-white dark:text-primary-foreground" },
+  warning: { bg: "bg-warning", fg: "text-white dark:text-primary-foreground" },
+  destructive: { bg: "bg-destructive", fg: "text-destructive-foreground" },
+  muted: { bg: "bg-accent", fg: "text-muted-foreground" },
 };
 
 export function Badge({
   tone = "muted",
   icon,
   children,
-  style,
+  className = "",
 }: {
-  tone?: Tone;
+  tone?: string;
   icon?: ReactNode;
   children: ReactNode;
-  style?: object;
+  className?: string;
 }) {
-  const theme = useTheme();
-  const dark = theme.dark;
-  const resolved = dark
-    ? {
-        default: { bg: theme.primarySoft, fg: theme.primary },
-        primary: { bg: theme.primarySoft, fg: theme.primary },
-        success: { bg: theme.successSoft, fg: theme.success },
-        warning: { bg: theme.warningSoft, fg: theme.warning },
-        destructive: { bg: theme.destructiveSoft, fg: theme.destructive },
-        info: { bg: theme.surfaceRaised, fg: theme.info },
-        muted: { bg: theme.surfaceRaised, fg: theme.foregroundMuted },
-      }[tone]
-    : BADGE_TONES[tone];
-
+  const palette = BADGE_TONE[tone] ?? BADGE_TONE.muted;
   return (
-    <View style={[styles.badge, { backgroundColor: resolved.bg }, style]}>
+    <GSBadge
+      className={`rounded-md px-2 py-[3px] self-start ${palette.bg} ${className}`}
+    >
       {icon}
-      <Text style={[styles.badgeText, { color: resolved.fg }]}>{children}</Text>
-    </View>
+      <BadgeText
+        className={`text-[11px] font-semibold tracking-wide ${palette.fg}`}
+      >
+        {children}
+      </BadgeText>
+    </GSBadge>
   );
 }
 
 /* ------------------------------------------------------------------ button */
+
+type ButtonVariant = "primary" | "secondary" | "outline" | "ghost" | "danger";
+type ButtonSize = "sm" | "md" | "lg";
+
+const BUTTON_VARIANT: Record<ButtonVariant, { root: string; text: string }> = {
+  primary: { root: "bg-primary", text: "text-primary-foreground" },
+  secondary: { root: "bg-accent", text: "text-accent-foreground" },
+  outline: {
+    root: "bg-transparent border border-border",
+    text: "text-foreground",
+  },
+  ghost: { root: "bg-transparent", text: "text-primary" },
+  danger: { root: "bg-destructive", text: "text-destructive-foreground" },
+};
+
+const BUTTON_SIZE: Record<ButtonSize, string> = {
+  sm: "h-[34px] px-3 rounded-lg",
+  md: "h-11 px-4 rounded-lg",
+  lg: "h-13 px-5 rounded-xl",
+};
 
 export function Button({
   title,
@@ -198,80 +205,42 @@ export function Button({
   loading,
   disabled,
   fullWidth,
+  className = "",
   style,
 }: {
   title?: string;
   onPress?: () => void;
-  variant?: "primary" | "secondary" | "outline" | "ghost" | "danger";
-  size?: "sm" | "md" | "lg";
+  variant?: ButtonVariant;
+  size?: ButtonSize;
   icon?: ReactNode;
   loading?: boolean;
   disabled?: boolean;
   fullWidth?: boolean;
-  style?: object;
+  className?: string;
+  style?: ComponentProps<typeof GSButton>["style"];
 }) {
-  const theme = useTheme();
+  const palette = BUTTON_VARIANT[variant];
   const isDisabled = disabled || loading;
 
-  const palette = {
-    primary: { bg: theme.primary, fg: theme.onPrimary, border: "transparent" },
-    secondary: {
-      bg: theme.accent,
-      fg: theme.foreground,
-      border: "transparent",
-    },
-    outline: {
-      bg: "transparent",
-      fg: theme.foreground,
-      border: theme.borderStrong,
-    },
-    ghost: { bg: "transparent", fg: theme.primary, border: "transparent" },
-    danger: { bg: theme.destructive, fg: "#FFFFFF", border: "transparent" },
-  }[variant];
-
-  const heights = { sm: 34, md: 44, lg: 52 };
-  const fonts = { sm: 13, md: 15, lg: 16 };
-
   return (
-    <Pressable
-      accessibilityRole="button"
-      accessibilityState={{
-        disabled: Boolean(isDisabled),
-        busy: Boolean(loading),
-      }}
+    <GSButton
       onPress={isDisabled ? undefined : onPress}
-      style={({ pressed }) => [
-        styles.button,
-        {
-          height: heights[size],
-          backgroundColor: palette.bg,
-          borderColor: palette.border,
-          borderWidth:
-            palette.border === "transparent" ? 0 : StyleSheet.hairlineWidth,
-          opacity: isDisabled ? 0.5 : pressed ? 0.85 : 1,
-        },
-        fullWidth && { alignSelf: "stretch" },
-        style,
-      ]}
+      isDisabled={isDisabled}
+      style={style}
+      className={`gap-2 ${BUTTON_SIZE[size]} ${palette.root} ${
+        fullWidth ? "w-full" : ""
+      } ${className}`}
     >
-      {loading ? (
-        <ActivityIndicator size="small" color={palette.fg} />
-      ) : (
-        <>
-          {icon}
-          {title ? (
-            <Text
-              style={[
-                styles.buttonText,
-                { color: palette.fg, fontSize: fonts[size] },
-              ]}
-            >
-              {title}
-            </Text>
-          ) : null}
-        </>
-      )}
-    </Pressable>
+      {loading ? <ButtonSpinner size="small" /> : null}
+      {!loading && icon ? icon : null}
+      {title ? (
+        <ButtonText
+          className={`text-[15px] font-semibold ${BUTTON_SIZE[size].includes("h-[34px]") ? "text-sm" : ""} ${palette.text}`}
+        >
+          {title}
+        </ButtonText>
+      ) : null}
+    </GSButton>
   );
 }
 
@@ -282,22 +251,21 @@ export function IconButton({
   label,
   tone = "surface",
   disabled,
-  style,
+  className = "",
 }: {
   onPress?: () => void;
   children: ReactNode;
   label: string;
   tone?: "surface" | "primary" | "ghost";
   disabled?: boolean;
-  style?: object;
+  className?: string;
 }) {
-  const theme = useTheme();
   const bg =
     tone === "primary"
-      ? theme.primary
+      ? "bg-primary"
       : tone === "ghost"
-        ? "transparent"
-        : theme.surface;
+        ? "bg-transparent"
+        : "bg-card border border-border";
 
   return (
     <Pressable
@@ -305,16 +273,7 @@ export function IconButton({
       accessibilityLabel={label}
       disabled={disabled}
       onPress={onPress}
-      hitSlop={8}
-      style={({ pressed }) => [
-        styles.iconButton,
-        {
-          backgroundColor: bg,
-          borderColor: tone === "ghost" ? "transparent" : theme.border,
-          opacity: disabled ? 0.4 : pressed ? 0.8 : 1,
-        },
-        style,
-      ]}
+      className={`h-9 w-9 items-center justify-center rounded-full ${bg} ${className}`}
     >
       {children}
     </Pressable>
@@ -334,33 +293,26 @@ export function Chip({
   selected?: boolean;
   onPress?: () => void;
   icon?: ReactNode;
-  tone?: Tone;
+  tone?: string;
 }) {
-  const theme = useTheme();
-  const accent = tone === "primary" ? theme.primary : theme.foreground;
+  const accent = tone === "primary" ? "bg-primary" : "bg-foreground";
   return (
     <Pressable
       accessibilityRole="button"
       accessibilityState={{ selected: Boolean(selected) }}
       onPress={onPress}
-      style={({ pressed }) => [
-        styles.chip,
-        {
-          backgroundColor: selected ? accent : theme.surface,
-          borderColor: selected ? accent : theme.border,
-          opacity: pressed ? 0.85 : 1,
-        },
-      ]}
+      className={`flex-row items-center gap-1.5 rounded-full border border-border px-3 py-[7px] ${
+        selected ? accent : "bg-card"
+      }`}
     >
       {icon}
-      <Text
-        style={[
-          styles.chipText,
-          { color: selected ? theme.onPrimary : theme.foreground },
-        ]}
+      <GSText
+        className={`text-[13px] font-semibold ${
+          selected ? "text-primary-foreground" : "text-foreground"
+        }`}
       >
         {label}
-      </Text>
+      </GSText>
     </Pressable>
   );
 }
@@ -373,25 +325,17 @@ export function FilterChip({
   label: string;
   onClear: () => void;
 }) {
-  const theme = useTheme();
   return (
     <Pressable
       accessibilityRole="button"
       accessibilityLabel={`Remove filter ${label}`}
       onPress={onClear}
-      style={({ pressed }) => [
-        styles.chip,
-        {
-          backgroundColor: theme.accent,
-          borderColor: theme.borderStrong,
-          opacity: pressed ? 0.8 : 1,
-        },
-      ]}
+      className="flex-row items-center gap-1.5 rounded-full border border-border bg-accent px-3 py-[7px]"
     >
-      <Text style={[styles.chipText, { color: theme.foreground }]}>
+      <GSText className="text-[13px] font-semibold text-foreground">
         {label}
-      </Text>
-      <Text style={{ color: theme.foregroundMuted, fontSize: 14 }}>✕</Text>
+      </GSText>
+      <Ionicons name="close" size={13} color="#647771" />
     </Pressable>
   );
 }
@@ -402,7 +346,11 @@ export function ChipRow({ children }: { children: ReactNode }) {
     <ScrollView
       horizontal
       showsHorizontalScrollIndicator={false}
-      contentContainerStyle={styles.chipRow}
+      contentContainerStyle={{
+        gap: 8,
+        paddingHorizontal: 16,
+        paddingVertical: 4,
+      }}
     >
       {children}
     </ScrollView>
@@ -420,14 +368,8 @@ export function Segmented<T extends string>({
   value: T;
   onChange: (value: T) => void;
 }) {
-  const theme = useTheme();
   return (
-    <View
-      style={[
-        styles.segmented,
-        { backgroundColor: theme.accent, borderColor: theme.border },
-      ]}
-    >
+    <Box className="flex-row gap-[2px] rounded-lg border border-border bg-accent p-[3px]">
       {options.map((option) => {
         const active = option.value === value;
         return (
@@ -436,91 +378,27 @@ export function Segmented<T extends string>({
             accessibilityRole="tab"
             accessibilityState={{ selected: active }}
             onPress={() => onChange(option.value)}
-            style={[
-              styles.segment,
-              active && { backgroundColor: theme.surface },
-            ]}
+            className={`flex-1 flex-row items-center justify-center gap-1.5 rounded-md py-2 ${
+              active ? "bg-card" : ""
+            }`}
           >
             {option.icon}
-            <Text
-              style={[
-                styles.segmentText,
-                {
-                  color: active ? theme.foreground : theme.foregroundMuted,
-                  fontWeight: active ? "600" : "500",
-                },
-              ]}
+            <GSText
+              className={`text-[13px] ${
+                active
+                  ? "font-semibold text-foreground"
+                  : "font-medium text-muted-foreground"
+              }`}
             >
               {option.label}
-            </Text>
+            </GSText>
           </Pressable>
         );
       })}
-    </View>
+    </Box>
   );
 }
 
-const styles = StyleSheet.create({
-  uppercase: { textTransform: "uppercase" },
-  mono: { fontFamily: "monospace" },
-  badge: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 6,
-    alignSelf: "flex-start",
-  },
-  badgeText: { fontSize: 11, fontWeight: "600", letterSpacing: 0.2 },
-  button: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 8,
-    paddingHorizontal: 16,
-    borderRadius: 10,
-  },
-  buttonText: { fontWeight: "600" },
-  iconButton: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    alignItems: "center",
-    justifyContent: "center",
-    borderWidth: StyleSheet.hairlineWidth,
-  },
-  chip: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    paddingHorizontal: 12,
-    paddingVertical: 7,
-    borderRadius: 999,
-    borderWidth: StyleSheet.hairlineWidth,
-  },
-  chipText: { fontSize: 13, fontWeight: "600" },
-  chipRow: { gap: 8, paddingHorizontal: 16, paddingVertical: 4 },
-  segmented: {
-    flexDirection: "row",
-    padding: 3,
-    borderRadius: 10,
-    borderWidth: StyleSheet.hairlineWidth,
-    gap: 2,
-  },
-  segment: {
-    flex: 1,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 6,
-    paddingVertical: 8,
-    borderRadius: 8,
-  },
-  segmentText: { fontSize: 13 },
-  avatar: { alignItems: "center", justifyContent: "center" },
-  avatarText: { fontWeight: "700" },
-});
 /* ------------------------------------------------------------------ avatar */
 
 /** Circular avatar that falls back to initials, mirroring the web `Avatar`. */
@@ -533,40 +411,19 @@ export function Avatar({
   uri?: string;
   size?: number;
 }) {
-  const theme = useTheme();
   const label = initials(name);
 
-  if (uri) {
-    return (
-      <ExpoImage
-        source={{ uri }}
-        style={{ width: size, height: size, borderRadius: size / 2 }}
-        contentFit="cover"
-        transition={150}
-      />
-    );
-  }
-
   return (
-    <View
-      style={[
-        styles.avatar,
-        {
-          width: size,
-          height: size,
-          borderRadius: size / 2,
-          backgroundColor: theme.primarySoft,
-        },
-      ]}
+    <GSAvatar
+      className="bg-primary/15"
+      style={{ width: size, height: size, borderRadius: size / 2 }}
     >
-      <Text
-        style={[
-          styles.avatarText,
-          { color: theme.primary, fontSize: size * 0.36 },
-        ]}
-      >
-        {label}
-      </Text>
-    </View>
+      {uri ? <AvatarImage source={{ uri }} /> : null}
+      <AvatarFallback>
+        <AvatarFallbackText className="text-primary font-bold">
+          {label}
+        </AvatarFallbackText>
+      </AvatarFallback>
+    </GSAvatar>
   );
 }

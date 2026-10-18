@@ -1,6 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
-import type { ComponentProps, ReactNode } from "react";
-import { Pressable, StyleSheet } from "react-native";
+import type { ComponentProps } from "react";
 
 import { useTheme } from "@/theme";
 
@@ -49,24 +48,3 @@ export const AMENITY_ICONS: Record<string, IconName> = {
   "pet friendly": "paw-outline",
   "water supply 24x7": "water-outline",
 };
-
-export function PressableRow({
-  onPress,
-  children,
-  style,
-}: {
-  onPress?: () => void;
-  children: ReactNode;
-  style?: object;
-}) {
-  return (
-    <Pressable
-      onPress={onPress}
-      style={({ pressed }) => [pressed && { opacity: 0.9 }, style]}
-    >
-      {children}
-    </Pressable>
-  );
-}
-
-export const ROW_STYLE = StyleSheet.create({ row: { flexDirection: "row" } });

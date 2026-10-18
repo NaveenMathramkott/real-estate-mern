@@ -1,25 +1,23 @@
 import { Ionicons } from "@expo/vector-icons";
-import { Pressable, StyleSheet, View } from "react-native";
-
-import { useTheme } from "@/theme";
+import { Box } from "@/components/ui/box";
+import { Pressable } from "@/components/ui/pressable";
 
 /** Read-only star row used on cards, detail screens and review lists. */
 export function Stars({ value, size = 12 }: { value: number; size?: number }) {
-  const theme = useTheme();
   return (
-    <View
-      style={{ flexDirection: "row", gap: 2 }}
+    <Box
       accessibilityLabel={`${value} out of 5 stars`}
+      className="flex-row gap-0.5"
     >
       {[1, 2, 3, 4, 5].map((star) => (
         <Ionicons
           key={star}
           name={value >= star - 0.25 ? "star" : "star-outline"}
           size={size}
-          color={theme.gold}
+          color="#C08A1E"
         />
       ))}
-    </View>
+    </Box>
   );
 }
 
@@ -31,9 +29,8 @@ export function StarPicker({
   value: number;
   onChange: (value: number) => void;
 }) {
-  const theme = useTheme();
   return (
-    <View style={styles.row}>
+    <Box className="flex-row gap-1.5">
       {[1, 2, 3, 4, 5].map((star) => {
         const filled = value >= star;
         return (
@@ -48,15 +45,11 @@ export function StarPicker({
             <Ionicons
               name={filled ? "star" : "star-outline"}
               size={26}
-              color={filled ? theme.gold : theme.foregroundMuted}
+              color={filled ? "#C08A1E" : "#647771"}
             />
           </Pressable>
         );
       })}
-    </View>
+    </Box>
   );
 }
-
-const styles = StyleSheet.create({
-  row: { flexDirection: "row", gap: 6 },
-});

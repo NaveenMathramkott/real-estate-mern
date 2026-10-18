@@ -1,7 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { router, useLocalSearchParams } from "expo-router";
 import * as React from "react";
-import { Modal, Pressable, Share, StyleSheet, View } from "react-native";
+import { Pressable, Share, StyleSheet, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { conversationApi, propertyApi, reviewApi } from "@/lib/api";
@@ -32,6 +32,14 @@ import { PropertyGallery } from "@/components/property/property-gallery";
 import { PropertyMap } from "@/components/property/property-map";
 import { PropertyCard } from "@/components/property/property-card";
 import { Badge, Button, Divider, Txt } from "@/components/ui/primitives";
+import {
+  Modal as GSModal,
+  ModalBackdrop as GSModalBackdrop,
+  ModalBody as GSModalBody,
+  ModalContent as GSModalContent,
+  ModalFooter as GSModalFooter,
+  ModalHeader as GSModalHeader,
+} from "@/components/ui/modal";
 import { Field, Textarea } from "@/components/ui/form";
 import {
   EmptyState,
@@ -639,41 +647,34 @@ function InquirySheet({
   onClose: () => void;
   onSend: () => void;
 }) {
-  const theme = useTheme();
-
   return (
-    <Modal
-      visible={visible}
-      transparent
-      animationType="slide"
-      onRequestClose={onClose}
+    <GSModal
+      isOpen={visible}
+      onClose={onClose}
+      isKeyboardDismissable
+      className="bg-background"
     >
-      <Pressable
-        accessibilityLabel="Close"
-        onPress={onClose}
-        style={[StyleSheet.absoluteFill, { backgroundColor: theme.overlay }]}
-      />
-      <View
-        style={[
-          styles.sheet,
-          { backgroundColor: theme.background, borderColor: theme.border },
-        ]}
-      >
-        <View style={{ gap: 6 }}>
+      <GSModalBackdrop className="bg-black/45" />
+      <GSModalContent className="mb-8 gap-4 rounded-2xl border border-border bg-background p-5">
+        <GSModalHeader className="flex-col items-start gap-1.5">
           <Txt variant="heading">Send an enquiry</Txt>
           <Txt variant="small" tone="muted">
             Mention when you want to move and your budget — agents reply faster
             with specifics.
           </Txt>
-        </View>
-        <Field label="Message">
-          <Textarea
-            value={message}
-            onChangeText={setMessage}
-            placeholder="I'd like to know more about this property…"
-          />
-        </Field>
-        <View style={styles.sheetActions}>
+        </GSModalHeader>
+
+        <GSModalBody>
+          <Field label="Message">
+            <Textarea
+              value={message}
+              onChangeText={setMessage}
+              placeholder="I'd like to know more about this property…"
+            />
+          </Field>
+        </GSModalBody>
+
+        <GSModalFooter className="mt-1 gap-2.5">
           <Button title="Cancel" variant="ghost" onPress={onClose} />
           <Button
             title={pending ? "Sending…" : "Send"}
@@ -681,9 +682,9 @@ function InquirySheet({
             loading={pending}
             disabled={!message.trim()}
           />
-        </View>
-      </View>
-    </Modal>
+        </GSModalFooter>
+      </GSModalContent>
+    </GSModal>
   );
 }
 
@@ -742,17 +743,4 @@ const styles = StyleSheet.create({
   distRow: { flexDirection: "row", alignItems: "center", gap: 6 },
   distBar: { flex: 1, height: 6, borderRadius: 3, overflow: "hidden" },
   distFill: { height: 6, borderRadius: 3 },
-  sheet: {
-    position: "absolute",
-    left: 0,
-    right: 0,
-    bottom: 0,
-    gap: 14,
-    padding: 20,
-    paddingBottom: 36,
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    borderWidth: StyleSheet.hairlineWidth,
-  },
-  sheetActions: { flexDirection: "row", justifyContent: "flex-end", gap: 10 },
 });

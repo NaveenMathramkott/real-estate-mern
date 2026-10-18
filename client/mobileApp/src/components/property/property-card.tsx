@@ -1,19 +1,22 @@
 import { Ionicons } from "@expo/vector-icons";
-import { Image } from "expo-image";
 import { useRouter } from "expo-router";
-import { Pressable, StyleSheet, View } from "react-native";
+import type { ReactNode } from "react";
 
+import { useFavoriteAction } from "@/hooks/use-favorite-action";
 import { formatListingPrice, formatSize, pricePerSqft } from "@/lib/format";
 import { propertyTypeLabel } from "@/lib/constants";
 import type { Property } from "@/lib/types";
-import { useTheme } from "@/theme";
-import { Badge, Card, Txt } from "@/components/ui/primitives";
-import { useFavoriteAction } from "@/hooks/use-favorite-action";
 import { useIsFavorite, useIsFavoritePending } from "@/store/favorites-store";
+import { Box } from "@/components/ui/box";
+import { Image as GSImage } from "@/components/ui/image";
+import { Pressable } from "@/components/ui/pressable";
+import { Text as GSText } from "@/components/ui/text";
+import { VStack } from "@/components/ui/vstack";
+import { Badge, Card, Txt } from "@/components/ui/primitives";
 import { PropertyTypeIcon } from "./property-type-icon";
 
-/** Cover image with a deterministic gradient fallback for listings that have
- *  no hosted media yet — the web app uses the same placeholder-art approach. */
+/** Cover image with a deterministic accent fallback for listings that have no
+ *  hosted media yet — the same placeholder-art approach the web client uses. */
 export function PropertyCover({
   property,
   height = 180,
@@ -23,48 +26,35 @@ export function PropertyCover({
   height?: number;
   rounded?: number;
 }) {
-  const theme = useTheme();
   const uri = property.thumbnail ?? property.images?.[0];
-  const placeholder = [theme.primary, theme.gold, theme.info][
+  const placeholder = ["bg-primary", "bg-gold", "bg-info"][
     (property.title?.length ?? 0) % 3
   ];
 
   return (
-    <View
-      style={{
-        height,
-        borderRadius: rounded,
-        overflow: "hidden",
-        backgroundColor: theme.accent,
-      }}
+    <Box
+      className="overflow-hidden bg-accent"
+      style={{ height, borderRadius: rounded }}
     >
       {uri ? (
-        <Image
+        <GSImage
           source={{ uri }}
-          style={StyleSheet.absoluteFill}
-          contentFit="cover"
-          transition={200}
-          recyclingKey={property.thumbnail ?? undefined}
+          size="full"
+          resizeMode="cover"
+          alt={property.title}
         />
       ) : (
-        <View
-          style={[
-            StyleSheet.absoluteFill,
-            {
-              backgroundColor: placeholder,
-              alignItems: "center",
-              justifyContent: "center",
-            },
-          ]}
+        <Box
+          className={`h-full w-full items-center justify-center ${placeholder}`}
         >
           <PropertyTypeIcon
             type={property.type}
             size={28}
             color="rgba(255,255,255,0.85)"
           />
-        </View>
+        </Box>
       )}
-    </View>
+    </Box>
   );
 }
 
@@ -76,7 +66,6 @@ export function FavoriteButton({
   propertyId: string;
   size?: number;
 }) {
-  const theme = useTheme();
   const isFavorite = useIsFavorite(propertyId);
   const isPending = useIsFavoritePending(propertyId);
   const onFavorite = useFavoriteAction();
@@ -88,30 +77,20 @@ export function FavoriteButton({
       accessibilityLabel={
         isFavorite ? "Remove from shortlist" : "Add to shortlist"
       }
-      hitSlop={8}
       onPress={() => void onFavorite(propertyId)}
-      style={[
-        styles.favorite,
-        {
-          width: size,
-          height: size,
-          borderRadius: size / 2,
-          backgroundColor: theme.surface,
-          opacity: isPending ? 0.6 : 1,
-        },
-      ]}
+      className="items-center justify-center rounded-full border border-border bg-card"
+      style={{ width: size, height: size, opacity: isPending ? 0.6 : 1 }}
     >
       <Ionicons
         name={isFavorite ? "heart" : "heart-outline"}
         size={size * 0.52}
-        color={isFavorite ? theme.destructive : theme.foreground}
+        color={isFavorite ? "#D4483A" : "#0B2A23"}
       />
     </Pressable>
   );
 }
 
 function SpecRow({ property }: { property: Property }) {
-  const theme = useTheme();
   const size = formatSize(property.size);
   const items = [
     {
@@ -126,28 +105,27 @@ function SpecRow({ property }: { property: Property }) {
   ];
 
   return (
-    <View style={styles.specRow}>
+    <Box className="flex-row items-center gap-2.5">
       {items.map((item, index) => (
-        <View key={item.icon} style={styles.specItem}>
-          <Ionicons name={item.icon} size={13} color={theme.foregroundMuted} />
+        <Box key={item.icon} className="flex-row items-center gap-1">
+          <Ionicons name={item.icon} size={13} color="#647771" />
           <Txt variant="tiny" tone="muted">
             {item.label}
           </Txt>
           {index < items.length - 1 ? (
-            <View style={styles.specDivider} />
+            <Box className="ml-1.5 h-3 w-px bg-border" />
           ) : null}
-        </View>
+        </Box>
       ))}
-    </View>
+    </Box>
   );
 }
 
 /** Primary listing card — the mobile equivalent of the web `PropertyCard`. */
 export function PropertyCard({ property }: { property: Property }) {
-  const theme = useTheme();
   const router = useRouter();
-  const perSqft = pricePerSqft(property.price, property.size);
   const imageCount = property.images?.length ?? 0;
+  const perSqft = pricePerSqft(property.price, property.size);
 
   return (
     <Pressable
@@ -158,44 +136,43 @@ export function PropertyCard({ property }: { property: Property }) {
         property.purpose,
       )}`}
       onPress={() => router.push(`/property/${property._id}`)}
-      style={({ pressed }) => [{ opacity: pressed ? 0.9 : 1 }]}
     >
-      <Card padded={false} style={{ overflow: "hidden" }}>
-        <View>
+      <Card padded={false} className="overflow-hidden">
+        <Box>
           <PropertyCover property={property} height={168} rounded={0} />
-          <View style={styles.coverTopRow}>
+
+          <Box className="absolute left-2.5 top-2.5 flex-row gap-1.5">
             <Badge tone={property.purpose === "rent" ? "primary" : "info"}>
               {property.purpose === "rent" ? "For rent" : "For sale"}
             </Badge>
             {property.verifiedAt ? (
               <Badge tone="success">Verified</Badge>
             ) : null}
-          </View>
-          <View style={styles.coverBottomRow}>
+          </Box>
+
+          <Box className="absolute bottom-2.5 left-2.5 flex-row items-center gap-1.5">
             {property.status !== "active" ? (
               <Badge tone="warning">{property.status}</Badge>
             ) : null}
             {imageCount > 1 ? (
-              <View
-                style={[styles.imageCount, { backgroundColor: theme.overlay }]}
-              >
+              <Box className="flex-row items-center gap-1 rounded-md bg-black/45 px-2 py-0.5">
                 <Ionicons name="images-outline" size={11} color="#FFFFFF" />
-                <Txt variant="tiny" style={styles.imageCountText}>
-                  {imageCount}
-                </Txt>
-              </View>
+                <GSText className="text-xs text-white">{imageCount}</GSText>
+              </Box>
             ) : null}
-          </View>
-          <View style={styles.favoriteSlot}>
-            <FavoriteButton propertyId={property._id} />
-          </View>
-        </View>
+          </Box>
 
-        <View style={{ padding: 12, gap: 6 }}>
+          <Box className="absolute right-2 top-2">
+            <FavoriteButton propertyId={property._id} />
+          </Box>
+        </Box>
+
+        <VStack space="xs" className="p-3">
           <Txt variant="subheading" numberOfLines={1}>
             {property.title}
           </Txt>
-          <View style={styles.priceRow}>
+
+          <Box className="flex-row items-baseline gap-2">
             <Txt variant="heading">
               {formatListingPrice(
                 property.price,
@@ -208,11 +185,11 @@ export function PropertyCard({ property }: { property: Property }) {
                 ₹{perSqft}/sq.ft
               </Txt>
             ) : null}
-          </View>
+          </Box>
 
           <SpecRow property={property} />
 
-          <View style={styles.badgeRow}>
+          <Box className="flex-row flex-wrap gap-1.5">
             <Badge tone="muted">
               <PropertyTypeIcon type={property.type} />
               {propertyTypeLabel(property.type)}
@@ -220,26 +197,22 @@ export function PropertyCard({ property }: { property: Property }) {
             {property.furnished ? (
               <Badge tone="muted">{property.furnished.replace("-", " ")}</Badge>
             ) : null}
-          </View>
+          </Box>
 
           {property.address ? (
-            <View style={styles.addressRow}>
-              <Ionicons
-                name="location-outline"
-                size={12}
-                color={theme.foregroundMuted}
-              />
+            <Box className="mt-0.5 flex-row items-center gap-1">
+              <Ionicons name="location-outline" size={12} color="#647771" />
               <Txt
                 variant="tiny"
                 tone="muted"
                 numberOfLines={1}
-                style={{ flex: 1 }}
+                className="flex-1"
               >
                 {property.address}
               </Txt>
-            </View>
+            </Box>
           ) : null}
-        </View>
+        </VStack>
       </Card>
     </Pressable>
   );
@@ -251,9 +224,8 @@ export function PropertyRow({
   trailing,
 }: {
   property: Property;
-  trailing?: React.ReactNode;
+  trailing?: ReactNode;
 }) {
-  const theme = useTheme();
   const router = useRouter();
   const size = formatSize(property.size);
 
@@ -261,16 +233,10 @@ export function PropertyRow({
     <Pressable
       accessibilityRole="button"
       onPress={() => router.push(`/property/${property._id}`)}
-      style={({ pressed }) => [
-        styles.row,
-        {
-          backgroundColor: pressed ? theme.accent : theme.surface,
-          borderColor: theme.border,
-        },
-      ]}
+      className="flex-row items-center gap-3 rounded-xl border border-border bg-card p-2.5"
     >
       <PropertyCover property={property} height={64} rounded={8} />
-      <View style={{ flex: 1, gap: 3 }}>
+      <VStack space="xs" className="flex-1">
         <Txt variant="bodyStrong" numberOfLines={1}>
           {property.title}
         </Txt>
@@ -290,61 +256,8 @@ export function PropertyRow({
             .filter(Boolean)
             .join(" · ")}
         </Txt>
-      </View>
+      </VStack>
       {trailing}
     </Pressable>
   );
 }
-
-const styles = StyleSheet.create({
-  coverTopRow: {
-    position: "absolute",
-    top: 10,
-    left: 10,
-    flexDirection: "row",
-    gap: 6,
-  },
-  coverBottomRow: {
-    position: "absolute",
-    left: 10,
-    bottom: 10,
-    flexDirection: "row",
-    gap: 6,
-    alignItems: "center",
-  },
-  favoriteSlot: { position: "absolute", top: 8, right: 8 },
-  favorite: { alignItems: "center", justifyContent: "center" },
-  imageCount: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-    paddingHorizontal: 7,
-    paddingVertical: 3,
-    borderRadius: 6,
-  },
-  imageCountText: { color: "#FFFFFF" },
-  priceRow: { flexDirection: "row", alignItems: "baseline", gap: 8 },
-  specRow: { flexDirection: "row", alignItems: "center", gap: 10 },
-  specItem: { flexDirection: "row", alignItems: "center", gap: 4 },
-  specDivider: {
-    width: StyleSheet.hairlineWidth,
-    height: 12,
-    backgroundColor: "#CBD6D1",
-    marginLeft: 6,
-  },
-  badgeRow: { flexDirection: "row", gap: 6, flexWrap: "wrap" },
-  addressRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-    marginTop: 2,
-  },
-  row: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-    padding: 10,
-    borderRadius: 12,
-    borderWidth: StyleSheet.hairlineWidth,
-  },
-});

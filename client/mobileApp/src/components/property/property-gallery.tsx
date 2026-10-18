@@ -1,16 +1,11 @@
 import { Ionicons } from "@expo/vector-icons";
-import { Image } from "expo-image";
 import * as React from "react";
-import {
-  FlatList,
-  Pressable,
-  StyleSheet,
-  useWindowDimensions,
-  View,
-} from "react-native";
+import { FlatList, useWindowDimensions } from "react-native";
 
 import type { Property, PropertyMedia } from "@/lib/types";
-import { useTheme } from "@/theme";
+import { Box } from "@/components/ui/box";
+import { Image as GSImage } from "@/components/ui/image";
+import { Pressable } from "@/components/ui/pressable";
 import { Txt } from "@/components/ui/primitives";
 
 type Slide = { key: string; uri: string };
@@ -36,7 +31,6 @@ export function PropertyGallery({
   property: Pick<Property, "_id" | "title" | "images" | "thumbnail">;
   media: PropertyMedia[];
 }) {
-  const theme = useTheme();
   const { width } = useWindowDimensions();
   const [expanded, setExpanded] = React.useState(false);
   const [index, setIndex] = React.useState(0);
@@ -55,24 +49,15 @@ export function PropertyGallery({
 
   if (slides.length === 0) {
     return (
-      <View
-        style={{
-          height,
-          backgroundColor: theme.accent,
-          alignItems: "center",
-          justifyContent: "center",
-          gap: 8,
-        }}
+      <Box
+        className="items-center justify-center gap-2 bg-accent"
+        style={{ height }}
       >
-        <Ionicons
-          name="image-outline"
-          size={28}
-          color={theme.foregroundMuted}
-        />
+        <Ionicons name="image-outline" size={28} color="#647771" />
         <Txt variant="small" tone="muted">
           No photos yet
         </Txt>
-      </View>
+      </Box>
     );
   }
 
@@ -86,7 +71,7 @@ export function PropertyGallery({
           setExpanded(true);
         }}
       >
-        <View>
+        <Box>
           <FlatList
             data={slides}
             keyExtractor={(item) => item.key}
@@ -105,21 +90,21 @@ export function PropertyGallery({
               setIndex(Math.round(event.nativeEvent.contentOffset.x / width))
             }
             renderItem={({ item }) => (
-              <Image
+              <GSImage
                 source={{ uri: item.uri }}
+                resizeMode="cover"
+                alt={item.key}
                 style={{ width, height }}
-                contentFit="cover"
-                transition={200}
               />
             )}
           />
-          <View style={[styles.counter, { backgroundColor: theme.overlay }]}>
+          <Box className="absolute bottom-3 right-3 flex-row items-center gap-1.5 rounded-md bg-black/45 px-2 py-1">
             <Ionicons name="images-outline" size={12} color="#FFFFFF" />
-            <Txt variant="tiny" style={styles.counterText}>
+            <Txt variant="tiny" className="text-white">
               {index + 1} / {slides.length}
             </Txt>
-          </View>
-        </View>
+          </Box>
+        </Box>
       </Pressable>
 
       {expanded ? (
@@ -151,8 +136,8 @@ function Lightbox({
   const { width } = useWindowDimensions();
 
   return (
-    <View style={[StyleSheet.absoluteFill, styles.lightbox]}>
-      <View style={styles.lightboxHeader}>
+    <Box className="absolute inset-0 z-50 bg-black">
+      <Box className="flex-row items-center gap-3 px-4 pb-3 pt-15">
         <Txt
           variant="subheading"
           numberOfLines={1}
@@ -168,7 +153,7 @@ function Lightbox({
         >
           <Ionicons name="close" size={26} color="#FFFFFF" />
         </Pressable>
-      </View>
+      </Box>
 
       <FlatList
         data={slides}
@@ -186,44 +171,20 @@ function Lightbox({
           onIndex(Math.round(event.nativeEvent.contentOffset.x / width))
         }
         renderItem={({ item }) => (
-          <Image
+          <GSImage
             source={{ uri: item.uri }}
+            resizeMode="contain"
+            alt={item.key}
             style={{ width, height: "100%" }}
-            contentFit="contain"
           />
         )}
       />
 
-      <View style={styles.lightboxFooter}>
-        <Txt variant="small" style={{ color: "#D8D8D8" }}>
+      <Box className="items-center py-6">
+        <Txt variant="small" className="text-neutral-300">
           {index + 1} of {slides.length}
         </Txt>
-      </View>
-    </View>
+      </Box>
+    </Box>
   );
 }
-
-const styles = StyleSheet.create({
-  counter: {
-    position: "absolute",
-    right: 12,
-    bottom: 12,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 5,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 6,
-  },
-  counterText: { color: "#FFFFFF" },
-  lightbox: { backgroundColor: "#000000", zIndex: 200 },
-  lightboxHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-    paddingHorizontal: 16,
-    paddingTop: 60,
-    paddingBottom: 12,
-  },
-  lightboxFooter: { paddingVertical: 24, alignItems: "center" },
-});

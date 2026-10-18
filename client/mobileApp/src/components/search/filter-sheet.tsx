@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Pressable, ScrollView, StyleSheet, View } from "react-native";
+import { ScrollView, View } from "react-native";
 
 import {
   AMENITIES,
@@ -11,6 +11,7 @@ import {
   type SortOption,
 } from "@/lib/constants";
 import { formatCompact } from "@/lib/format";
+import { savedSearchApi } from "@/lib/api";
 import {
   clearFilter,
   describeFilters,
@@ -19,7 +20,15 @@ import {
   useSearchStore,
   type SearchFilters,
 } from "@/store/search-store";
-import { useTheme } from "@/theme";
+import { useAuthStore } from "@/store/auth-store";
+import {
+  Actionsheet,
+  ActionsheetBackdrop,
+  ActionsheetContent,
+  ActionsheetDragIndicator,
+  ActionsheetDragIndicatorWrapper,
+} from "@/components/ui/actionsheet";
+import { Box } from "@/components/ui/box";
 import {
   Button,
   Chip,
@@ -28,9 +37,10 @@ import {
   Txt,
 } from "@/components/ui/primitives";
 import { Field, Input, RangeSlider } from "@/components/ui/form";
-import { savedSearchApi } from "@/lib/api";
+import { Pressable } from "@/components/ui/pressable";
+import { Text as GSText } from "@/components/ui/text";
+import { VStack } from "@/components/ui/vstack";
 import { useMutation } from "@/hooks/use-mutation";
-import { useAuthStore } from "@/store/auth-store";
 
 const SORT_LABELS: Record<SortOption, string> = {
   relevance: "Recommended",
@@ -52,7 +62,6 @@ export function ActiveFilterChips({ compact = false }: { compact?: boolean }) {
   const setFilters = useSearchStore((state) => state.setFilters);
   const reset = useSearchStore((state) => state.reset);
   const chips = describeFilters(filters);
-  const theme = useTheme();
 
   if (chips.length === 0) return null;
 
@@ -60,7 +69,11 @@ export function ActiveFilterChips({ compact = false }: { compact?: boolean }) {
     <ScrollView
       horizontal
       showsHorizontalScrollIndicator={false}
-      contentContainerStyle={styles.chipRow}
+      contentContainerStyle={{
+        gap: 8,
+        paddingHorizontal: 16,
+        paddingVertical: 8,
+      }}
     >
       {chips.map((chip, index) => (
         <FilterChip
@@ -70,13 +83,8 @@ export function ActiveFilterChips({ compact = false }: { compact?: boolean }) {
         />
       ))}
       {!compact ? (
-        <Pressable
-          onPress={reset}
-          style={{ justifyContent: "center", paddingHorizontal: 8 }}
-        >
-          <Txt variant="small" style={{ color: theme.primary }}>
-            Clear all
-          </Txt>
+        <Pressable onPress={reset} className="justify-center px-2">
+          <GSText className="text-sm text-primary">Clear all</GSText>
         </Pressable>
       ) : null}
     </ScrollView>
@@ -87,14 +95,17 @@ export function ActiveFilterChips({ compact = false }: { compact?: boolean }) {
 export function SortRow() {
   const sort = useSearchStore((state) => state.filters.sort ?? "relevance");
   const setFilter = useSearchStore((state) => state.setFilter);
-  const theme = useTheme();
   const options = Object.entries(SORT_LABELS) as [SortOption, string][];
 
   return (
     <ScrollView
       horizontal
       showsHorizontalScrollIndicator={false}
-      contentContainerStyle={styles.sortRow}
+      contentContainerStyle={{
+        gap: 8,
+        paddingHorizontal: 16,
+        paddingVertical: 6,
+      }}
     >
       {options.map(([value, label]) => {
         const active = sort === value;
@@ -104,20 +115,17 @@ export function SortRow() {
             accessibilityRole="button"
             accessibilityState={{ selected: active }}
             onPress={() => setFilter("sort", value)}
-            style={[
-              styles.sortChip,
-              {
-                backgroundColor: active ? theme.foreground : theme.surface,
-                borderColor: active ? theme.foreground : theme.border,
-              },
-            ]}
+            className={`rounded-full border px-3 py-1.5 ${
+              active
+                ? "border-foreground bg-foreground"
+                : "border-border bg-card"
+            }`}
           >
-            <Txt
-              variant="tiny"
-              style={{ color: active ? theme.surface : theme.foreground }}
+            <GSText
+              className={`text-xs ${active ? "text-background" : "text-foreground"}`}
             >
               {label}
-            </Txt>
+            </GSText>
           </Pressable>
         );
       })}
@@ -125,10 +133,28 @@ export function SortRow() {
   );
 }
 
+function FilterGroup({
+  label,
+  children,
+}: {
+  label: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <VStack space="sm">
+      <Txt variant="tiny" tone="muted" uppercase>
+        {label}
+      </Txt>
+      <Box className="flex-row flex-wrap gap-2">{children}</Box>
+    </VStack>
+  );
+}
+
 /**
- * Bottom-sheet filter panel — the mobile stand-in for the web filter sidebar.
- * The body mounts only while the sheet is open, so its draft state always starts
- * from the committed filters and Cancel really cancels.
+ * Filter panel built on gluestack's `Actionsheet`, so it gets the platform
+ * overlay, backdrop dismissal, drag indicator and keyboard avoidance for free.
+ * The body mounts only while the sheet is open, so its draft always starts from
+ * the committed filters and Cancel really cancels.
  */
 export function FilterSheet({
   visible,
@@ -141,30 +167,9 @@ export function FilterSheet({
   onApply: () => void;
   resultCount?: number;
 }) {
-  if (!visible) return null;
-
-  return (
-    <FilterSheetBody
-      onClose={onClose}
-      onApply={onApply}
-      resultCount={resultCount}
-    />
-  );
-}
-
-function FilterSheetBody({
-  onClose,
-  onApply,
-  resultCount,
-}: {
-  onClose: () => void;
-  onApply: () => void;
-  resultCount?: number;
-}) {
   const committed = useSearchStore((state) => state.filters);
   const setFilters = useSearchStore((state) => state.setFilters);
   const user = useAuthStore((state) => state.user);
-  const theme = useTheme();
 
   const [draft, setDraft] = React.useState<SearchFilters>(committed);
   const [priceMinText, setPriceMinText] = React.useState(
@@ -194,23 +199,21 @@ function FilterSheetBody({
     setDraft((state) => ({ ...state, [key]: next }));
   };
 
-  const bands = PRICE_BANDS[draft.purpose ?? "rent"];
-
   return (
-    <View style={[StyleSheet.absoluteFill, styles.sheetHost]}>
-      <Pressable
-        accessibilityLabel="Close filters"
-        onPress={onClose}
-        style={[StyleSheet.absoluteFill, { backgroundColor: theme.overlay }]}
-      />
+    <Actionsheet
+      isOpen={visible}
+      onClose={onClose}
+      closeOnOverlayClick
+      isKeyboardDismissable
+      className="bg-background"
+    >
+      <ActionsheetBackdrop className="bg-black/45" />
+      <ActionsheetContent className="max-h-[88%] rounded-t-2xl border-t border-border bg-background pb-8">
+        <ActionsheetDragIndicatorWrapper>
+          <ActionsheetDragIndicator className="bg-border" />
+        </ActionsheetDragIndicatorWrapper>
 
-      <View
-        style={[
-          styles.sheet,
-          { backgroundColor: theme.background, borderColor: theme.border },
-        ]}
-      >
-        <View style={styles.sheetHeader}>
+        <Box className="flex-row items-center justify-between px-4 pb-2 pt-4">
           <Txt variant="heading">Filters</Txt>
           <Pressable
             accessibilityRole="button"
@@ -221,44 +224,43 @@ function FilterSheetBody({
               setPriceMaxText("");
             }}
           >
-            <Txt variant="small" style={{ color: theme.primary }}>
+            <Txt variant="small" tone="primary">
               Reset
             </Txt>
           </Pressable>
-        </View>
+        </Box>
 
         <ScrollView
-          style={{ maxHeight: 460 }}
-          contentContainerStyle={styles.sheetBody}
+          style={{ maxHeight: 420 }}
+          contentContainerStyle={{
+            paddingHorizontal: 16,
+            paddingBottom: 12,
+            gap: 16,
+          }}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
-          <View style={{ gap: 8 }}>
-            <Txt variant="tiny" tone="muted" uppercase>
-              Purpose
-            </Txt>
-            <View style={styles.wrapRow}>
-              {PURPOSES.map((purpose) => (
-                <Chip
-                  key={purpose}
-                  label={purpose === "rent" ? "Rent" : "Buy"}
-                  selected={draft.purpose === purpose}
-                  onPress={() =>
-                    setDraft((state) => ({
-                      ...state,
-                      purpose: state.purpose === purpose ? undefined : purpose,
-                      priceMin: undefined,
-                      priceMax: undefined,
-                    }))
-                  }
-                />
-              ))}
-            </View>
-          </View>
+          <FilterGroup label="Purpose">
+            {PURPOSES.map((purpose) => (
+              <Chip
+                key={purpose}
+                label={purpose === "rent" ? "Rent" : "Buy"}
+                selected={draft.purpose === purpose}
+                onPress={() =>
+                  setDraft((state) => ({
+                    ...state,
+                    purpose: state.purpose === purpose ? undefined : purpose,
+                    priceMin: undefined,
+                    priceMax: undefined,
+                  }))
+                }
+              />
+            ))}
+          </FilterGroup>
 
           <Divider />
 
-          <View style={{ gap: 8 }}>
+          <VStack space="sm">
             <Txt variant="tiny" tone="muted" uppercase>
               Price ({formatCompact(0)} – {formatCompact(ceiling)})
             </Txt>
@@ -276,8 +278,8 @@ function FilterSheetBody({
                 }))
               }
             />
-            <View style={styles.bandRow}>
-              {bands.map((band) => {
+            <Box className="flex-row flex-wrap gap-2">
+              {PRICE_BANDS[draft.purpose ?? "rent"].map((band) => {
                 const active =
                   draft.priceMin === band.min && draft.priceMax === band.max;
                 return (
@@ -295,146 +297,125 @@ function FilterSheetBody({
                   />
                 );
               })}
-            </View>
-            <View style={styles.priceInputs}>
-              <Field label="Min">
-                <Input
-                  keyboardType="numeric"
-                  placeholder="Any"
-                  value={priceMinText}
-                  onChangeText={setPriceMinText}
-                />
-              </Field>
-              <Field label="Max">
-                <Input
-                  keyboardType="numeric"
-                  placeholder="Any"
-                  value={priceMaxText}
-                  onChangeText={setPriceMaxText}
-                />
-              </Field>
-            </View>
-          </View>
+            </Box>
+            <Box className="flex-row gap-3">
+              <View style={{ flex: 1 }}>
+                <Field label="Min">
+                  <Input
+                    keyboardType="numeric"
+                    placeholder="Any"
+                    value={priceMinText}
+                    onChangeText={setPriceMinText}
+                  />
+                </Field>
+              </View>
+              <View style={{ flex: 1 }}>
+                <Field label="Max">
+                  <Input
+                    keyboardType="numeric"
+                    placeholder="Any"
+                    value={priceMaxText}
+                    onChangeText={setPriceMaxText}
+                  />
+                </Field>
+              </View>
+            </Box>
+          </VStack>
 
           <Divider />
 
-          <View style={{ gap: 8 }}>
-            <Txt variant="tiny" tone="muted" uppercase>
-              Bedrooms
-            </Txt>
-            <View style={styles.wrapRow}>
-              {BED_PRESETS.map((beds) => (
-                <Chip
-                  key={beds}
-                  label={`${beds}+`}
-                  selected={draft.beds === beds}
-                  onPress={() =>
-                    setDraft((state) => ({
-                      ...state,
-                      beds: state.beds === beds ? undefined : beds,
-                    }))
-                  }
-                />
-              ))}
-            </View>
-          </View>
-
-          <Divider />
-
-          <View style={{ gap: 8 }}>
-            <Txt variant="tiny" tone="muted" uppercase>
-              Property type
-            </Txt>
-            <View style={styles.wrapRow}>
-              {PROPERTY_TYPES.map((type) => (
-                <Chip
-                  key={type}
-                  label={propertyTypeLabel(type)}
-                  selected={draft.type?.includes(type)}
-                  onPress={() => toggleIn("type", type)}
-                />
-              ))}
-            </View>
-          </View>
-
-          <Divider />
-
-          <View style={{ gap: 8 }}>
-            <Txt variant="tiny" tone="muted" uppercase>
-              Furnishing
-            </Txt>
-            <View style={styles.wrapRow}>
-              {FURNISHED.map((value) => (
-                <Chip
-                  key={value}
-                  label={value.replace("-", " ")}
-                  selected={draft.furnished?.includes(value)}
-                  onPress={() => toggleIn("furnished", value)}
-                />
-              ))}
-            </View>
-          </View>
-
-          <Divider />
-
-          <View style={{ gap: 8 }}>
-            <Txt variant="tiny" tone="muted" uppercase>
-              Amenities — all must match
-            </Txt>
-            <View style={styles.wrapRow}>
-              {AMENITIES.map((amenity) => (
-                <Chip
-                  key={amenity}
-                  label={amenity}
-                  selected={draft.amenities?.includes(amenity)}
-                  onPress={() => toggleIn("amenities", amenity)}
-                />
-              ))}
-            </View>
-          </View>
-
-          <Divider />
-
-          <View style={{ gap: 8 }}>
-            <Txt variant="tiny" tone="muted" uppercase>
-              Radius
-            </Txt>
-            <View style={styles.wrapRow}>
+          <FilterGroup label="Bedrooms">
+            {BED_PRESETS.map((beds) => (
               <Chip
-                label="Anywhere"
-                selected={!draft.lat}
+                key={beds}
+                label={`${beds}+`}
+                selected={draft.beds === beds}
                 onPress={() =>
                   setDraft((state) => ({
                     ...state,
-                    lat: undefined,
-                    lng: undefined,
-                    radius: undefined,
+                    beds: state.beds === beds ? undefined : beds,
                   }))
                 }
               />
-              {RADIUS_STEPS.map((metres) => (
-                <Chip
-                  key={metres}
-                  label={metres >= 1000 ? `${metres / 1000} km` : `${metres} m`}
-                  selected={draft.radius === metres}
-                  onPress={() =>
-                    setDraft((state) => ({
-                      ...state,
-                      radius: state.radius === metres ? undefined : metres,
-                    }))
-                  }
-                />
-              ))}
-            </View>
-            <Txt variant="tiny" tone="muted">
-              {draft.lat
-                ? "Radius applies once you pick a map centre on the results screen."
-                : "Set a radius here, then search from a centre on the map."}
-            </Txt>
-          </View>
+            ))}
+          </FilterGroup>
+
+          <Divider />
+
+          <FilterGroup label="Property type">
+            {PROPERTY_TYPES.map((type) => (
+              <Chip
+                key={type}
+                label={propertyTypeLabel(type)}
+                selected={draft.type?.includes(type)}
+                onPress={() => toggleIn("type", type)}
+              />
+            ))}
+          </FilterGroup>
+
+          <Divider />
+
+          <FilterGroup label="Furnishing">
+            {FURNISHED.map((value) => (
+              <Chip
+                key={value}
+                label={value.replace("-", " ")}
+                selected={draft.furnished?.includes(value)}
+                onPress={() => toggleIn("furnished", value)}
+              />
+            ))}
+          </FilterGroup>
+
+          <Divider />
+
+          <FilterGroup label="Amenities — all must match">
+            {AMENITIES.map((amenity) => (
+              <Chip
+                key={amenity}
+                label={amenity}
+                selected={draft.amenities?.includes(amenity)}
+                onPress={() => toggleIn("amenities", amenity)}
+              />
+            ))}
+          </FilterGroup>
+
+          <Divider />
+
+          <FilterGroup label="Radius">
+            <Chip
+              label="Anywhere"
+              selected={!draft.lat}
+              onPress={() =>
+                setDraft((state) => ({
+                  ...state,
+                  lat: undefined,
+                  lng: undefined,
+                  radius: undefined,
+                }))
+              }
+            />
+            {RADIUS_STEPS.map((metres) => (
+              <Chip
+                key={metres}
+                label={metres >= 1000 ? `${metres / 1000} km` : `${metres} m`}
+                selected={draft.radius === metres}
+                onPress={() =>
+                  setDraft((state) => ({
+                    ...state,
+                    radius: state.radius === metres ? undefined : metres,
+                  }))
+                }
+              />
+            ))}
+          </FilterGroup>
+          <Txt variant="tiny" tone="muted">
+            {draft.lat
+              ? "Radius applies once you pick a map centre on the results screen."
+              : "Set a radius here, then search from a centre on the map."}
+          </Txt>
         </ScrollView>
 
-        <View style={[styles.sheetFooter, { borderTopColor: theme.border }]}>
+        <Box className="flex-row gap-2.5 border-t border-border px-4 pt-3">
           {user ? (
             <Button
               title="Save search"
@@ -449,6 +430,7 @@ function FilterSheetBody({
                 ? "Show results"
                 : `Show ${resultCount} results`
             }
+            className="flex-1"
             onPress={() => {
               const min = Number(priceMinText.replace(/,/g, ""));
               const max = Number(priceMaxText.replace(/,/g, ""));
@@ -460,9 +442,9 @@ function FilterSheetBody({
               onApply();
             }}
           />
-        </View>
-      </View>
-    </View>
+        </Box>
+      </ActionsheetContent>
+    </Actionsheet>
   );
 }
 
@@ -488,7 +470,7 @@ export function SaveCurrentSearchPrompt() {
     <Pressable
       accessibilityRole="button"
       onPress={() => save.mutate()}
-      style={{ paddingVertical: 6 }}
+      className="py-1.5"
     >
       <Txt variant="tiny" tone="primary">
         Save this search
@@ -496,45 +478,3 @@ export function SaveCurrentSearchPrompt() {
     </Pressable>
   );
 }
-
-const styles = StyleSheet.create({
-  chipRow: { gap: 8, paddingHorizontal: 16, paddingVertical: 8 },
-  sortRow: { gap: 8, paddingHorizontal: 16, paddingVertical: 6 },
-  sortChip: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 999,
-    borderWidth: StyleSheet.hairlineWidth,
-  },
-  sheetHost: { zIndex: 60 },
-  sheet: {
-    position: "absolute",
-    left: 0,
-    right: 0,
-    bottom: 0,
-    maxHeight: "88%",
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    borderWidth: StyleSheet.hairlineWidth,
-    paddingBottom: 28,
-  },
-  sheetHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: 16,
-    paddingTop: 18,
-    paddingBottom: 10,
-  },
-  sheetBody: { paddingHorizontal: 16, paddingBottom: 12, gap: 16 },
-  wrapRow: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
-  bandRow: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
-  priceInputs: { flexDirection: "row", gap: 12 },
-  sheetFooter: {
-    flexDirection: "row",
-    gap: 10,
-    paddingHorizontal: 16,
-    paddingTop: 12,
-    borderTopWidth: StyleSheet.hairlineWidth,
-  },
-});
