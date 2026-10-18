@@ -155,7 +155,7 @@ export default function RegisterScreen() {
 }
 
 const styles = StyleSheet.create({
-  scroll: { paddingTop: 32, gap: 16 },
+  scroll: { paddingTop: 100, gap: 16 },
   roleRow: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
   row: { flexDirection: "row", gap: 12 },
   error: { padding: 10, borderRadius: 10 },

@@ -187,7 +187,7 @@ export default function LoginScreen() {
         </Txt>
       </Pressable>
 
-      <View style={[styles.demo, { borderColor: theme.border }]}>
+      {/* <View style={[styles.demo, { borderColor: theme.border }]}>
         <Txt variant="tiny" tone="muted" uppercase>
           Demo accounts
         </Txt>
@@ -204,13 +204,19 @@ export default function LoginScreen() {
             />
           ))}
         </View>
-      </View>
+      </View> */}
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  scroll: { paddingTop: 32, gap: 16, justifyContent: "flex-start" },
+  scroll: {
+    flex: 1,
+    paddingTop: 100,
+    gap: 16,
+    justifyContent: "flex-start",
+    alignItems: "center",
+  },
   hero: { gap: 6, marginBottom: 4 },
   modes: { flexDirection: "row", gap: 8 },
   error: {
