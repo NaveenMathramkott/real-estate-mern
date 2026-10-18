@@ -16,7 +16,7 @@ import {
   LoadingBlock,
   Pagination,
 } from "@/components/ui/feedback";
-import { Screen, ScreenHeader } from "@/components/ui/screen";
+import { Screen } from "@/components/ui/screen";
 import { useFavoritesStore } from "@/store/favorites-store";
 
 const PAGE_SIZE = 20;
@@ -34,26 +34,33 @@ export default function SavedScreen() {
   const [page, setPage] = React.useState(1);
   const [tab, setTab] = React.useState<"shortlist" | "searches">("shortlist");
 
-  const favourites = useQuery(`get|/favorites|saved|${page}`, () =>
-    favoriteApi.list(),
-  );
+  // GET /favorites returns the whole shortlist in one response, so paging is
+  // done here rather than on the query key — passing `page` only refetched the
+  // identical payload.
+  const favourites = useQuery("get|/favorites|saved", () => favoriteApi.list());
 
   const properties = (favourites.data?.favorites ?? [])
     .map(populatedProperty)
     .filter((property): property is Property => Boolean(property));
 
+  // Counts the whole shortlist, not just the visible page, so the totals stay
+  // stable while paging.
   const value = properties.reduce(
     (sum, property) => sum + (property.price ?? 0),
     0,
   );
 
+  // Derived rather than set in an effect, so removing a favourite on the last
+  // page snaps back instead of rendering an empty screen.
+  const pages = Math.max(1, Math.ceil(properties.length / PAGE_SIZE));
+  const currentPage = Math.min(Math.max(page, 1), pages);
+  const visible = React.useMemo(() => {
+    const start = (currentPage - 1) * PAGE_SIZE;
+    return properties.slice(start, start + PAGE_SIZE);
+  }, [properties, currentPage]);
+
   return (
     <Screen>
-      <ScreenHeader
-        title="Saved"
-        subtitle={`${formatNumber(ids.length)} shortlisted · ${properties.length} loaded`}
-      />
-
       <Segmented
         options={[
           { value: "shortlist", label: "Shortlist" },
@@ -102,15 +109,11 @@ export default function SavedScreen() {
             </Txt>
           </View>
 
-          {properties.map((property) => (
+          {visible.map((property) => (
             <PropertyCard key={property._id} property={property} />
           ))}
 
-          <Pagination
-            page={page}
-            pages={Math.max(1, Math.ceil(ids.length / PAGE_SIZE))}
-            onChange={setPage}
-          />
+          <Pagination page={currentPage} pages={pages} onChange={setPage} />
         </View>
       )}
     </Screen>
@@ -171,6 +174,11 @@ function SavedSearches({ onOpen }: { onOpen: () => void }) {
 
 const styles = StyleSheet.create({
   list: { flex: 1, gap: 12 },
+  metaRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
   summary: {
     flexDirection: "row",
     alignItems: "center",

@@ -128,7 +128,7 @@ function InquiryCard({
                 : "muted"
           }
         >
-          {inquiry.status}
+          {inquiry.status ?? "unknown"}
         </Badge>
         <Txt variant="tiny" tone="muted">
           {formatRelative(inquiry.createdAt)}

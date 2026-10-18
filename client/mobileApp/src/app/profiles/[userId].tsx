@@ -2,6 +2,7 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { View } from "react-native";
 
 import { profileApi } from "@/lib/api";
+import { idOf } from "@/lib/format";
 import { ROLE_LABELS } from "@/lib/roles";
 import { useQuery } from "@/hooks/use-query";
 import { Avatar, Badge, Button, Txt } from "@/components/ui/primitives";
@@ -57,9 +58,9 @@ export default function PublicProfileScreen() {
           ) : null}
 
           <SectionCard title="Details">
-            <KeyValue label="User ID" value={String(profile.userId)} />
-            {profile.agencyId ? (
-              <KeyValue label="Agency" value={String(profile.agencyId)} />
+            <KeyValue label="User ID" value={idOf(profile.userId) ?? "—"} />
+            {idOf(profile.agencyId) ? (
+              <KeyValue label="Agency" value={idOf(profile.agencyId)} />
             ) : null}
           </SectionCard>
 

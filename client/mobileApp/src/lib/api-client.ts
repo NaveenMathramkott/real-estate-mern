@@ -11,18 +11,33 @@ import { apiCache, cacheKey } from "./api-cache";
 import { readAccessToken, writeAccessToken } from "./token-store";
 import type { ApiEnvelope } from "./types";
 
+/** The port the Express API listens on (see `server/.env.example`). */
+const DEFAULT_PORT = 4000;
+
+const LOOPBACK_HOSTS = new Set(["localhost", "127.0.0.1", "::1"]);
+
+/**
+ * Works out where the API lives.
+ *
+ * Order matters. `EXPO_PUBLIC_API_URL` wins, because production needs a fixed
+ * host — but a value pinned to a LAN address goes stale as soon as the DHCP
+ * lease changes, and a stale host hangs until the request times out. So when the
+ * variable is unset we derive the host from Metro's `hostUri`, which is always
+ * the machine serving the bundle, and that cannot drift.
+ */
 function resolveBaseUrl() {
-  const fromEnv = process.env.EXPO_PUBLIC_API_URL?.replace(/\/$/, "");
+  const fromEnv = process.env.EXPO_PUBLIC_API_URL?.trim().replace(/\/+$/, "");
   if (fromEnv) return fromEnv;
 
-  // On a physical device `localhost` points at the phone. The Metro host is the
-  // closest thing to "the machine running the server", so reuse its IP.
-  const hostUri = Constants.expoConfig?.hostUri;
-  const host = hostUri?.split(":")[0];
-  if (host && host !== "localhost" && host !== "127.0.0.1" && host !== "::1") {
-    return `http://${host}:4000/api/v1`;
+  const host = Constants.expoConfig?.hostUri?.split(":")[0];
+  if (host && !LOOPBACK_HOSTS.has(host)) {
+    // A device or emulator pointed at the dev machine: reach the API by its
+    // LAN address, never `localhost` (which would be the device itself).
+    return `http://${host}:${DEFAULT_PORT}/api/v1`;
   }
-  return "http://localhost:4000/api/v1";
+
+  // Simulator, or a bundle served over loopback.
+  return `http://localhost:${DEFAULT_PORT}/api/v1`;
 }
 
 export const API_BASE_URL = resolveBaseUrl();
@@ -92,6 +107,47 @@ http.interceptors.request.use(
   (error) => Promise.reject(error),
 );
 
+/**
+ * Endpoints where a rejection genuinely means "not signed in" — the credentials
+ * are wrong or absent, so refreshing cannot help.
+ *
+ * `/auth/me` is deliberately absent: it is the bootstrap call, and it is exactly
+ * the request that needs a refresh when the access token has lapsed.
+ */
+const SIGN_IN_ENDPOINTS = [
+  "/auth/login",
+  "/auth/register",
+  "/auth/otp",
+  "/auth/otp/verify",
+  "/auth/logout",
+  "/auth/refresh",
+];
+
+function isSignInEndpoint(url?: string) {
+  return Boolean(url && SIGN_IN_ENDPOINTS.some((path) => url.includes(path)));
+}
+
+/**
+ * Whether a response means "this access token is no good".
+ *
+ * The API documents 401 for a missing or invalid token, but the server's
+ * `requireSignIn` answers 403 when verification throws — which is what an
+ * *expired* token produces. Refreshing only on 401 therefore meant a lapsed
+ * access token was never rotated, and the app signed the user out despite the
+ * long-lived refresh cookie still being valid.
+ *
+ * A genuine role denial is also 403 ("Not authorized!"), so the message is what
+ * separates the two; refreshing on those would sign out a user who simply
+ * opened a screen they lack access to.
+ */
+function isTokenRejected(status: number, message: string) {
+  if (status === 401) return true;
+  return (
+    status === 403 &&
+    /token is not valid|jwt expired|invalid token/i.test(message)
+  );
+}
+
 let refreshing: Promise<string | null> | null = null;
 
 /** Rotates the refresh cookie for a new access token. */
@@ -122,13 +178,11 @@ http.interceptors.response.use(
       error.message ??
       "Something went wrong";
 
-    const isAuthRoute = original?.url?.includes("/auth/");
-
     if (
-      status === 401 &&
       original &&
       !original._retried &&
-      !isAuthRoute &&
+      !isSignInEndpoint(original.url) &&
+      isTokenRejected(status, message) &&
       !refreshUnavailable
     ) {
       original._retried = true;
@@ -144,6 +198,21 @@ http.interceptors.response.use(
       refreshUnavailable = true;
       await writeAccessToken(null);
       onUnauthorized?.();
+    }
+
+    // No response at all means the request never reached the server: a wrong or
+    // stale host, a device that is not on the same network, or cleartext HTTP
+    // being blocked. Axios's own message ("timeout of 20000ms exceeded") tells
+    // the reader none of that, so name the URL and the likely cause.
+    if (!error.response) {
+      return Promise.reject(
+        new ApiError(
+          `Cannot reach the API at ${API_BASE_URL}. ` +
+            "Check the server is running on port 4000 and that " +
+            "EXPO_PUBLIC_API_URL matches this machine's address.",
+          0,
+        ),
+      );
     }
 
     if (status === 429) {

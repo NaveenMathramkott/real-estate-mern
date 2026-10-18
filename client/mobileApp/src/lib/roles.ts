@@ -128,13 +128,12 @@ export const ROLE_BLURBS: Record<string, string> = {
   landlord: "List your own property and handle tenant enquiries.",
 };
 
-/** Where the app lands after sign-in. Buyers resume browsing; listers and
- *  admins go straight to the role dashboard. */
-export function homeRouteFor(role?: Role | null) {
-  if (!role) return "/";
-  if (role === "admin" || role === "agent" || role === "landlord") {
-    return "/dashboard";
-  }
+/**
+ * Where the app lands after sign-in. Always the Properties tab: it is the
+ * index route of the tabs navigator, it is the one screen every role can use,
+ * and the dashboard is one tap away from the Profile tab for listers.
+ */
+export function homeRouteFor() {
   return "/";
 }
 

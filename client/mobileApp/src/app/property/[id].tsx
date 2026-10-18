@@ -1,7 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { router, useLocalSearchParams } from "expo-router";
 import * as React from "react";
-import { Pressable, Share, StyleSheet, View } from "react-native";
+import { Pressable, ScrollView, Share, StyleSheet, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { conversationApi, propertyApi, reviewApi } from "@/lib/api";
@@ -89,6 +89,16 @@ export default function PropertyDetailScreen() {
       return conversationApi.create({ participantId, propertyId: id });
     },
     successMessage: "Conversation opened",
+    onSuccess: (response) => {
+      // Creating the thread is not the goal — open it, otherwise tapping Message
+      // looks like it did nothing.
+      const conversationId = response.conversation?._id;
+      if (conversationId) {
+        router.push(`/chats/${conversationId}`);
+      } else {
+        router.push("/chats");
+      }
+    },
   });
 
   // ownerId/agentId arrive populated on some routes and as bare ids on others.
@@ -149,209 +159,216 @@ export default function PropertyDetailScreen() {
   const contactId = idOf(property.agentId) ?? idOf(property.ownerId);
 
   return (
-    <Screen scroll padded={false} edges={false}>
-      <View style={[styles.topBar, { paddingTop: insets.top + 8 }]}>
-        <View style={[styles.barButton, { backgroundColor: theme.surface }]}>
-          <TopBarBack />
-        </View>
-        <View style={styles.topBarActions}>
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel="Share listing"
-            onPress={() => void share()}
-            style={[styles.barButton, { backgroundColor: theme.surface }]}
-          >
-            <Ionicons name="share-outline" size={18} color={theme.foreground} />
-          </Pressable>
-          <Pressable
-            accessibilityRole="button"
-            accessibilityState={{ selected: isShortlisted }}
-            accessibilityLabel={
-              isShortlisted ? "Remove from shortlist" : "Add to shortlist"
-            }
-            onPress={() => void onFavorite(property._id)}
-            style={[styles.barButton, { backgroundColor: theme.surface }]}
-          >
-            <Ionicons
-              name={isShortlisted ? "heart" : "heart-outline"}
-              size={18}
-              color={isShortlisted ? theme.destructive : theme.foreground}
-            />
-          </Pressable>
-        </View>
-      </View>
-
-      <PropertyGallery property={property} media={media} />
-
-      <View style={styles.body}>
-        <View style={styles.badgeRow}>
-          <Badge tone={property.purpose === "rent" ? "primary" : "info"}>
-            {property.purpose === "rent" ? "For rent" : "For sale"}
-          </Badge>
-          <Badge tone="muted">
-            <PropertyTypeIcon type={property.type} />
-            {propertyTypeLabel(property.type)}
-          </Badge>
-          {property.verifiedAt ? <Badge tone="success">Verified</Badge> : null}
-          {property.status !== "active" ? (
-            <Badge tone="warning">{property.status}</Badge>
-          ) : null}
-        </View>
-
-        <View style={{ gap: 6 }}>
-          <Txt variant="title">{property.title}</Txt>
-          <View style={styles.addressRow}>
-            <Ionicons
-              name="location-outline"
-              size={14}
-              color={theme.foregroundMuted}
-            />
-            <Txt variant="small" tone="muted" style={{ flex: 1 }}>
-              {property.address ?? "Address on request"}
-            </Txt>
+    // Not `scroll`: the screen composes its own ScrollView so the enquiry bar
+    // can stay pinned to the bottom while the content scrolls under it.
+    <Screen padded={false} edges={false}>
+      <ScrollView
+        style={styles.flex}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={[styles.topBar, { paddingTop: insets.top + 8 }]}>
+          <View style={[styles.barButton, { backgroundColor: theme.surface }]}>
+            <TopBarBack />
           </View>
-        </View>
-
-        <View style={styles.priceRow}>
-          <Txt variant="display">
-            {formatListingPrice(
-              property.price,
-              property.currency,
-              property.purpose,
-            )}
-          </Txt>
-          {perSqft ? (
-            <Txt variant="small" tone="muted">
-              ₹{perSqft} per sq.ft
-            </Txt>
-          ) : null}
-        </View>
-
-        <View style={styles.specRow}>
-          <Spec icon="bed-outline" label={`${property.beds ?? "—"} beds`} />
-          <Spec icon="water-outline" label={`${property.baths ?? "—"} baths`} />
-          <Spec
-            icon="resize-outline"
-            label={property.size ? `${property.size} sq.ft` : "—"}
-          />
-          {property.furnished ? (
-            <Spec
-              icon="cube-outline"
-              label={property.furnished.replace("-", " ")}
-            />
-          ) : null}
-        </View>
-
-        <Divider />
-
-        <View style={styles.kvRow}>
-          <KeyValue
-            label="Property ID"
-            value={property._id.slice(-8)}
-            icon="pricetag-outline"
-          />
-          <KeyValue label="Type" value={propertyTypeLabel(property.type)} />
-          <KeyValue label="Status" value={property.status} />
-          <KeyValue label="Floor" value={property.floor ?? "—"} />
-        </View>
-        <View style={styles.kvRow}>
-          <KeyValue
-            label="Available from"
-            value={
-              property.availableFrom
-                ? formatShortDate(property.availableFrom)
-                : "Immediately"
-            }
-            icon="calendar-outline"
-          />
-          {property.verifiedAt ? (
-            <KeyValue
-              label="Verified on"
-              value={formatShortDate(property.verifiedAt)}
-            />
-          ) : null}
-        </View>
-
-        {property.description ? (
-          <View style={{ gap: 8 }}>
-            <Txt variant="heading">About this property</Txt>
-            <Txt variant="body" tone="muted">
-              {property.description}
-            </Txt>
-          </View>
-        ) : null}
-
-        {(property.amenities?.length ?? 0) > 0 ? (
-          <View style={{ gap: 10 }}>
-            <Txt variant="heading">Amenities</Txt>
-            <View style={styles.amenityGrid}>
-              {property.amenities!.map((amenity) => (
-                <View
-                  key={amenity}
-                  style={[
-                    styles.amenity,
-                    {
-                      backgroundColor: theme.accent,
-                      borderColor: theme.border,
-                    },
-                  ]}
-                >
-                  <Ionicons
-                    name={AMENITY_ICONS[amenity] ?? "checkmark-circle-outline"}
-                    size={14}
-                    color={theme.primary}
-                  />
-                  <Txt variant="small" style={{ flex: 1 }} numberOfLines={1}>
-                    {amenity}
-                  </Txt>
-                </View>
-              ))}
-            </View>
-          </View>
-        ) : null}
-
-        {coordinates ? (
-          <View style={{ gap: 10 }}>
-            <Txt variant="heading">Location</Txt>
-            <PropertyMap
-              properties={[property]}
-              height={220}
-              showRecenter={false}
-            />
-          </View>
-        ) : null}
-
-        <PriceHistory propertyId={property._id} currency={property.currency} />
-
-        <ReviewsPanel
-          propertyId={property._id}
-          buildingId={property.buildingId}
-        />
-
-        <View style={styles.actions}>
-          <Button
-            title="Send an enquiry"
-            onPress={() => setInquiryOpen(true)}
-            fullWidth
-            icon={
-              <Ionicons name="mail-outline" size={16} color={theme.onPrimary} />
-            }
-          />
-          <Button
-            title="Message the agent"
-            variant="outline"
-            onPress={() => void startChat.mutate()}
-            loading={startChat.isPending}
-            disabled={!contactId}
-            fullWidth
-            icon={
+          <View style={styles.topBarActions}>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Share listing"
+              onPress={() => void share()}
+              style={[styles.barButton, { backgroundColor: theme.surface }]}
+            >
               <Ionicons
-                name="chatbubble-outline"
-                size={16}
+                name="share-outline"
+                size={18}
                 color={theme.foreground}
               />
-            }
+            </Pressable>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityState={{ selected: isShortlisted }}
+              accessibilityLabel={
+                isShortlisted ? "Remove from shortlist" : "Add to shortlist"
+              }
+              onPress={() => void onFavorite(property._id)}
+              style={[styles.barButton, { backgroundColor: theme.surface }]}
+            >
+              <Ionicons
+                name={isShortlisted ? "heart" : "heart-outline"}
+                size={18}
+                color={isShortlisted ? theme.destructive : theme.foreground}
+              />
+            </Pressable>
+          </View>
+        </View>
+
+        <PropertyGallery property={property} media={media} />
+
+        {/* Overlaps the cover so the hero bleeds into the content instead of
+            stopping at a hard edge. */}
+        <View style={[styles.introCard, { backgroundColor: theme.background }]}>
+          <View style={styles.badgeRow}>
+            <Badge tone={property.purpose === "rent" ? "primary" : "info"}>
+              {property.purpose === "rent" ? "For rent" : "For sale"}
+            </Badge>
+            <Badge tone="muted">
+              <PropertyTypeIcon type={property.type} />
+              {propertyTypeLabel(property.type)}
+            </Badge>
+            {property.verifiedAt ? (
+              <Badge tone="success">Verified</Badge>
+            ) : null}
+            {property.status !== "active" ? (
+              <Badge tone="warning">{property.status}</Badge>
+            ) : null}
+          </View>
+
+          <View style={{ gap: 6 }}>
+            <Txt variant="title">{property.title}</Txt>
+            <View style={styles.addressRow}>
+              <Ionicons
+                name="location-outline"
+                size={14}
+                color={theme.foregroundMuted}
+              />
+              <Txt variant="small" tone="muted" style={{ flex: 1 }}>
+                {property.address ?? "Address on request"}
+              </Txt>
+            </View>
+          </View>
+
+          <View style={styles.priceRow}>
+            <Txt variant="display">
+              {formatListingPrice(
+                property.price,
+                property.currency,
+                property.purpose,
+              )}
+            </Txt>
+            {perSqft ? (
+              <View style={[styles.perSqft, { backgroundColor: theme.accent }]}>
+                <Txt variant="tiny" tone="muted">
+                  ₹{perSqft} / sq.ft
+                </Txt>
+              </View>
+            ) : null}
+          </View>
+        </View>
+
+        {/* Specs sit on the card as an evenly divided row. */}
+        <View
+          style={[
+            styles.specCard,
+            { backgroundColor: theme.surface, borderColor: theme.border },
+          ]}
+        >
+          <View style={styles.specRow}>
+            <Spec icon="bed-outline" label={`${property.beds ?? "—"} beds`} />
+            <Spec
+              icon="water-outline"
+              label={`${property.baths ?? "—"} baths`}
+            />
+            <Spec
+              icon="resize-outline"
+              label={property.size ? `${property.size} sq.ft` : "—"}
+            />
+            {property.furnished ? (
+              <Spec
+                icon="cube-outline"
+                label={property.furnished.replace("-", " ")}
+              />
+            ) : null}
+          </View>
+        </View>
+
+        <View style={styles.body}>
+          <SectionCard title="Listing details">
+            <View style={styles.factGrid}>
+              <Fact label="Type" value={propertyTypeLabel(property.type)} />
+              <Fact label="Status" value={property.status ?? "—"} />
+              <Fact label="Floor" value={property.floor ?? "—"} />
+              <Fact
+                label="Available from"
+                value={
+                  property.availableFrom
+                    ? formatShortDate(property.availableFrom)
+                    : "Immediately"
+                }
+              />
+              {property.verifiedAt ? (
+                <Fact
+                  label="Verified on"
+                  value={formatShortDate(property.verifiedAt)}
+                  tone="success"
+                />
+              ) : null}
+              <Fact label="Furnishing" value={property.furnished ?? "—"} />
+            </View>
+            <Divider />
+            <Fact label="Property ID" value={property._id} mono full />
+          </SectionCard>
+
+          {property.description ? (
+            <View style={{ gap: 8 }}>
+              <Txt variant="heading">About this property</Txt>
+              <Txt variant="body" tone="muted">
+                {property.description}
+              </Txt>
+            </View>
+          ) : null}
+
+          {(property.amenities ?? []).length > 0 ? (
+            <View style={{ gap: 10 }}>
+              <Txt variant="heading">Amenities</Txt>
+              <View style={styles.amenityGrid}>
+                {(property.amenities ?? []).map((amenity) => (
+                  <View
+                    key={amenity}
+                    style={[
+                      styles.amenity,
+                      {
+                        backgroundColor: theme.accent,
+                        borderColor: theme.border,
+                      },
+                    ]}
+                  >
+                    <Ionicons
+                      name={
+                        AMENITY_ICONS[amenity] ?? "checkmark-circle-outline"
+                      }
+                      size={14}
+                      color={theme.primary}
+                    />
+                    <Txt variant="small" style={{ flex: 1 }} numberOfLines={1}>
+                      {amenity}
+                    </Txt>
+                  </View>
+                ))}
+              </View>
+            </View>
+          ) : null}
+
+          {coordinates ? (
+            <View style={{ gap: 10 }}>
+              <Txt variant="heading">Location</Txt>
+              <PropertyMap
+                properties={[property]}
+                height={220}
+                showRecenter={false}
+              />
+            </View>
+          ) : null}
+
+          <PriceHistory
+            propertyId={property._id}
+            currency={property.currency}
           />
+
+          <ReviewsPanel
+            propertyId={property._id}
+            buildingId={property.buildingId}
+          />
+
           {canManage ? (
             <Button
               title="Edit this listing"
@@ -360,26 +377,75 @@ export default function PropertyDetailScreen() {
               fullWidth
             />
           ) : null}
+
+          <Txt variant="tiny" tone="muted">
+            Listed {formatDateTime(property.createdAt)} · Updated{" "}
+            {formatDateTime(property.updatedAt)}
+          </Txt>
         </View>
 
-        <Txt variant="tiny" tone="muted">
-          Listed {formatDateTime(property.createdAt)} · Updated{" "}
-          {formatDateTime(property.updatedAt)}
-        </Txt>
+        {(similar.data?.properties?.length ?? 0) > 0 ? (
+          <View style={[styles.body, { paddingTop: 8 }]}>
+            <SectionHeading
+              eyebrow="You might also like"
+              title="Similar homes nearby"
+              description="Same purpose and type, within 20% of this price and 5 km away."
+            />
+            {(similar.data?.properties ?? []).map((item) => (
+              <PropertyCard key={item._id} property={item} />
+            ))}
+          </View>
+        ) : null}
+      </ScrollView>
+
+      {/* Pinned so the two actions that matter stay reachable however far the
+          visitor scrolls through price history and reviews. */}
+      <View
+        style={[
+          styles.actionBar,
+          {
+            backgroundColor: theme.surface,
+            borderTopColor: theme.border,
+            paddingBottom: insets.bottom + 10,
+          },
+        ]}
+      >
+        <View style={styles.actionPrice}>
+          <Txt variant="tiny" tone="muted" uppercase>
+            {property.purpose === "rent" ? "Rent" : "Price"}
+          </Txt>
+          <Txt variant="subheading" numberOfLines={1}>
+            {formatListingPrice(
+              property.price,
+              property.currency,
+              property.purpose,
+            )}
+          </Txt>
+        </View>
+        <Button
+          title="Message"
+          variant="outline"
+          style={styles.actionButton}
+          onPress={() => void startChat.mutate()}
+          loading={startChat.isPending}
+          disabled={!contactId}
+          icon={
+            <Ionicons
+              name="chatbubble-outline"
+              size={16}
+              color={theme.foreground}
+            />
+          }
+        />
+        <Button
+          title="Enquire"
+          style={styles.actionButton}
+          onPress={() => setInquiryOpen(true)}
+          icon={
+            <Ionicons name="mail-outline" size={16} color={theme.onPrimary} />
+          }
+        />
       </View>
-
-      {(similar.data?.properties?.length ?? 0) > 0 ? (
-        <View style={[styles.body, { paddingTop: 8 }]}>
-          <SectionHeading
-            eyebrow="You might also like"
-            title="Similar homes nearby"
-            description="Same purpose and type, within 20% of this price and 5 km away."
-          />
-          {similar.data!.properties.map((item) => (
-            <PropertyCard key={item._id} property={item} />
-          ))}
-        </View>
-      ) : null}
 
       <InquirySheet
         visible={inquiryOpen}
@@ -390,6 +456,39 @@ export default function PropertyDetailScreen() {
         onSend={() => void sendInquiry.mutate()}
       />
     </Screen>
+  );
+}
+
+/** Two facts per row with a fixed rhythm, so long labels never get squeezed
+ *  into a quarter-width column the way a flex row of four did. */
+function Fact({
+  label,
+  value,
+  tone = "default",
+  mono,
+  full,
+}: {
+  label: string;
+  value: string;
+  tone?: "default" | "success";
+  mono?: boolean;
+  full?: boolean;
+}) {
+  return (
+    <KeyValue
+      label={label}
+      flex={false}
+      style={{ width: full ? "100%" : "50%", paddingRight: 8 }}
+      value={
+        <Txt
+          variant={mono ? "mono" : "bodyStrong"}
+          tone={tone}
+          numberOfLines={1}
+        >
+          {value}
+        </Txt>
+      }
+    />
   );
 }
 
@@ -418,8 +517,8 @@ function Spec({
   const theme = useTheme();
   return (
     <View style={styles.spec}>
-      <Ionicons name={icon} size={14} color={theme.foregroundMuted} />
-      <Txt variant="small" numberOfLines={1}>
+      <Ionicons name={icon} size={16} color={theme.foregroundMuted} />
+      <Txt variant="small" numberOfLines={1} center>
         {label}
       </Txt>
     </View>
@@ -689,6 +788,10 @@ function InquirySheet({
 }
 
 const styles = StyleSheet.create({
+  flex: { flex: 1 },
+  // Clears the pinned action bar plus the home indicator.
+  scrollContent: { paddingBottom: 28 },
+
   topBar: {
     position: "absolute",
     top: 0,
@@ -707,19 +810,46 @@ const styles = StyleSheet.create({
     borderRadius: 18,
     alignItems: "center",
     justifyContent: "center",
+    shadowColor: "#000",
+    shadowOpacity: 0.18,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 4,
   },
-  body: { padding: 16, gap: 18 },
+
+  // Pulled up over the cover so the photo bleeds into the content.
+  introCard: {
+    marginTop: -22,
+    borderTopLeftRadius: 22,
+    borderTopRightRadius: 22,
+    paddingHorizontal: 16,
+    paddingTop: 18,
+    gap: 12,
+  },
   badgeRow: { flexDirection: "row", flexWrap: "wrap", gap: 6 },
   addressRow: { flexDirection: "row", alignItems: "center", gap: 4 },
   priceRow: {
     flexDirection: "row",
-    alignItems: "baseline",
+    alignItems: "center",
     gap: 10,
     flexWrap: "wrap",
   },
-  specRow: { flexDirection: "row", flexWrap: "wrap", gap: 14 },
-  spec: { flexDirection: "row", alignItems: "center", gap: 5 },
-  kvRow: { flexDirection: "row", gap: 16 },
+  perSqft: { paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6 },
+
+  specCard: {
+    flexDirection: "row",
+    marginHorizontal: 16,
+    marginTop: 12,
+    paddingVertical: 14,
+    paddingHorizontal: 6,
+    borderRadius: 14,
+    borderWidth: StyleSheet.hairlineWidth,
+  },
+  specRow: { flexDirection: "row", alignItems: "center", flex: 1, gap: 4 },
+  spec: { flex: 1, alignItems: "center", gap: 4 },
+
+  body: { padding: 16, gap: 18 },
+  factGrid: { flexDirection: "row", flexWrap: "wrap", rowGap: 4 },
   amenityGrid: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
   amenity: {
     flexDirection: "row",
@@ -731,7 +861,6 @@ const styles = StyleSheet.create({
     borderWidth: StyleSheet.hairlineWidth,
     maxWidth: "48%",
   },
-  actions: { gap: 10 },
   historyRow: {
     flexDirection: "row",
     alignItems: "center",
@@ -743,4 +872,24 @@ const styles = StyleSheet.create({
   distRow: { flexDirection: "row", alignItems: "center", gap: 6 },
   distBar: { flex: 1, height: 6, borderRadius: 3, overflow: "hidden" },
   distFill: { height: 6, borderRadius: 3 },
+
+  actionBar: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    bottom: 0,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    paddingHorizontal: 16,
+    paddingTop: 10,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    shadowColor: "#000",
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: -4 },
+    elevation: 12,
+  },
+  actionPrice: { flex: 1, minWidth: 76 },
+  actionButton: { paddingHorizontal: 12, flexShrink: 0 },
 });

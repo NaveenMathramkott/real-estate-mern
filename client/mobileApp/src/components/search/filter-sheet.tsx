@@ -91,48 +91,6 @@ export function ActiveFilterChips({ compact = false }: { compact?: boolean }) {
   );
 }
 
-/** Sort menu — the mobile equivalent of the web results `SortMenu`. */
-export function SortRow() {
-  const sort = useSearchStore((state) => state.filters.sort ?? "relevance");
-  const setFilter = useSearchStore((state) => state.setFilter);
-  const options = Object.entries(SORT_LABELS) as [SortOption, string][];
-
-  return (
-    <ScrollView
-      horizontal
-      showsHorizontalScrollIndicator={false}
-      contentContainerStyle={{
-        gap: 8,
-        paddingHorizontal: 16,
-        paddingVertical: 6,
-      }}
-    >
-      {options.map(([value, label]) => {
-        const active = sort === value;
-        return (
-          <Pressable
-            key={value}
-            accessibilityRole="button"
-            accessibilityState={{ selected: active }}
-            onPress={() => setFilter("sort", value)}
-            className={`rounded-full border px-3 py-1.5 ${
-              active
-                ? "border-foreground bg-foreground"
-                : "border-border bg-card"
-            }`}
-          >
-            <GSText
-              className={`text-xs ${active ? "text-background" : "text-foreground"}`}
-            >
-              {label}
-            </GSText>
-          </Pressable>
-        );
-      })}
-    </ScrollView>
-  );
-}
-
 function FilterGroup({
   label,
   children,
@@ -213,7 +171,7 @@ export function FilterSheet({
           <ActionsheetDragIndicator className="bg-border" />
         </ActionsheetDragIndicatorWrapper>
 
-        <Box className="flex-row items-center justify-between px-4 pb-2 pt-4">
+        <Box className="flex-row items-center justify-between px-4 pb-2 pt-4 w-[100%]">
           <Txt variant="heading">Filters</Txt>
           <Pressable
             accessibilityRole="button"
@@ -231,7 +189,7 @@ export function FilterSheet({
         </Box>
 
         <ScrollView
-          style={{ maxHeight: 420 }}
+          style={{ maxHeight: 440 }}
           contentContainerStyle={{
             paddingHorizontal: 16,
             paddingBottom: 12,
@@ -240,6 +198,26 @@ export function FilterSheet({
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
+          <FilterGroup label="Sort by">
+            {(Object.entries(SORT_LABELS) as [SortOption, string][]).map(
+              ([value, label]) => (
+                <Chip
+                  key={value}
+                  label={label}
+                  selected={(draft.sort ?? "relevance") === value}
+                  onPress={() =>
+                    setDraft((state) => ({
+                      ...state,
+                      sort: state.sort === value ? undefined : value,
+                    }))
+                  }
+                />
+              ),
+            )}
+          </FilterGroup>
+
+          <Divider />
+
           <FilterGroup label="Purpose">
             {PURPOSES.map((purpose) => (
               <Chip

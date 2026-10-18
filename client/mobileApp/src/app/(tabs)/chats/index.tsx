@@ -3,12 +3,12 @@ import { useRouter } from "expo-router";
 import { Pressable, StyleSheet, View } from "react-native";
 
 import { conversationApi } from "@/lib/api";
-import { formatMessageTime } from "@/lib/format";
-import type { Conversation, User } from "@/lib/types";
+import { formatCurrency, formatMessageTime } from "@/lib/format";
+import type { Conversation, ConversationListing, User } from "@/lib/types";
 import { useQuery } from "@/hooks/use-query";
 import { useAuthStore } from "@/store/auth-store";
 import { useTheme } from "@/theme";
-import { Avatar, Txt } from "@/components/ui/primitives";
+import { Avatar, Badge, Txt } from "@/components/ui/primitives";
 import { EmptyState, ErrorState, LoadingBlock } from "@/components/ui/feedback";
 import { Screen, ScreenHeader } from "@/components/ui/screen";
 
@@ -24,6 +24,19 @@ function otherParticipant(
     (participant) => participant?._id !== userId,
   );
   return (other as Participant) ?? {};
+}
+
+/** `propertyId` arrives expanded as `{ title, address, price, currency }`. */
+function linkedListing(
+  conversation: Conversation,
+): ConversationListing | undefined {
+  const { propertyId } = conversation;
+  return propertyId && typeof propertyId !== "string" ? propertyId : undefined;
+}
+
+/** Asking price, matching how the listing cards render an amount. */
+function askingPrice(listing: ConversationListing): string {
+  return formatCurrency(listing.price, listing.currency ?? "INR", true);
 }
 
 export default function ChatsScreen() {
@@ -85,6 +98,7 @@ export default function ChatsScreen() {
             const other = otherParticipant(conversation, user._id);
             const label = other.name ?? other.email ?? "Conversation";
             const preview = conversation.lastMessage?.body ?? "Say hello";
+            const listing = linkedListing(conversation);
 
             return (
               <Pressable
@@ -99,18 +113,37 @@ export default function ChatsScreen() {
                   },
                 ]}
               >
-                <Avatar name={label} uri={other.avatar} />
+                <Avatar name={label} uri={other.avatar} size={44} />
                 <View style={{ flex: 1, gap: 3 }}>
-                  <Txt variant="bodyStrong" numberOfLines={1}>
-                    {label}
-                  </Txt>
-                  <Txt variant="small" tone="muted" numberOfLines={1}>
+                  <View style={styles.titleRow}>
+                    <Txt
+                      variant="bodyStrong"
+                      numberOfLines={1}
+                      style={{ flex: 1 }}
+                    >
+                      {label}
+                    </Txt>
+                    {listing ? <Badge tone="primary">Listing</Badge> : null}
+                  </View>
+                  {listing ? (
+                    <Txt variant="tiny" tone="muted" numberOfLines={1}>
+                      {listing.title}
+                    </Txt>
+                  ) : null}
+                  <Txt variant="small" tone="muted" numberOfLines={2}>
                     {preview}
                   </Txt>
                 </View>
-                <Txt variant="tiny" tone="muted">
-                  {formatMessageTime(conversation.lastMessageAt)}
-                </Txt>
+                <View style={styles.trailing}>
+                  <Txt variant="tiny" tone="muted">
+                    {formatMessageTime(conversation.lastMessageAt)}
+                  </Txt>
+                  {listing?.price ? (
+                    <Txt variant="tiny" style={{ color: theme.primary }}>
+                      {askingPrice(listing)}
+                    </Txt>
+                  ) : null}
+                </View>
               </Pressable>
             );
           })}
@@ -121,6 +154,10 @@ export default function ChatsScreen() {
 }
 
 const styles = StyleSheet.create({
+  titleRow: { flexDirection: "row", alignItems: "center", gap: 8 },
+  // Top-aligned, so the time sits beside the title instead of drifting to the
+  // vertical middle of a two-line preview.
+  trailing: { alignItems: "flex-end", gap: 4, alignSelf: "flex-start" },
   bell: {
     width: 36,
     height: 36,

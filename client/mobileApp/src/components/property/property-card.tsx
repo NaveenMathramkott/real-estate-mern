@@ -1,5 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+import * as React from "react";
 import type { ReactNode } from "react";
 
 import { useFavoriteAction } from "@/hooks/use-favorite-action";
@@ -31,17 +32,23 @@ export function PropertyCover({
     (property.title?.length ?? 0) % 3
   ];
 
+  // Measured instead of relying on `w-full`: the card can be rendered at a
+  // width the screen query does not know about (dashboards, list rows).
+  const [containerWidth, setContainerWidth] = React.useState(0);
+  const boxWidth = containerWidth || undefined;
+
   return (
     <Box
       className="overflow-hidden bg-accent"
-      style={{ height, borderRadius: rounded }}
+      onLayout={(event) => setContainerWidth(event.nativeEvent.layout.width)}
+      style={{ width: boxWidth, height, borderRadius: rounded }}
     >
       {uri ? (
         <GSImage
           source={{ uri }}
-          size="full"
           resizeMode="cover"
           alt={property.title}
+          style={{ width: boxWidth, height }}
         />
       ) : (
         <Box
@@ -130,7 +137,7 @@ export function PropertyCard({ property }: { property: Property }) {
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel={`${property.title}, ${formatListingPrice(
+      accessibilityLabel={`${property.title ?? "Listing"}, ${formatListingPrice(
         property.price,
         property.currency,
         property.purpose,
@@ -151,7 +158,7 @@ export function PropertyCard({ property }: { property: Property }) {
           </Box>
 
           <Box className="absolute bottom-2.5 left-2.5 flex-row items-center gap-1.5">
-            {property.status !== "active" ? (
+            {property.status && property.status !== "active" ? (
               <Badge tone="warning">{property.status}</Badge>
             ) : null}
             {imageCount > 1 ? (
@@ -169,7 +176,7 @@ export function PropertyCard({ property }: { property: Property }) {
 
         <VStack space="xs" className="p-3">
           <Txt variant="subheading" numberOfLines={1}>
-            {property.title}
+            {property.title ?? "Untitled listing"}
           </Txt>
 
           <Box className="flex-row items-baseline gap-2">
@@ -238,7 +245,7 @@ export function PropertyRow({
       <PropertyCover property={property} height={64} rounded={8} />
       <VStack space="xs" className="flex-1">
         <Txt variant="bodyStrong" numberOfLines={1}>
-          {property.title}
+          {property.title ?? "Untitled listing"}
         </Txt>
         <Txt variant="small" tone="primary">
           {formatListingPrice(

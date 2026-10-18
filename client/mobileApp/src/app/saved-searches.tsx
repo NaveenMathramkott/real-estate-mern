@@ -129,7 +129,7 @@ export default function SavedSearchesScreen() {
                 lastRunAt={search.lastRunAt}
                 busy={remove.isPending}
                 onApply={() => {
-                  setFilters(search.filters as SearchFilters);
+                  setFilters((search.filters ?? {}) as SearchFilters);
                   router.push("/");
                 }}
                 onRun={async () => {
@@ -138,7 +138,7 @@ export default function SavedSearchesScreen() {
                     `${results.total} new match${results.total === 1 ? "" : "es"}`,
                     "Showing the stored filters on the search screen.",
                   );
-                  setFilters(search.filters as SearchFilters);
+                  setFilters((search.filters ?? {}) as SearchFilters);
                   router.push("/");
                 }}
                 onRemove={() =>

@@ -52,7 +52,7 @@ export function PropertyMap({
   const initialRegion = React.useMemo<Region>(() => {
     const first = properties
       .map((property) => coordinatesToLatLng(property.location?.coordinates))
-      .find(Boolean);
+      .find((point) => Boolean(point));
     const fallback = center ? coordinatesToLatLng(center) : null;
     const point = first ?? fallback;
     // `coordinatesToLatLng` speaks lat/lng; `Region` speaks latitude/longitude.

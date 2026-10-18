@@ -34,7 +34,7 @@ export default function RegisterScreen() {
   const submit = async () => {
     setPending(true);
     try {
-      const user = await register({
+      await register({
         email: email.trim(),
         password,
         name: name.trim() || undefined,
@@ -42,7 +42,7 @@ export default function RegisterScreen() {
         locale,
         currency,
       });
-      router.replace(homeRouteFor(user.role) as never);
+      router.replace(homeRouteFor() as never);
     } catch {
       /* surfaced by the store */
     } finally {

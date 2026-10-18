@@ -32,7 +32,7 @@ import { RequireAuth } from "@/components/guards";
 
 function BuyerPanel({ data }: { data: BuyerDashboard }) {
   const router = useRouter();
-  const summary = data.summary;
+  const summary = data.summary ?? {};
 
   const favourites = useQuery("get|/favorites|dashboard", () =>
     favoriteApi.list(),
@@ -152,7 +152,7 @@ function BuyerPanel({ data }: { data: BuyerDashboard }) {
             You have not sent any enquiries yet.
           </Txt>
         ) : (
-          data.recentInquiries.map((inquiry) => (
+          (data.recentInquiries ?? []).map((inquiry) => (
             <View key={inquiry._id} style={styles.inquiryRow}>
               <View style={{ flex: 1 }}>
                 <Txt variant="small" numberOfLines={1}>
@@ -179,7 +179,7 @@ function ListerPanel({
   isLandlord: boolean;
 }) {
   const router = useRouter();
-  const summary = data.summary;
+  const summary = data.summary ?? {};
 
   return (
     <View style={{ gap: 18 }}>
@@ -187,7 +187,7 @@ function ListerPanel({
         <StatTile
           label={isLandlord ? "Properties" : "Listings"}
           value={formatNumber(summary.totalListings)}
-          hint={`${summary.activeListings} active`}
+          hint={`${summary.activeListings ?? 0} active`}
           icon="home-outline"
           onPress={() => router.push("/listings")}
         />
@@ -202,7 +202,7 @@ function ListerPanel({
         <StatTile
           label="Open enquiries"
           value={formatNumber(summary.newInquiries)}
-          hint={`${summary.totalInquiries} total`}
+          hint={`${summary.totalInquiries ?? 0} total`}
           icon="mail-outline"
           onPress={() => router.push("/inquiries")}
         />
@@ -249,7 +249,7 @@ function ListerPanel({
             }
           />
         ) : (
-          data.recentListings.map((property) => (
+          (data.recentListings ?? []).map((property) => (
             <PropertyRow key={property._id} property={property} />
           ))
         )}
@@ -261,7 +261,7 @@ function ListerPanel({
             No price changes recorded yet.
           </Txt>
         ) : (
-          data.recentPriceChanges.map((change) => (
+          (data.recentPriceChanges ?? []).map((change) => (
             <View key={change._id} style={styles.inquiryRow}>
               <View style={{ flex: 1 }}>
                 <Txt variant="small">
@@ -286,7 +286,7 @@ function ListerPanel({
 }
 
 function AdminPanel({ data }: { data: AdminDashboard }) {
-  const summary = data.summary;
+  const summary = data.summary ?? {};
   return (
     <View style={{ gap: 18 }}>
       <View style={styles.tileRow}>
@@ -336,7 +336,7 @@ function AdminPanel({ data }: { data: AdminDashboard }) {
               Unverified users
             </Txt>
             <Txt variant="heading">
-              {formatNumber(data.unverified.users.count)}
+              {formatNumber(data.unverified?.users?.count ?? 0)}
             </Txt>
           </View>
           <View style={{ flex: 1 }}>
@@ -344,7 +344,7 @@ function AdminPanel({ data }: { data: AdminDashboard }) {
               Unverified listings
             </Txt>
             <Txt variant="heading">
-              {formatNumber(data.unverified.properties.count)}
+              {formatNumber(data.unverified?.properties?.count ?? 0)}
             </Txt>
           </View>
           <View style={{ flex: 1 }}>
@@ -352,7 +352,7 @@ function AdminPanel({ data }: { data: AdminDashboard }) {
               Unverified agencies
             </Txt>
             <Txt variant="heading">
-              {formatNumber(data.unverified.agencies.count)}
+              {formatNumber(data.unverified?.agencies?.count ?? 0)}
             </Txt>
           </View>
         </View>

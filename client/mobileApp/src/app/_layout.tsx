@@ -109,7 +109,7 @@ export default function RootLayout() {
           contentStyle: { backgroundColor: tokens.background },
         }}
       >
-        <Stack.Screen name="index" />
+        {/* `(auth)` owns its own index, which redirects to /login. */}
         <Stack.Screen name="(auth)" />
       </Stack>
     );

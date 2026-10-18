@@ -113,10 +113,20 @@ export interface Inquiry {
   createdAt: string;
 }
 
+/** `GET /conversations` populates `propertyId` with this subset of fields. */
+export interface ConversationListing {
+  _id: Id;
+  title: string;
+  address?: string;
+  price?: number;
+  currency?: string;
+}
+
 export interface Conversation {
   _id: Id;
   participants: User[];
-  propertyId?: Id;
+  /** Populated object from the API, or a bare id when not expanded. */
+  propertyId?: Id | ConversationListing;
   lastMessageAt?: string;
   lastMessage?: { body: string; senderId: Id };
 }

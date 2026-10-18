@@ -9,41 +9,31 @@ import {
   View,
 } from "react-native";
 
-import { areaApi } from "@/lib/api";
-import {
-  CITIES,
-  PRICE_BANDS,
-  PROPERTY_TYPES,
-  PURPOSES,
-  propertyTypeLabel,
-} from "@/lib/constants";
 import { formatNumber } from "@/lib/format";
 import { sortProperties } from "@/lib/sort-properties";
-import { describeFilters, useSearchStore } from "@/store/search-store";
+import { useSearchStore } from "@/store/search-store";
 import { useTheme } from "@/theme";
 import { PropertyCard } from "@/components/property/property-card";
 import {
-  ActiveFilterChips,
   FilterSheet,
   SaveCurrentSearchPrompt,
-  SortRow,
 } from "@/components/search/filter-sheet";
-import { Button, Chip, Txt } from "@/components/ui/primitives";
+import { Button, Txt } from "@/components/ui/primitives";
 import {
   EmptyState,
   ErrorState,
   LoadingBlock,
   Pagination,
-  SectionHeading,
 } from "@/components/ui/feedback";
-import { Screen, ScreenHeader } from "@/components/ui/screen";
-import { useQuery } from "@/hooks/use-query";
+import { Screen } from "@/components/ui/screen";
 import { useSearchResults } from "@/hooks/use-search-results";
 
 /**
- * The Properties tab: search, filter, sort and browse the whole marketplace.
- * With no filters applied it also surfaces the discovery strips the landing page
- * used to carry, so the four tabs cover everything the web home page offered.
+ * The Properties tab: a search box and the results list.
+ *
+ * Deliberately lean — every filter (purpose, sort, price, beds, type,
+ * furnishing, amenities, radius) lives in the filter sheet behind the sliders
+ * icon, so the screen itself is only the query and its answers.
  */
 export default function PropertiesScreen() {
   const theme = useTheme();
@@ -77,34 +67,9 @@ export default function PropertiesScreen() {
     data?.properties ?? [],
     filters.sort ?? "relevance",
   );
-  const isBrowsing = describeFilters(filters).length === 0;
 
   return (
     <Screen>
-      <ScreenHeader
-        title="Properties"
-        subtitle={
-          isLoading
-            ? "Loading listings…"
-            : `${formatNumber(data?.total ?? 0)} listing${(data?.total ?? 0) === 1 ? "" : "s"}`
-        }
-        right={
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel="Open filters"
-            onPress={() => setFiltersOpen(true)}
-            style={[styles.filterButton, { borderColor: theme.borderStrong }]}
-          >
-            <Ionicons
-              name="options-outline"
-              size={16}
-              color={theme.foreground}
-            />
-            <Txt variant="small">Filters</Txt>
-          </Pressable>
-        }
-      />
-
       <View
         style={[
           styles.queryBox,
@@ -135,6 +100,14 @@ export default function PropertiesScreen() {
         ) : null}
         <Pressable
           accessibilityRole="button"
+          accessibilityLabel="Open filters"
+          onPress={() => setFiltersOpen(true)}
+          style={[styles.viewToggle, { borderColor: theme.borderStrong }]}
+        >
+          <Ionicons name="options-outline" size={16} color={theme.foreground} />
+        </Pressable>
+        <Pressable
+          accessibilityRole="button"
           accessibilityLabel="Open map view"
           onPress={() => router.push("/map")}
           style={[styles.viewToggle, { borderColor: theme.borderStrong }]}
@@ -143,26 +116,9 @@ export default function PropertiesScreen() {
         </Pressable>
       </View>
 
-      <View style={styles.purposeRow}>
-        {PURPOSES.map((purpose) => (
-          <Chip
-            key={purpose}
-            label={purpose === "rent" ? "Rent" : "Buy"}
-            selected={filters.purpose === purpose}
-            onPress={() =>
-              setFilter(
-                "purpose",
-                filters.purpose === purpose ? undefined : purpose,
-              )
-            }
-          />
-        ))}
+      <View style={styles.metaRow}>
+        <SaveCurrentSearchPrompt />
       </View>
-
-      <ActiveFilterChips />
-      <SortRow />
-
-      {isBrowsing ? <DiscoveryStrips /> : null}
 
       {isLoading ? (
         <LoadingBlock label="Loading listings…" />
@@ -200,17 +156,15 @@ export default function PropertiesScreen() {
             pages={data?.pages ?? 1}
             onChange={(page) => setFilter("page", page)}
           />
-          <View style={styles.footerRow}>
-            <SaveCurrentSearchPrompt />
-            <Pressable
-              accessibilityRole="button"
-              onPress={() => router.push("/saved-searches")}
-            >
-              <Txt variant="tiny" tone="muted">
-                Saved searches
-              </Txt>
-            </Pressable>
-          </View>
+          <Pressable
+            accessibilityRole="button"
+            onPress={() => router.push("/saved-searches")}
+            style={{ paddingVertical: 8 }}
+          >
+            <Txt variant="tiny" tone="muted" center>
+              Manage saved searches
+            </Txt>
+          </Pressable>
         </ScrollView>
       )}
 
@@ -221,87 +175,6 @@ export default function PropertiesScreen() {
         resultCount={data?.total}
       />
     </Screen>
-  );
-}
-
-/**
- * Quick-entry strips shown above an unfiltered result set: the jump points the
- * web landing page offered, without giving them a tab of their own.
- */
-function DiscoveryStrips() {
-  const theme = useTheme();
-  const router = useRouter();
-  const setFilters = useSearchStore((state) => state.setFilters);
-
-  const areas = useQuery("get|/areas|properties", () =>
-    areaApi.list({ limit: 12 }),
-  );
-
-  return (
-    <View style={{ gap: 12 }}>
-      <SectionHeading eyebrow="Price bands" title="Start from a range" />
-      {(["rent", "buy"] as const).map((purpose) => (
-        <ScrollView
-          key={purpose}
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.strip}
-        >
-          {PRICE_BANDS[purpose].map((band) => (
-            <Chip
-              key={band.label}
-              label={band.label}
-              onPress={() =>
-                setFilters({ purpose, priceMin: band.min, priceMax: band.max })
-              }
-            />
-          ))}
-        </ScrollView>
-      ))}
-
-      <SectionHeading eyebrow="Neighbourhoods" title="Browse by area" />
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.strip}
-      >
-        {(areas.data?.areas ?? []).map((area) => (
-          <Chip
-            key={area._id}
-            label={`${area.name}, ${area.city}`}
-            onPress={() => router.push(`/areas/${area._id}`)}
-          />
-        ))}
-      </ScrollView>
-
-      <SectionHeading eyebrow="Cities" title="Where people are looking" />
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.strip}
-      >
-        {CITIES.map((city) => (
-          <Chip key={city} label={city} onPress={() => setFilters({ city })} />
-        ))}
-      </ScrollView>
-
-      <SectionHeading eyebrow="Property types" title="Every kind of place" />
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.strip}
-      >
-        {PROPERTY_TYPES.map((type) => (
-          <Chip
-            key={type}
-            label={propertyTypeLabel(type)}
-            onPress={() => setFilters({ type: [type] })}
-          />
-        ))}
-      </ScrollView>
-
-      <View style={{ height: 4, backgroundColor: theme.background }} />
-    </View>
   );
 }
 
@@ -334,7 +207,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  purposeRow: { flexDirection: "row", gap: 8 },
+  metaRow: { flexDirection: "row", alignItems: "center", gap: 10 },
+  metaCount: { flex: 1 },
   results: { flex: 1, marginHorizontal: -16 },
   resultsBody: {
     paddingHorizontal: 16,
@@ -347,5 +221,4 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     paddingTop: 4,
   },
-  strip: { gap: 8, paddingVertical: 2 },
 });

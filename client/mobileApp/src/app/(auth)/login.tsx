@@ -11,10 +11,10 @@ import { Field, Input } from "@/components/ui/form";
 import { Screen } from "@/components/ui/screen";
 
 const DEMO_ACCOUNTS = [
-  { role: "Buyer", email: "buyer@example.com" },
-  { role: "Renter", email: "renter@example.com" },
-  { role: "Agent", email: "agent@example.com" },
-  { role: "Landlord", email: "landlord@example.com" },
+  { role: "Buyer", email: "buyer@gmail.com" },
+  { role: "Renter", email: "renter@gmail.com" },
+  { role: "Agent", email: "agent@gmail.com" },
+  { role: "Landlord", email: "landlord@gmail.com" },
 ];
 
 /** Password sign-in plus the Redis-backed OTP flow, mirroring the web login page. */
@@ -34,14 +34,13 @@ export default function LoginScreen() {
   const [otp, setOtp] = React.useState("");
   const [pending, setPending] = React.useState(false);
 
-  const finish = (role: Parameters<typeof homeRouteFor>[0]) =>
-    router.replace(homeRouteFor(role) as never);
+  const finish = () => router.replace(homeRouteFor() as never);
 
   const submitPassword = async () => {
     setPending(true);
     try {
-      const user = await login(email.trim(), password);
-      finish(user.role);
+      await login(email.trim(), password);
+      finish();
     } catch {
       /* the store already surfaced the message */
     } finally {
@@ -63,8 +62,8 @@ export default function LoginScreen() {
   const submitOtp = async () => {
     setPending(true);
     try {
-      const user = await loginWithOtp(email.trim(), otp.trim());
-      finish(user.role);
+      await loginWithOtp(email.trim(), otp.trim());
+      finish();
     } catch {
       /* surfaced by the store */
     } finally {

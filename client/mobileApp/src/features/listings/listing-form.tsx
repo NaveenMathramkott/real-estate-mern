@@ -64,6 +64,8 @@ const BLANK: FormState = {
 };
 
 function fromProperty(property: Property): FormState {
+  const coordinates = property.location?.coordinates;
+
   return {
     title: property.title ?? "",
     purpose: property.purpose ?? "rent",
@@ -81,12 +83,9 @@ function fromProperty(property: Property): FormState {
       : "",
     amenities: property.amenities ?? [],
     address: property.address ?? "",
-    lat: property.location?.coordinates?.[1]
-      ? String(property.location.coordinates[1])
-      : "",
-    lng: property.location?.coordinates?.[0]
-      ? String(property.location.coordinates[0])
-      : "",
+    // GeoJSON is [lng, lat]; the two inputs are edited separately.
+    lat: coordinates?.[1] === undefined ? "" : String(coordinates[1]),
+    lng: coordinates?.[0] === undefined ? "" : String(coordinates[0]),
   };
 }
 
@@ -184,9 +183,12 @@ export function ListingForm({
   const save = useMutation({
     mutationFn: () => {
       const payload = toPayload(form) as Partial<Property>;
-      return editing
-        ? propertyApi.update(initial!._id, payload)
-        : propertyApi.create(payload);
+      if (!editing) return propertyApi.create(payload);
+      // `editing` implies a listing, but the detail request can fail or come
+      // back empty — never dereference `initial` on the strength of a boolean.
+      const id = initial?._id;
+      if (!id) throw new Error("This listing could not be loaded.");
+      return propertyApi.update(id, payload);
     },
     successMessage: editing ? "Listing updated" : "Listing published",
     onSuccess: onDone,

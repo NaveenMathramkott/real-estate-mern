@@ -13,6 +13,11 @@
       "bundleIdentifier": "com.tenementary.mobileapp",
       "config": {
         "usesNonExemptEncryption": false
+      },
+      "infoPlist": {
+        "NSAppTransportSecurity": {
+          "NSAllowsLocalNetworking": true
+        }
       }
     },
     "android": {
@@ -41,6 +46,14 @@
         }
       ],
       "expo-secure-store",
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "usesCleartextTraffic": true
+          }
+        }
+      ],
       [
         "expo-location",
         {

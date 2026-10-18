@@ -131,18 +131,29 @@ export function KeyValue({
   hint,
   icon,
   flex = true,
+  style,
 }: {
   label: string;
   value: ReactNode;
   hint?: string;
   icon?: IconName;
+  /** Pass `false` inside a wrapping grid that sizes its own cells. */
   flex?: boolean;
+  style?: object;
 }) {
   return (
-    <Box className={flex ? "flex-1" : undefined}>
+    <Box style={style} className={flex ? "flex-1" : undefined}>
       <HStack className="items-center gap-1">
         {icon ? <Ionicons name={icon} size={12} color="#647771" /> : null}
-        <Txt variant="tiny" tone="muted" uppercase>
+        {/* Labels never wrap: a two-line label breaks the row rhythm in every
+            grid that uses KeyValue. */}
+        <Txt
+          variant="tiny"
+          tone="muted"
+          uppercase
+          numberOfLines={1}
+          className="flex-1"
+        >
           {label}
         </Txt>
       </HStack>

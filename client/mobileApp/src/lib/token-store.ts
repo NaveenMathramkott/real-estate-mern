@@ -16,7 +16,9 @@ export async function readAccessToken() {
       return value;
     })
     .catch(() => {
-      cached = null;
+      // Deliberately not memoised: a keychain read that fails once (locked
+      // device, transient error) must not look like "no token" for the rest of
+      // the session, or every later request would go out unauthenticated.
       return null;
     })
     .finally(() => {

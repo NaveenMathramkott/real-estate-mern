@@ -92,7 +92,7 @@ export default function ListingMediaScreen() {
       <Screen>
         <ScreenHeader
           title="Media"
-          subtitle={detail.data?.property.title}
+          subtitle={detail.data?.property?.title}
           onBack={() => router.back()}
         />
 
@@ -177,7 +177,9 @@ export default function ListingMediaScreen() {
                 </AlertDialogHeader>
                 <AlertDialogBody>
                   <Txt variant="small" tone="muted">
-                    {pendingRemoval?.url.split("/").pop()}
+                    {pendingRemoval?.url
+                      ? pendingRemoval.url.split("/").pop()
+                      : ""}
                   </Txt>
                 </AlertDialogBody>
                 <AlertDialogFooter className="gap-2.5">
@@ -236,17 +238,23 @@ function MediaRow({
         },
       ]}
     >
-      <Box className="h-12 w-12 overflow-hidden rounded-lg bg-border">
-        <GSImage
-          source={{ uri: media.url }}
-          resizeMode="cover"
-          alt={media.url}
-          style={StyleSheet.absoluteFill}
-        />
-      </Box>
+      {media.url ? (
+        <Box className="h-12 w-12 overflow-hidden rounded-lg bg-border">
+          <GSImage
+            source={{ uri: media.url }}
+            resizeMode="cover"
+            alt={media.url}
+            style={StyleSheet.absoluteFill}
+          />
+        </Box>
+      ) : (
+        <Box className="h-12 w-12 items-center justify-center rounded-lg bg-border">
+          <Ionicons name="image-outline" size={18} color="#647771" />
+        </Box>
+      )}
       <View style={{ flex: 1, gap: 4 }}>
         <Txt variant="bodyStrong" numberOfLines={1}>
-          {media.url.split("/").pop()}
+          {media.url ? media.url.split("/").pop() : "Media"}
         </Txt>
         <Badge tone="muted">
           #{index} · {media.type}

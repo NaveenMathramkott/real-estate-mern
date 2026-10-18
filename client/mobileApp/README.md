@@ -12,7 +12,7 @@ resolves the session on launch and mounts exactly one of two navigators.
 - **Signed out** → `(auth)` — a login screen with password and OTP modes, and a
   register screen with a role picker.
 - **Signed in** → the application, four native tabs plus a stack of detail
-  screens.
+  screens, landing on the Properties tab.
 
 Signing out swaps the navigator back, so no signed-in route is reachable without
 a session.
@@ -40,12 +40,12 @@ map screen — Expo Go will not render it. Use `npx expo run:ios|android` or
 
 ## Tabs
 
-| Tab        | Route      | Contents                                                                                                                                                 |
-| ---------- | ---------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Properties | `/`        | Search, filters, sort, results and the map view. With no filters applied it also shows the discovery strips (price bands, areas, cities, property types) |
-| Saved      | `/saved`   | Shortlist with combined asking value, plus stored saved searches                                                                                         |
-| Chats      | `/chats`   | Conversation list with a realtime message thread at `/chats/[id]`                                                                                        |
-| Profile    | `/profile` | Public details, preferences, sign out, and every role-aware destination                                                                                  |
+| Tab        | Route      | Contents                                                                                                                                    |
+| ---------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| Properties | `/`        | Search box and the results list. Every filter — sort, purpose, price, beds, type, furnishing, amenities, radius — lives in the filter sheet |
+| Saved      | `/saved`   | Shortlist with combined asking value, plus stored saved searches                                                                            |
+| Chats      | `/chats`   | Conversation list with a realtime message thread at `/chats/[id]`                                                                           |
+| Profile    | `/profile` | Public details, preferences, sign out, and every role-aware destination                                                                     |
 
 Above the tabs the stack carries `property/[id]`, `map`, `dashboard`,
 `listings/*`, `inquiries`, `saved-searches`, `notifications`, `reviews`,
@@ -82,6 +82,14 @@ Emerald" tokens onto them. Styling goes through
 `metro.config.js`; the theme lives in `src/global.css` and `gluestack-ui.config.json`
 tells the CLI where the components are. Regenerate or add components with
 `npx gluestack-ui@latest add <component>`.
+
+**Session persistence.** The access token lives in `expo-secure-store`
+(`src/lib/token-store.ts`); the refresh token is an httpOnly cookie the server
+sets and React Native's native cookie jar replays, so the session survives an app
+restart. `GET /auth/me` is treated as refreshable — it is the bootstrap call, and
+the server rejects a lapsed access token with **403**, not the documented 401, so
+the interceptor recognises both (and deliberately ignores a role-denial 403).
+A failed token read or a network blip at launch never clears stored credentials.
 
 **API.** `src/lib/api-client.ts` is an axios instance with a bearer-token request
 interceptor, a response interceptor that rotates the access token on a 401 and

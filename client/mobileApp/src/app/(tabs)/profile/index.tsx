@@ -13,7 +13,7 @@ import { useTheme } from "@/theme";
 import { Avatar, Badge, Button, Txt } from "@/components/ui/primitives";
 import { Field, Input, Select, Textarea } from "@/components/ui/form";
 import { KeyValue, ListRow, SectionCard } from "@/components/ui/feedback";
-import { Screen, ScreenHeader } from "@/components/ui/screen";
+import { Screen } from "@/components/ui/screen";
 
 /**
  * The Profile tab: who you are, what your role can do, and every destination
@@ -27,8 +27,8 @@ export default function ProfileScreen() {
   const setUser = useAuthStore((state) => state.setUser);
   const logout = useAuthStore((state) => state.logout);
 
-  const caps = capabilitiesFor(user.role);
-  const isLister = LISTER_ROLES.includes(user.role);
+  const caps = capabilitiesFor(user?.role);
+  const isLister = LISTER_ROLES.includes(user?.role);
 
   const dashboard = useQuery("get|/dashboard|profile", () =>
     dashboardApi.generic(),
@@ -74,8 +74,6 @@ export default function ProfileScreen() {
 
   return (
     <Screen scroll>
-      <ScreenHeader title="Profile" subtitle={ROLE_LABELS[user.role]} />
-
       <View
         style={[
           styles.identity,
@@ -322,7 +320,10 @@ export default function ProfileScreen() {
       <Button
         title="Sign out"
         variant="outline"
-        onPress={() => void logout()}
+        onPress={() => {
+          router.push("/(auth)/register");
+          void logout();
+        }}
         fullWidth
       />
     </Screen>

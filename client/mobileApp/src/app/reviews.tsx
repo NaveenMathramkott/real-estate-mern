@@ -63,14 +63,18 @@ export default function ReviewsScreen() {
             {reviews.map((review) => (
               <SectionCard
                 key={review._id}
-                title={TARGET_LABELS[review.targetType] ?? review.targetType}
+                title={
+                  TARGET_LABELS[review.targetType] ??
+                  review.targetType ??
+                  "Review"
+                }
               >
                 <Stars value={review.rating} size={14} />
                 {review.body ? <Txt variant="small">{review.body}</Txt> : null}
                 <View style={styles.metaRow}>
                   <Txt variant="tiny" tone="muted" style={{ flex: 1 }}>
-                    {formatRelative(review.createdAt)} ·{" "}
-                    {review.targetId.slice(-8)}
+                    {formatRelative(review.createdAt)}
+                    {review.targetId ? ` · ${review.targetId.slice(-8)}` : ""}
                   </Txt>
                   <Button
                     title="Delete"

@@ -66,7 +66,7 @@ export default function BuildingDetailScreen() {
             />
             {building.amenities?.length ? (
               <View style={styles.chips}>
-                {building.amenities.map((amenity) => (
+                {(building.amenities ?? []).map((amenity) => (
                   <Badge key={amenity} tone="muted">
                     {amenity}
                   </Badge>
@@ -75,7 +75,7 @@ export default function BuildingDetailScreen() {
             ) : null}
           </SectionCard>
 
-          {building.location ? (
+          {building.location?.coordinates ? (
             <View style={{ gap: 10 }}>
               <Txt variant="heading">Location</Txt>
               <PropertyMap
@@ -98,7 +98,7 @@ export default function BuildingDetailScreen() {
                 description="Nothing is published here right now."
               />
             ) : (
-              detail.data!.properties.map((property) => (
+              (detail.data?.properties ?? []).map((property) => (
                 <PropertyCard key={property._id} property={property} />
               ))
             )}

@@ -48,19 +48,22 @@ export function PropertyMap({ properties, height }: Props) {
       <Txt variant="small" tone="muted" center>
         Map view is available in the iOS and Android apps.
       </Txt>
-      {properties.slice(0, 6).map((property) => (
-        <View key={property._id} style={{ alignSelf: "stretch", gap: 2 }}>
-          <Txt variant="small" numberOfLines={1}>
-            {property.title}
-          </Txt>
-          <Txt variant="tiny" tone="muted">
-            {formatCompact(property.price)} ·{" "}
-            {coordinatesToLatLng(property.location?.coordinates)
-              ? `${coordinatesToLatLng(property.location?.coordinates)!.lat.toFixed(4)}, ${coordinatesToLatLng(property.location?.coordinates)!.lng.toFixed(4)}`
-              : "no coordinates"}
-          </Txt>
-        </View>
-      ))}
+      {properties.slice(0, 6).map((property) => {
+        const point = coordinatesToLatLng(property.location?.coordinates);
+        return (
+          <View key={property._id} style={{ alignSelf: "stretch", gap: 2 }}>
+            <Txt variant="small" numberOfLines={1}>
+              {property.title}
+            </Txt>
+            <Txt variant="tiny" tone="muted">
+              {formatCompact(property.price)} ·{" "}
+              {point
+                ? `${point.lat.toFixed(4)}, ${point.lng.toFixed(4)}`
+                : "no coordinates"}
+            </Txt>
+          </View>
+        );
+      })}
     </View>
   );
 }

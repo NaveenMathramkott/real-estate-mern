@@ -1,6 +1,7 @@
 import { create } from "zustand";
 
 import {
+  ApiError,
   apiCache,
   markRefreshAvailable,
   setUnauthorizedHandler,
@@ -129,12 +130,36 @@ export const useAuthStore = create<AuthState>((set) => ({
 
   bootstrap: async () => {
     set({ status: "loading" });
+
+    // A cold start often races the network coming up. One retry turns the most
+    // common cause of a spurious sign-out into a slightly slower launch.
+    const attempt = async () => {
+      try {
+        return await authApi.me();
+      } catch (error) {
+        // ApiError status 0 means the request never reached the server.
+        if (error instanceof ApiError && error.status === 0) {
+          await new Promise((resolve) => setTimeout(resolve, 800));
+          return authApi.me();
+        }
+        throw error;
+      }
+    };
+
     try {
-      const data = await authApi.me();
+      const data = await attempt();
       markRefreshAvailable();
       set({ user: data.user, status: "authenticated" });
-    } catch {
-      await writeAccessToken(null);
+    } catch (error) {
+      // Only a rejected token means the session is really over. A network
+      // blip must not destroy stored credentials, or the next cold start is
+      // signed out even though the refresh cookie was never spent.
+      const rejected =
+        error instanceof ApiError &&
+        (error.status === 401 || error.status === 403);
+
+      if (rejected) await writeAccessToken(null);
+
       // A failed bootstrap is the normal anonymous case, not an error state.
       set({ user: null, status: "unauthenticated" });
     }

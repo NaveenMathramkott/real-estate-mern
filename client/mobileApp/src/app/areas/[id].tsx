@@ -33,7 +33,7 @@ export default function AreaDetailScreen() {
     areaApi.insights(id),
   );
   const listings = useQuery(id ? `get|/areas/${id}/listings` : null, () =>
-    propertyApi.search({ city: detail.data?.area.city, limit: 12 }),
+    propertyApi.search({ city: detail.data?.area?.city, limit: 12 }),
   );
 
   const area = detail.data?.area;
@@ -73,14 +73,14 @@ export default function AreaDetailScreen() {
                   <Stat
                     label="Median price"
                     value={formatCurrency(
-                      insights.data?.priceStats.medianPrice,
+                      insights.data?.priceStats?.medianPrice,
                       undefined,
                       true,
                     )}
                   />
                   <Stat
                     label="Rating"
-                    value={`${(insights.data?.rating.average ?? 0).toFixed(1)} ★`}
+                    value={`${(insights.data?.rating?.average ?? 0).toFixed(1)} ★`}
                   />
                 </View>
                 <Txt variant="tiny" tone="muted" uppercase>
@@ -106,8 +106,9 @@ export default function AreaDetailScreen() {
                 properties={[]}
                 height={220}
                 polygon={
-                  (area.boundary.coordinates?.[0] as [number, number][]) ??
-                  undefined
+                  area.boundary.coordinates?.[0] as
+                    | [number, number][]
+                    | undefined
                 }
               />
             </View>
@@ -138,7 +139,7 @@ export default function AreaDetailScreen() {
                 description={`Nothing published in ${area.city} yet.`}
               />
             ) : (
-              listings.data!.properties.map((property) => (
+              (listings.data?.properties ?? []).map((property) => (
                 <PropertyCard key={property._id} property={property} />
               ))
             )}
