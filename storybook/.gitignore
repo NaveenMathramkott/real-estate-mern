@@ -1,0 +1,28 @@
+
+!.vscode/extensions.json
+# Deployment
+# Editor directories and files
+# Logs
+# React Router build output
+*.local
+*.log
+*.njsproj
+*.ntvs*
+*.sln
+*.suo
+*.sw?
+.DS_Store
+.idea
+.vercel
+.vscode/*
+/.react-router
+/build
+dist
+dist-ssr
+lerna-debug.log*
+logs
+node_modules
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
