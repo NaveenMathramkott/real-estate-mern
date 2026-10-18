@@ -40,12 +40,12 @@ map screen — Expo Go will not render it. Use `npx expo run:ios|android` or
 
 ## Tabs
 
-| Tab | Route | Contents |
-| --- | --- | --- |
-| Properties | `/` | Search, filters, sort, results and the map view. With no filters applied it also shows the discovery strips (price bands, areas, cities, property types) |
-| Saved | `/saved` | Shortlist with combined asking value, plus stored saved searches |
-| Chats | `/chats` | Conversation list with a realtime message thread at `/chats/[id]` |
-| Profile | `/profile` | Public details, preferences, sign out, and every role-aware destination |
+| Tab        | Route      | Contents                                                                                                                                                 |
+| ---------- | ---------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Properties | `/`        | Search, filters, sort, results and the map view. With no filters applied it also shows the discovery strips (price bands, areas, cities, property types) |
+| Saved      | `/saved`   | Shortlist with combined asking value, plus stored saved searches                                                                                         |
+| Chats      | `/chats`   | Conversation list with a realtime message thread at `/chats/[id]`                                                                                        |
+| Profile    | `/profile` | Public details, preferences, sign out, and every role-aware destination                                                                                  |
 
 Above the tabs the stack carries `property/[id]`, `map`, `dashboard`,
 `listings/*`, `inquiries`, `saved-searches`, `notifications`, `reviews`,
@@ -65,13 +65,23 @@ tab only renders the sections a role can use.
 ```
 src/
 ├── app/            Expo Router routes (one file per screen)
-├── components/     UI kit, property cards/gallery/map, filter sheet, tab bar
+├── components/     gluestack wrappers, property cards/gallery/map, filter sheet, tabs
 ├── features/       Reusable forms shared across routes
 ├── hooks/          useQuery / useMutation / geolocation / favourites
 ├── lib/            axios client, typed endpoints, domain types, socket client
 ├── store/          zustand stores: auth, favourites, search, toasts
 └── theme.ts        "Ivory & Emerald" light/dark tokens
 ```
+
+**UI.** Every component is built on [gluestack-ui](https://gluestack.io) v5.
+Gluestack v5 is copy-paste: `src/components/ui/*` holds the generated component
+sources plus five thin app-level wrappers (`primitives.tsx`, `form.tsx`,
+`feedback.tsx`, `screen.tsx`, `toaster.tsx`) that map the web client's "Ivory &
+Emerald" tokens onto them. Styling goes through
+[UniWind](https://uniwind.dev) (Tailwind CSS v4, no PostCSS step), configured in
+`metro.config.js`; the theme lives in `src/global.css` and `gluestack-ui.config.json`
+tells the CLI where the components are. Regenerate or add components with
+`npx gluestack-ui@latest add <component>`.
 
 **API.** `src/lib/api-client.ts` is an axios instance with a bearer-token request
 interceptor, a response interceptor that rotates the access token on a 401 and
@@ -82,5 +92,8 @@ React Native's native cookie jar via `withCredentials`.
 **State.** All session, shortlist, search-filter and toast state is zustand —
 the same four stores the web client uses.
 
-**Theme.** `src/theme.ts` translates the web client's "Ivory & Emerald" OKLCH
-palette into hex tokens for light and dark, so both clients read the same.
+**Theme.** The web client's "Ivory & Emerald" OKLCH palette is translated into
+semantic RGB tokens twice: `src/global.css` (what UniWind compiles for
+classNames) and `src/theme.ts` (the JS mirror, still needed for the handful of
+imperative styles such as map markers and the native tab tint). Change both
+together.

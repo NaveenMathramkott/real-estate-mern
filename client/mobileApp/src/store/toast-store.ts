@@ -1,60 +1,41 @@
-import { create } from "zustand";
-
 export type ToastVariant = "default" | "success" | "destructive" | "warning";
 
-export type Toast = {
-  id: string;
+export type ToastOptions = {
   title: string;
   description?: string;
-  variant: ToastVariant;
-  duration: number;
+  variant?: ToastVariant;
+  /** Milliseconds before auto-dismiss. Defaults to 4500. */
+  duration?: number;
 };
 
-type ToastState = {
-  toasts: Toast[];
-  push: (
-    toast: Omit<Toast, "id" | "variant" | "duration"> &
-      Partial<Pick<Toast, "variant" | "duration">>,
-  ) => string;
-  dismiss: (id: string) => void;
+export type ToastController = {
+  show: (options: ToastOptions) => void;
 };
 
-let counter = 0;
+/**
+ * Imperative toast facade. Screens and stores call `toast.success(...)` from
+ * event handlers and mutation callbacks, which are not React render functions,
+ * so the hook-based gluestack API is wrapped here. `<Toaster />` registers the
+ * real controller on mount.
+ */
+let controller: ToastController | null = null;
 
-export const useToastStore = create<ToastState>((set) => ({
-  toasts: [],
-  push: (toast) => {
-    const id = `toast-${++counter}`;
-    set((state) => ({
-      toasts: [
-        ...state.toasts.slice(-3),
-        {
-          id,
-          variant: "default",
-          duration: 4500,
-          ...toast,
-        },
-      ],
-    }));
-    return id;
-  },
-  dismiss: (id) =>
-    set((state) => ({
-      toasts: state.toasts.filter((t) => t.id !== id),
-    })),
-}));
+export function registerToastController(next: ToastController | null) {
+  controller = next;
+}
+
+function show(options: ToastOptions) {
+  controller?.show(options);
+}
 
 export const toast = {
-  show: (
-    t: Omit<Toast, "id" | "variant" | "duration"> &
-      Partial<Pick<Toast, "variant" | "duration">>,
-  ) => useToastStore.getState().push(t),
+  show,
   success: (title: string, description?: string) =>
-    useToastStore.getState().push({ title, description, variant: "success" }),
+    show({ title, description, variant: "success" }),
   error: (title: string, description?: string) =>
-    useToastStore
-      .getState()
-      .push({ title, description, variant: "destructive", duration: 6000 }),
+    show({ title, description, variant: "destructive", duration: 6000 }),
+  warning: (title: string, description?: string) =>
+    show({ title, description, variant: "warning" }),
   info: (title: string, description?: string) =>
-    useToastStore.getState().push({ title, description }),
+    show({ title, description, variant: "default" }),
 };

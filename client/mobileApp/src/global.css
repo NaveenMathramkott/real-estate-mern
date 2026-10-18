@@ -1,12 +1,122 @@
-:root {
-  --font-display:
-    Spline Sans, Inter, ui-sans-serif, system-ui, sans-serif, Apple Color Emoji,
-    Segoe UI Emoji, Segoe UI Symbol, Noto Color Emoji;
-  --font-mono:
-    ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, Liberation Mono,
-    Courier New, monospace;
-  --font-rounded:
-    "SF Pro Rounded", "Hiragino Maru Gothic ProN", Meiryo, "MS PGothic",
-    sans-serif;
-  --font-serif: Georgia, "Times New Roman", serif;
+@import "tailwindcss";
+@import "uniwind";
+
+/* ─── Theme: "Ivory & Emerald" ───────────────────────────────────────────────
+   The same palette the web client uses, expressed as shadcn-style semantic
+   tokens. Values are space-separated RGB triplets (no rgb() wrapper) so Tailwind
+   opacity modifiers like bg-primary/10 keep working. Switched at runtime by
+   `Uniwind.setTheme('light' | 'dark' | 'system')`, which GluestackUIProvider
+   calls on mount.                                                           */
+@layer theme {
+  :root {
+    @variant light {
+      --background: 251 253 252;
+      --foreground: 11 42 35;
+
+      --card: 255 255 255;
+      --card-foreground: 11 42 35;
+
+      --popover: 255 255 255;
+      --popover-foreground: 11 42 35;
+
+      /* Emerald carries every primary action. */
+      --primary: 14 159 110;
+      --primary-foreground: 255 255 255;
+
+      --secondary: 242 247 244;
+      --secondary-foreground: 11 42 35;
+
+      --muted: 245 248 246;
+      --muted-foreground: 100 119 113;
+
+      --accent: 242 247 244;
+      --accent-foreground: 11 42 35;
+
+      --destructive: 212 72 58;
+      --destructive-foreground: 255 255 255;
+
+      --success: 30 158 100;
+      --warning: 176 124 20;
+      --gold: 192 138 30;
+      --info: 44 107 207;
+      --surface-soft: 245 248 246;
+
+      --border: 226 233 229;
+      --input: 226 233 229;
+      --ring: 14 159 110;
+    }
+
+    @variant dark {
+      --background: 10 20 18;
+      --foreground: 237 245 242;
+
+      --card: 18 33 30;
+      --card-foreground: 237 245 242;
+
+      --popover: 18 33 30;
+      --popover-foreground: 237 245 242;
+
+      /* Primary inverts to a brighter emerald on dark surfaces. */
+      --primary: 49 188 139;
+      --primary-foreground: 6 32 24;
+
+      --secondary: 27 46 42;
+      --secondary-foreground: 237 245 242;
+
+      --muted: 23 39 36;
+      --muted-foreground: 157 176 170;
+
+      --accent: 27 50 44;
+      --accent-foreground: 237 245 242;
+
+      --destructive: 228 103 90;
+      --destructive-foreground: 6 32 24;
+
+      --success: 63 190 134;
+      --warning: 224 180 87;
+      --gold: 224 180 87;
+      --info: 108 155 240;
+      --surface-soft: 23 39 36;
+
+      --border: 38 56 51;
+      --input: 38 56 51;
+      --ring: 49 188 139;
+    }
+  }
+}
+
+/* ─── Tailwind v4 mappings ──────────────────────────────────────────────────
+   bg-primary → rgb(var(--primary)), text-foreground → rgb(var(--foreground)), etc. */
+@theme inline {
+  --color-background: rgb(var(--background));
+  --color-foreground: rgb(var(--foreground));
+  --color-card: rgb(var(--card));
+  --color-card-foreground: rgb(var(--card-foreground));
+  --color-popover: rgb(var(--popover));
+  --color-popover-foreground: rgb(var(--popover-foreground));
+  --color-primary: rgb(var(--primary));
+  --color-primary-foreground: rgb(var(--primary-foreground));
+  --color-secondary: rgb(var(--secondary));
+  --color-secondary-foreground: rgb(var(--secondary-foreground));
+  --color-muted: rgb(var(--muted));
+  --color-muted-foreground: rgb(var(--muted-foreground));
+  --color-accent: rgb(var(--accent));
+  --color-accent-foreground: rgb(var(--accent-foreground));
+  --color-destructive: rgb(var(--destructive));
+  --color-destructive-foreground: rgb(var(--destructive-foreground));
+  --color-success: rgb(var(--success));
+  --color-warning: rgb(var(--warning));
+  --color-gold: rgb(var(--gold));
+  --color-info: rgb(var(--info));
+  --color-surface-soft: rgb(var(--surface-soft));
+  --color-border: rgb(var(--border));
+  --color-input: rgb(var(--input));
+  --color-ring: rgb(var(--ring));
+
+  /* The web client's --radius: 0.65rem scale. */
+  --radius-sm: 4px;
+  --radius-md: 7px;
+  --radius-lg: 10px;
+  --radius-xl: 14px;
+  --radius-2xl: 20px;
 }

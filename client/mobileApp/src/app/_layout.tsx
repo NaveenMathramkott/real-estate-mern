@@ -2,7 +2,16 @@ import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import * as React from "react";
 import { View } from "react-native";
-import { SafeAreaProvider } from "react-native-safe-area-context";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
+import {
+  SafeAreaListener,
+  SafeAreaProvider,
+} from "react-native-safe-area-context";
+import { Uniwind } from "uniwind";
+
+// UniWind compiles the theme in src/global.css; importing it here registers the
+// stylesheet for the whole app.
+import "@/global.css";
 
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { useAuthStore } from "@/store/auth-store";
@@ -10,6 +19,7 @@ import { useFavoritesStore } from "@/store/favorites-store";
 import { connectSocket, disconnectSocket } from "@/lib/socket";
 import { LoadingBlock } from "@/components/ui/feedback";
 import { Toaster } from "@/components/ui/toaster";
+import { GluestackUIProvider } from "@/components/ui/gluestack-ui-provider";
 import { darkTheme, lightTheme } from "@/theme";
 
 SplashScreen.preventAutoHideAsync().catch(() => undefined);
@@ -71,53 +81,65 @@ export default function RootLayout() {
   }, [status]);
 
   const tokens = scheme === "dark" ? darkTheme : lightTheme;
+  const navigationTheme = scheme === "dark" ? DarkTheme : DefaultTheme;
 
-  return (
-    <SafeAreaProvider>
-      <ThemeProvider
-        value={{
-          ...(scheme === "dark" ? DarkTheme : DefaultTheme),
-          colors: {
-            ...(scheme === "dark" ? DarkTheme : DefaultTheme).colors,
-            primary: tokens.primary,
-            background: tokens.background,
-            card: tokens.surface,
-            text: tokens.foreground,
-            border: tokens.border,
-          },
+  const navigator =
+    status === "idle" || status === "loading" ? (
+      <View style={{ flex: 1, justifyContent: "center" }}>
+        <LoadingBlock label="Checking your session…" />
+      </View>
+    ) : user ? (
+      /* The whole application lives behind authentication: every route below is
+         unreachable until there is a session. */
+      <Stack
+        screenOptions={{
+          headerShown: false,
+          contentStyle: { backgroundColor: tokens.background },
         }}
       >
-        {status === "idle" || status === "loading" ? (
-          <View style={{ flex: 1, justifyContent: "center" }}>
-            <LoadingBlock label="Checking your session…" />
-          </View>
-        ) : user ? (
-          /* The whole application lives behind authentication: every route below
-             is unreachable until there is a session. */
-          <Stack
-            screenOptions={{
-              headerShown: false,
-              contentStyle: { backgroundColor: tokens.background },
-            }}
-          >
-            {APP_SCREENS.map((screen) => (
-              <Stack.Screen key={screen.name} name={screen.name} />
-            ))}
-            <Stack.Screen name="+not-found" />
-          </Stack>
-        ) : (
-          <Stack
-            screenOptions={{
-              headerShown: false,
-              contentStyle: { backgroundColor: tokens.background },
-            }}
-          >
-            <Stack.Screen name="index" />
-            <Stack.Screen name="(auth)" />
-          </Stack>
-        )}
-        <Toaster />
-      </ThemeProvider>
-    </SafeAreaProvider>
+        {APP_SCREENS.map((screen) => (
+          <Stack.Screen key={screen.name} name={screen.name} />
+        ))}
+        <Stack.Screen name="+not-found" />
+      </Stack>
+    ) : (
+      <Stack
+        screenOptions={{
+          headerShown: false,
+          contentStyle: { backgroundColor: tokens.background },
+        }}
+      >
+        <Stack.Screen name="index" />
+        <Stack.Screen name="(auth)" />
+      </Stack>
+    );
+
+  return (
+    // `Uniwind.updateInsets` feeds the CSS safe-area variables that
+    // `useSafeArea()` inside gluestack components relies on.
+    <SafeAreaListener onChange={({ insets }) => Uniwind.updateInsets(insets)}>
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <GluestackUIProvider mode="system">
+          <SafeAreaProvider>
+            <ThemeProvider
+              value={{
+                ...navigationTheme,
+                colors: {
+                  ...navigationTheme.colors,
+                  primary: tokens.primary,
+                  background: tokens.background,
+                  card: tokens.surface,
+                  text: tokens.foreground,
+                  border: tokens.border,
+                },
+              }}
+            >
+              {navigator}
+              <Toaster />
+            </ThemeProvider>
+          </SafeAreaProvider>
+        </GluestackUIProvider>
+      </GestureHandlerRootView>
+    </SafeAreaListener>
   );
 }

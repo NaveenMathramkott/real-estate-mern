@@ -1,17 +1,26 @@
 import { Ionicons } from "@expo/vector-icons";
-import { Image } from "expo-image";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import * as React from "react";
-import { Alert, Pressable, StyleSheet, View } from "react-native";
+import { Pressable, StyleSheet, View } from "react-native";
 
 import { MEDIA_TYPES } from "@/lib/constants";
 import { propertyApi } from "@/lib/api";
+import {
+  AlertDialog,
+  AlertDialogBackdrop,
+  AlertDialogBody,
+  AlertDialogContent,
+  AlertDialogFooter,
+  AlertDialogHeader,
+} from "@/components/ui/alert-dialog";
 import { LISTER_ROLES } from "@/lib/roles";
 import type { MediaType, PropertyMedia } from "@/lib/types";
 import { useMutation } from "@/hooks/use-mutation";
 import { useQuery } from "@/hooks/use-query";
 import { useTheme } from "@/theme";
 import { Badge, Button, Txt } from "@/components/ui/primitives";
+import { Box } from "@/components/ui/box";
+import { Image as GSImage } from "@/components/ui/image";
 import { Field, Input, Select } from "@/components/ui/form";
 import {
   EmptyState,
@@ -39,6 +48,8 @@ export default function ListingMediaScreen() {
   const [url, setUrl] = React.useState("");
   const [type, setType] = React.useState<MediaType>("image");
   const [blurhash, setBlurhash] = React.useState("");
+  const [pendingRemoval, setPendingRemoval] =
+    React.useState<PropertyMedia | null>(null);
 
   const add = useMutation({
     mutationFn: () =>
@@ -149,20 +160,45 @@ export default function ListingMediaScreen() {
                     busy={reorder.isPending}
                     onMoveUp={() => move(index, -1)}
                     onMoveDown={() => move(index, 1)}
-                    onRemove={() =>
-                      Alert.alert("Remove media?", "This cannot be undone.", [
-                        { text: "Cancel", style: "cancel" },
-                        {
-                          text: "Remove",
-                          style: "destructive",
-                          onPress: () => void remove.mutateAsync(item._id),
-                        },
-                      ])
-                    }
+                    onRemove={() => setPendingRemoval(item)}
                   />
                 ))
               )}
             </SectionCard>
+
+            <AlertDialog
+              isOpen={Boolean(pendingRemoval)}
+              onClose={() => setPendingRemoval(null)}
+            >
+              <AlertDialogBackdrop className="bg-black/45" />
+              <AlertDialogContent className="gap-4 rounded-2xl border border-border bg-background p-5">
+                <AlertDialogHeader>
+                  <Txt variant="heading">Remove this media?</Txt>
+                </AlertDialogHeader>
+                <AlertDialogBody>
+                  <Txt variant="small" tone="muted">
+                    {pendingRemoval?.url.split("/").pop()}
+                  </Txt>
+                </AlertDialogBody>
+                <AlertDialogFooter className="gap-2.5">
+                  <Button
+                    title="Cancel"
+                    variant="ghost"
+                    onPress={() => setPendingRemoval(null)}
+                  />
+                  <Button
+                    title="Remove"
+                    variant="danger"
+                    loading={remove.isPending}
+                    onPress={() => {
+                      if (pendingRemoval)
+                        void remove.mutateAsync(pendingRemoval._id);
+                      setPendingRemoval(null);
+                    }}
+                  />
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </>
         )}
       </Screen>
@@ -200,14 +236,14 @@ function MediaRow({
         },
       ]}
     >
-      <View style={styles.thumb}>
-        <Image
+      <Box className="h-12 w-12 overflow-hidden rounded-lg bg-border">
+        <GSImage
           source={{ uri: media.url }}
+          resizeMode="cover"
+          alt={media.url}
           style={StyleSheet.absoluteFill}
-          contentFit="cover"
-          transition={150}
         />
-      </View>
+      </Box>
       <View style={{ flex: 1, gap: 4 }}>
         <Txt variant="bodyStrong" numberOfLines={1}>
           {media.url.split("/").pop()}
@@ -264,13 +300,6 @@ const styles = StyleSheet.create({
     padding: 8,
     borderRadius: 10,
     borderWidth: StyleSheet.hairlineWidth,
-  },
-  thumb: {
-    width: 48,
-    height: 48,
-    borderRadius: 8,
-    overflow: "hidden",
-    backgroundColor: "#E2E9E5",
   },
   actions: { flexDirection: "row", alignItems: "center", gap: 12 },
 });
