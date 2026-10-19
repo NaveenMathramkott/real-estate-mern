@@ -34,6 +34,33 @@ const STATS = [
   { value: "4", label: "Applications" },
 ];
 
+const STACKS = [
+  "Node.js",
+  "Express 4",
+  "MongoDB",
+  "Mongoose 8",
+  "Socket.IO",
+  "JWT",
+  "Cloudinary",
+  "Upstash Redis",
+  "Swagger",
+  "React 19",
+  "React Router 7",
+  "Vite 8",
+  "TypeScript",
+  "Tailwind v4",
+  "shadcn/ui",
+  "Radix",
+  "Recharts",
+  "Leaflet",
+  "Expo SDK 57",
+  "React Native 0.86",
+  "Expo Router",
+  "gluestack-ui",
+  "UniWind",
+  "Zustand",
+];
+
 const SURFACES = [
   {
     name: "Express + MongoDB API",
@@ -89,7 +116,7 @@ export default function Home() {
       {/* ---------------------------------- hero --------------------------------- */}
 
       <section className="border-b">
-        <div className="relative mx-auto w-full max-w-6xl px-5 py-16 text-center sm:px-8 sm:py-20">
+        <div className="relative mx-auto w-full max-w-8xl px-5 py-16 text-center sm:px-8 sm:py-20">
           <div className="mx-auto max-w-3xl">
             <Badge variant="secondary" className="mb-6">
               <span className="bg-primary mr-1.5 inline-block size-1.5 rounded-full" />
@@ -98,7 +125,7 @@ export default function Home() {
 
             <h1 className="text-4xl leading-[1.08] font-semibold tracking-tight text-balance sm:text-6xl">
               The complete build of{" "}
-              <span className="text-primary">Tenementary</span>
+              <h1 className="text-primary">Tenementary Full Stack App</h1>
             </h1>
 
             <p className="text-muted-foreground mt-6 text-lg leading-relaxed text-pretty sm:text-xl">
@@ -141,6 +168,22 @@ export default function Home() {
                 </div>
               ))}
             </dl>
+          </div>
+
+          <div className="mx-auto mt-16 w-full max-w-5xl">
+            <p className="text-muted-foreground mb-4 text-center text-xs font-semibold tracking-widest uppercase">
+              The stack, end to end
+            </p>
+            <ul className="text-muted-foreground flex flex-wrap items-center justify-center gap-x-2 gap-y-2 text-sm">
+              {STACKS.map((tech) => (
+                <li
+                  key={tech}
+                  className="bg-card rounded-full border px-3 py-1 font-mono text-xs"
+                >
+                  {tech}
+                </li>
+              ))}
+            </ul>
           </div>
 
           <div className="mx-auto mt-16 w-full max-w-4xl">
