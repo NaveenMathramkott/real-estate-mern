@@ -8,7 +8,6 @@ import {
 } from "react-router";
 import type { LinksFunction } from "react-router";
 
-import { ThemeScript } from "~/components/docs/theme";
 import { getRepoStats } from "~/lib/github.server";
 import { REPO_SLUG } from "~/lib/site";
 import stylesheet from "~/app.css?url";
@@ -30,12 +29,12 @@ export async function loader() {
 
 export function Layout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" className="dark" suppressHydrationWarning>
       <head>
+        <script dangerouslySetInnerHTML={{ __html: `(function(){try{var s=localStorage.getItem("storybook:theme");document.documentElement.classList.add(s==="light"?"light":"dark");}catch(e){document.documentElement.classList.add("dark");}})();` }} />
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <meta name="theme-color" content="#0e9f6e" />
-        <ThemeScript />
         <Meta />
         <Links />
       </head>

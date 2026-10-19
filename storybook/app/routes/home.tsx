@@ -35,6 +35,9 @@ const STATS = [
 ];
 
 const STACKS = [
+  "React 19",
+  "React Native 0.86",
+  "Expo SDK 57",
   "Node.js",
   "Express 4",
   "MongoDB",
@@ -44,7 +47,6 @@ const STACKS = [
   "Cloudinary",
   "Upstash Redis",
   "Swagger",
-  "React 19",
   "React Router 7",
   "Vite 8",
   "TypeScript",
@@ -53,8 +55,6 @@ const STACKS = [
   "Radix",
   "Recharts",
   "Leaflet",
-  "Expo SDK 57",
-  "React Native 0.86",
   "Expo Router",
   "gluestack-ui",
   "UniWind",
@@ -125,7 +125,9 @@ export default function Home() {
 
             <h1 className="text-4xl leading-[1.08] font-semibold tracking-tight text-balance sm:text-6xl">
               The complete build of{" "}
-              <h1 className="text-primary">Tenementary Full Stack App</h1>
+              <h1 className="text-primary text-4xl leading-[1.08] font-semibold tracking-tight text-balance sm:text-6xl">
+                Tenementary Full Stack App
+              </h1>
             </h1>
 
             <p className="text-muted-foreground mt-6 text-lg leading-relaxed text-pretty sm:text-xl">
