@@ -3,7 +3,7 @@
     "name": "Tenementary",
     "slug": "tenementary-mobile",
     "version": "1.0.0",
-    "orientation": "portrait",
+    "orientation": "default",
     "icon": "./assets/images/icon.png",
     "scheme": "tenementary",
     "userInterfaceStyle": "automatic",
@@ -49,6 +49,9 @@
       [
         "expo-build-properties",
         {
+          "ios": {
+            "enableSceneSupport": true
+          },
           "android": {
             "usesCleartextTraffic": true
           }
